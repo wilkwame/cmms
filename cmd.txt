@@ -1,0 +1,15 @@
+C:\xamp\mysql\bin>  mysgl -u root -p
+
+1. CREATE DATABASE cmms
+
+2. USE cmms
+
+3. SOURCE C:/xampp/htdocs/CMMS/schema.sql;
+4. SOURCE C:/xampp/htdocs/CMMS/template.sql;
+5. SHOW TABLES;
+6. SELECT * FROM categories;
+7. SELECT id, name, email, role FROM users;
+8. SELECT COUNT(*) AS total_reports FROM reports;
+9. SELECT status, COUNT(*) FROM work_orders GROUP BY status;
+10. SELECT * FROM reports LIMIT 5;
+11.  EXIT;

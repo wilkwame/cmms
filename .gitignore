@@ -1,0 +1,5 @@
+node_modules/
+api/config.php
+uploads/
+*.log
+.DS_Store

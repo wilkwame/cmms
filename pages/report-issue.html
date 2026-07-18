@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style/report-issue.css">
+</head>
+<body>
+<page name="report-issue" id="report-issue" onshow="loadReportIssuePage">
+  <section>
+    <div class="page-header">
+      <div class="header-content">
+        <h2><i class="fas fa-clipboard-list"></i> Report an Issue</h2>
+        <p class="header-date">Fill in the details below — photos help staff diagnose the problem faster.</p>
+      </div>
+    </div>
+
+    <div class="form-card card-panel">
+      <div id="report-issue-banner" class="status-banner hidden"></div>
+
+      <div class="field">
+        <label for="ri-issue">Title <span class="required">*</span></label>
+        <input type="text" id="ri-issue" maxlength="200" placeholder="e.g. Roof leakage in Block C" />
+      </div>
+
+      <div class="field">
+        <label for="ri-description">Description</label>
+        <textarea id="ri-description" rows="4" placeholder="What's wrong, and any details that might help"></textarea>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="ri-category">Category <span class="required">*</span></label>
+          <select id="ri-category">
+            <option value="">Select category</option>
+            <option value="1">Electrical</option>
+            <option value="2">Plumbing</option>
+            <option value="3">Carpentry</option>
+            <option value="4">Roofing</option>
+            <option value="5">HVAC</option>
+            <option value="6">Civil</option>
+            <option value="7">General</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="ri-priority">Priority <span class="required">*</span></label>
+          <select id="ri-priority">
+            <option value="low">Low</option>
+            <option value="medium" selected>Medium</option>
+            <option value="high">High</option>
+            <option value="urgent">Urgent</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="ri-location">Location <span class="required">*</span></label>
+        <select id="ri-location">
+          <option value="">Loading locations...</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Photos <span class="field-hint">(up to 5, JPEG/PNG/WEBP, 5MB each)</span></label>
+        <div id="ri-dropzone" class="dropzone">
+          <i class="fas fa-camera"></i>
+          <p>Drag &amp; drop photos here, or click to choose</p>
+          <input type="file" id="ri-photo-input" accept="image/jpeg,image/png,image/webp" multiple hidden />
+        </div>
+        <div id="ri-photo-previews" class="photo-previews"></div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-cancel" action="clearReportIssueForm">Clear</button>
+        <button type="button" class="btn-submit" id="ri-submit-btn" action="submitReportIssue"><i class="fas fa-paper-plane"></i> Submit Report</button>
+      </div>
+    </div>
+  </section>
+</page>
+</body>
+</html>

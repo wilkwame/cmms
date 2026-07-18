@@ -1,0 +1,287 @@
+/* ========================================
+   USER DASHBOARD ("My Reports") — stats, card list, timeline popup
+   ======================================== */
+
+#user-home section {
+  padding: 16px 20px 24px;
+  max-width: 720px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ---- Stats strip ---- */
+
+.uh-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.uh-stat {
+  background: #fff;
+  border: 1px solid #eef0f3;
+  border-radius: 12px;
+  padding: 12px 8px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.uh-stat-count {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.uh-stat-label {
+  font-size: 10px;
+  color: #8a919c;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+}
+
+.uh-stat-pending .uh-stat-count  { color: #d97706; }
+.uh-stat-progress .uh-stat-count { color: #237FEA; }
+.uh-stat-done .uh-stat-count     { color: #16a34a; }
+
+/* ---- List header ---- */
+
+.uh-list-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.uh-list-header h4 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.uh-list-header .record-count {
+  font-size: 12px;
+  color: #9aa1ac;
+}
+
+/* ---- Report cards ---- */
+
+.uh-report-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mrc-card {
+  position: relative;
+  background: #fff;
+  border: 1px solid #eef0f3;
+  border-radius: 14px;
+  padding: 14px 40px 14px 16px;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease, transform 0.1s ease, border-color 0.15s ease;
+}
+
+.mrc-card:hover {
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+  border-color: #dbe6f7;
+  transform: translateY(-1px);
+}
+
+.mrc-card:active {
+  transform: translateY(0);
+}
+
+.mrc-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.mrc-ref {
+  font-size: 11px;
+  font-weight: 700;
+  color: #9aa1ac;
+  letter-spacing: 0.03em;
+}
+
+.mrc-issue {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a1a;
+  line-height: 1.35;
+}
+
+.mrc-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.mrc-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  color: #5b6472;
+  background: #f5f7fa;
+  padding: 3px 9px;
+  border-radius: 20px;
+}
+
+.mrc-tag i {
+  color: #237FEA;
+  font-size: 10px;
+}
+
+.mrc-tag-muted {
+  color: #9aa1ac;
+}
+
+.mrc-tag-muted i {
+  color: #c2c8d1;
+}
+
+.mrc-chevron {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #c2c8d1;
+  font-size: 13px;
+}
+
+/* ---- Empty state ---- */
+
+.uh-empty {
+  background: #fff;
+  border: 1px dashed #dfe3e8;
+  border-radius: 14px;
+  padding: 48px 20px;
+  text-align: center;
+}
+
+.uh-empty i {
+  font-size: 34px;
+  color: #c2c8d1;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.uh-empty p {
+  color: #6b7280;
+  font-size: 14px;
+  margin: 0 0 16px;
+}
+
+.uh-empty-btn {
+  border: none;
+  background: #237FEA;
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 10px 20px;
+  border-radius: 9px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.uh-empty-btn:hover {
+  background: #1a6dcc;
+}
+
+/* ---- Timeline (inside the detail popup) ---- */
+
+.timeline {
+  position: relative;
+  padding-left: 20px;
+}
+
+.timeline-step {
+  position: relative;
+  padding-bottom: 16px;
+}
+
+.timeline-step:last-child {
+  padding-bottom: 0;
+}
+
+.timeline-step::before {
+  content: '';
+  position: absolute;
+  left: -15px;
+  top: 14px;
+  bottom: -2px;
+  width: 2px;
+  background: #e5e7eb;
+}
+
+.timeline-step:last-child::before {
+  display: none;
+}
+
+.timeline-dot {
+  position: absolute;
+  left: -20px;
+  top: 3px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #237FEA;
+  box-shadow: 0 0 0 3px rgba(35, 127, 234, 0.15);
+}
+
+.timeline-label {
+  font-weight: 600;
+  font-size: 13.5px;
+  color: #1a1a1a;
+}
+
+.timeline-time {
+  font-size: 11.5px;
+  color: #9aa1ac;
+  margin-top: 1px;
+}
+
+.timeline-note {
+  font-size: 12.5px;
+  color: #5b6472;
+  margin-top: 3px;
+  font-style: italic;
+}
+
+@media (max-width: 600px) {
+  #user-home section {
+    padding: 12px 14px 20px;
+  }
+
+  .uh-stats {
+    gap: 8px;
+  }
+
+  .uh-stat {
+    padding: 10px 4px;
+  }
+
+  .uh-stat-count {
+    font-size: 17px;
+  }
+
+  .uh-stat-label {
+    font-size: 9px;
+  }
+
+  .mrc-card {
+    padding: 12px 34px 12px 14px;
+  }
+}

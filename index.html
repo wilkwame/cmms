@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+
+  <script>
+    // Guard: if there's no session, bounce to the login page immediately.
+    // Runs synchronously, before the app shell or any styles/scripts load.
+    (function () {
+      var user = localStorage.getItem('cmms_user') || sessionStorage.getItem('cmms_user');
+      var token = localStorage.getItem('cmms_token') || sessionStorage.getItem('cmms_token');
+      if (!user || !token) {
+        window.location.replace('login.html');
+      }
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="style/main.css">
+  <link rel="stylesheet" href="style/mobile.css">
+  <link rel="stylesheet" href="style/staffs.css">
+  <link rel="stylesheet" href="style/confirmation.css">
+  <link rel="stylesheet" href="style/popups.css">
+  <script src="https://unpkg.com/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
+  <script src="scripts/platform.js"></script>
+  <!-- <title>CMMS - Maintenance</title> -->
+
+</head>
+<body>
+  <app>
+    <!-- Page Imports (dashboard pages only — login lives at /login.html now) -->
+    <import src="pages/reports.html"></import>
+    <import src="pages/workorders.html"></import>
+    <import src="pages/settings.html"></import>
+    <import src="pages/staffs.html"></import>
+    <import src="pages/add-staff.html"></import>
+    <import src="pages/user-dashboard.html"></import>
+    <import src="pages/report-issue.html"></import>
+
+    <!-- Mobile Tabbar -->
+    <tabbar id="main-tabbar">
+      <tab page="home" data-roles="admin,supervisor,technician">
+        <span class="tab-icon"><i class="fas fa-home"></i></span>
+        <span class="tab-label">Home</span>
+      </tab>
+      <tab page="reports" data-roles="admin,supervisor,technician">
+        <span class="tab-icon"><i class="fas fa-clipboard-list"></i></span>
+        <span class="tab-label">Reports</span>
+      </tab>
+      <tab page="workorders" data-roles="admin,supervisor,technician">
+        <span class="tab-icon"><i class="fas fa-tools"></i></span>
+        <span class="tab-label">Work Orders</span>
+      </tab>
+      <tab page="staffs" data-roles="admin">
+        <span class="tab-icon"><i class="fas fa-users"></i></span>
+        <span class="tab-label">Staff</span>
+      </tab>
+      <tab page="settings" data-roles="admin">
+        <span class="tab-icon"><i class="fas fa-cog"></i></span>
+        <span class="tab-label">Settings</span>
+      </tab>
+      <tab page="user-home" data-roles="reporter">
+        <span class="tab-icon"><i class="fas fa-clipboard-list"></i></span>
+        <span class="tab-label">My Reports</span>
+      </tab>
+      <tab page="report-issue" data-roles="reporter">
+        <span class="tab-icon"><i class="fas fa-plus-circle"></i></span>
+        <span class="tab-label">Report Issue</span>
+      </tab>
+    </tabbar>
+
+    <!-- Top Navigation -->
+    <nav id="top-nav" class="app-nav">
+      <div id="menu-toggle" action="toggleMobileMenu">
+        <i class="fas fa-bars"></i>
+      </div>
+      <div id="brandname"><i class="fas fa-wrench"></i> CMMS - Maintenance</div>
+      <div class="right">
+        <div id="notification-bell" action="toggleNotifications">
+          <i class="fas fa-bell"></i>
+          <span id="notification-badge" class="hidden">0</span>
+        </div> 
+        <div id="notification-popup">
+          <div class="notification-header">
+            <h4><i class="fas fa-bell"></i> Notifications</h4>
+            <button class="mark-all-read" action="markAllNotificationsRead">Mark all read</button>
+          </div>
+          <div id="notification-list">
+            <div class="empty-notifications">
+              <i class="fas fa-bell-slash"></i>
+              No notifications
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Left Navigation / Sidebar -->
+    <nav default="left" id="left-nav" class="app-nav">
+      <div id="mobile-menu-close" action="closeMobileMenu"><i class="fas fa-times"></i></div>
+      
+      <div class="sidebar-user">
+        <div class="sidebar-avatar"><i class="fas fa-user-circle"></i></div>
+        <div class="sidebar-name" id="sidebar-user-name">User</div>
+        <div class="sidebar-role" id="sidebar-user-role">Administrator</div>
+      </div>
+
+      <tab page="home" data-roles="admin,supervisor,technician">
+        <i class="fas fa-home"></i>
+        <span>Dashboard</span>
+      </tab>
+      <tab page="reports" data-roles="admin,supervisor,technician">
+        <i class="fas fa-clipboard-list"></i>
+        <span>Reports</span>
+      </tab>
+      <tab page="workorders" data-roles="admin,supervisor,technician">
+        <i class="fas fa-tools"></i>
+        <span>Work Orders</span>
+      </tab>
+      <tab page="staffs" data-roles="admin">
+        <i class="fas fa-users"></i>
+        <span>Staff</span>
+      </tab>
+      <tab page="settings" data-roles="admin">
+        <i class="fas fa-cog"></i>
+        <span>Settings</span>
+      </tab>
+      <tab page="user-home" data-roles="reporter">
+        <i class="fas fa-clipboard-list"></i>
+        <span>My Reports</span>
+      </tab>
+      <tab page="report-issue" data-roles="reporter">
+        <i class="fas fa-plus-circle"></i>
+        <span>Report Issue</span>
+      </tab>
+
+      <tab id="log-me-out" action="logoutUser">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+      </tab>
+      
+      <div class="sidebar-footer">
+        <div class="footer-divider">CMMS</div>
+        <div class="footer-version">v1.0.0</div>
+      </div>
+    </nav>
+
+    <!-- Mobile Overlay -->
+    <div id="mobile-overlay" action="closeMobileMenu"></div>
+
+    <!-- Popup Overlay -->
+    <div id="popup-overlay">
+      <div id="popup-dialog"></div>
+    </div>
+
+    <!-- Confirmation Popup -->
+    <div id="confirmation-overlay">
+      <div id="confirmation-popup" class="success">
+        <div class="confirmation-icon">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <h3 id="confirmation-title">Success!</h3>
+        <p id="confirmation-message">You've just displayed this awesome pop-up view</p>
+        <button class="confirmation-btn" id="confirmation-btn" action="closeConfirmation">Done</button>
+      </div>
+    </div>
+
+    <!-- HOME PAGE -->
+    <page name="home" id="home" onshow="loadHomePage">
+      <section>
+        <!-- Welcome Header -->
+        <div class="page-header">
+          <div class="header-content">
+            <p class="greeting"><i class="fas fa-hand-peace"></i> Welcome back, <span id="user-name">User</span></p>
+            <h2><i class="fas fa-chart-pie"></i> Dashboard</h2>
+            <p class="header-date" id="current-date"></p>
+          </div>
+          <button class="fab-btn" action="goToNewReport">
+            <i class="fas fa-plus"></i>
+          </button>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="card-container">
+          <div class="card">
+            <div class="image-container icon-report">
+              <i class="fas fa-file-alt"></i>
+            </div>
+            <div class="card-data">
+              <p class="card-count" id="kpi-total">0</p>
+              <p class="card-label">Total Reports</p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="image-container icon-clock">
+              <i class="fas fa-clock"></i>
+            </div>
+            <div class="card-data">
+              <p class="card-count" id="kpi-pending">0</p>
+              <p class="card-label">Pending</p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="image-container icon-tools">
+              <i class="fas fa-spinner"></i>
+            </div>
+            <div class="card-data">
+              <p class="card-count" id="kpi-in-progress">0</p>
+              <p class="card-label">In Progress</p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="image-container icon-check">
+              <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="card-data">
+              <p class="card-count" id="kpi-completed">0</p>
+              <p class="card-label">Completed</p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="image-container icon-alert">
+              <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="card-data">
+              <p class="card-count" id="kpi-overdue">0</p>
+              <p class="card-label">Overdue</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content">
+          <div class="quick-overview">
+            <!-- Recent Reports -->
+            <div class="recent-reports card-panel">
+              <div class="panel-header">
+                <h4><i class="fas fa-clipboard-list"></i> Recent Reports</h4>
+                <span class="view-more" action="goToReports">See All <i class="fas fa-arrow-right"></i></span>
+              </div>
+              <div class="report-header">
+                <span class="col-id">ID</span>
+                <span class="col-issue">Issue</span>
+                <span class="col-category">Category</span>
+                <span class="col-location">Location</span>
+                <span class="col-date">Date</span>
+                <span class="col-action">Action</span>
+              </div>
+              <div id="dashboard-reports-body">
+                <p class="loading-text">Loading reports...</p>
+              </div>
+            </div>
+
+            <!-- Staff Workload -->
+            <div class="staff-workload card-panel">
+              <div class="panel-header">
+                <h4><i class="fas fa-users"></i> Staff Workload</h4>
+                <span class="view-more" action="goToStaff">See All <i class="fas fa-arrow-right"></i></span>
+              </div>
+              <div class="workload-header">
+                <span class="col-staff">Staff</span>
+                <span class="col-jobs">Jobs</span>
+                <span class="col-load">Load</span>
+              </div>
+              <div id="dashboard-workload-body">
+                <p class="loading-text">Loading staff...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Performance Chart -->
+          <div class="performance-chart card-panel">
+            <div class="panel-header">
+              <h4><i class="fas fa-chart-bar"></i> Overview</h4>
+              <span class="chart-label">Last 90 Days</span>
+            </div>
+            <div class="chart-bar">
+              <div class="chart-segment chart-completed" id="chart-bar-completed">
+                <span class="chart-label">Completed</span>
+              </div>
+              <div class="chart-segment chart-progress" id="chart-bar-progress">
+                <span class="chart-label">In Progress</span>
+              </div>
+              <div class="chart-segment chart-overdue" id="chart-bar-overdue">
+                <span class="chart-label">Overdue</span>
+              </div>
+            </div>
+            <div class="chart-legend">
+              <span><span class="legend-dot completed-dot"></span> Completed</span>
+              <span><span class="legend-dot progress-dot"></span> In Progress</span>
+              <span><span class="legend-dot overdue-dot"></span> Overdue</span>
+            </div>
+          </div>
+
+          <!-- Work Orders -->
+          <div class="work-orders card-panel">
+            <div class="panel-header">
+              <h4><i class="fas fa-tools"></i> Work Orders</h4>
+              <span class="view-more" action="goToWorkOrders">See All <i class="fas fa-arrow-right"></i></span>
+            </div>
+            <div class="orders-header">
+              <span class="col-id">ID</span>
+              <span class="col-issue">Issue</span>
+              <span class="col-worker">Assigned To</span>
+              <span class="col-category">Category</span>
+              <span class="col-location">Location</span>
+              <span class="col-priority">Priority</span>
+              <span class="col-status">Status</span>
+              <span class="col-date">Due Date</span>
+            </div>
+            <div id="dashboard-workorders-body">
+              <p class="loading-text">Loading work orders...</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </page>
+  </app>
+
+  <script src="runtime/clera.js"></script>
+  <script src="scripts/app.js"></script>
+  <script src="scripts/reports.js"></script>
+  <script src="scripts/workorders.js"></script>
+  <script src="scripts/staffs.js"></script>
+  <script src="scripts/add-staff.js"></script>
+  <script src="scripts/settings.js"></script>
+  <script src="scripts/report-issue.js"></script>
+  <script src="scripts/user-dashboard.js"></script>
+</body>
+</html>

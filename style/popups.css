@@ -1,0 +1,217 @@
+/* ========================================
+   DETAIL POPUP SYSTEM (#popup-overlay / #popup-dialog)
+   Used for report, work order, and "My Reports" timeline detail views.
+   Kept animation-cheap: only opacity/transform, no layout-affecting
+   properties, so it stays smooth even on low-end devices.
+   ======================================== */
+
+#popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 9998;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  transition: opacity 0.15s ease-out;
+}
+
+#popup-overlay.active {
+  display: flex;
+  opacity: 1;
+}
+
+#popup-dialog {
+  width: 100%;
+  max-width: 520px;
+  max-height: 85vh;
+}
+
+.popup-content {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  max-height: 85vh;
+  overflow: hidden;
+  transform: scale(0.96) translateY(8px);
+  opacity: 0;
+  animation: popupIn 0.18s ease-out forwards;
+}
+
+@keyframes popupIn {
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+.popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid #eef0f3;
+  flex-shrink: 0;
+}
+
+.popup-header h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: #1a1a1a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.popup-header h3 i {
+  color: #237FEA;
+  font-size: 15px;
+}
+
+.popup-close {
+  background: #f3f4f6;
+  border: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  color: #6b7280;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+
+.popup-close:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.popup-body {
+  padding: 18px 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.popup-field {
+  margin-bottom: 16px;
+}
+
+.popup-field:last-child {
+  margin-bottom: 0;
+}
+
+.popup-field label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #9aa1ac;
+  margin-bottom: 5px;
+}
+
+.popup-field label i {
+  color: #237FEA;
+  width: 12px;
+  text-align: center;
+}
+
+.popup-field p {
+  margin: 0;
+  font-size: 14px;
+  color: #1f2430;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.popup-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.popup-row .popup-field {
+  margin-bottom: 0;
+}
+
+.popup-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 14px 20px;
+  border-top: 1px solid #eef0f3;
+  flex-shrink: 0;
+}
+
+.popup-btn {
+  border: none;
+  border-radius: 9px;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.popup-btn:active {
+  transform: scale(0.97);
+}
+
+.popup-btn.secondary {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.popup-btn.secondary:hover {
+  background: #e5e7eb;
+}
+
+.popup-btn.approve {
+  background: #34c759;
+  color: #fff;
+}
+
+.popup-btn.approve:hover {
+  background: #2db84e;
+}
+
+.popup-btn.reject {
+  background: #ff3b30;
+  color: #fff;
+}
+
+.popup-btn.reject:hover {
+  background: #e0352b;
+}
+
+@media (max-width: 600px) {
+  .popup-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .popup-content {
+    max-height: 90vh;
+  }
+
+  #popup-dialog {
+    max-width: 100%;
+  }
+}

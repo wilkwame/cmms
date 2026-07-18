@@ -1,0 +1,48 @@
+/* ========================================
+   CMMS - Mobile Specific Overrides
+   ======================================== */
+
+app[layout="mobile"] tabbar {
+  display: flex !important;
+}
+
+app[layout="mobile"] page {
+  padding-bottom: 70px;
+  padding-left: 0;
+}
+
+app[layout="mobile"] .card-container {
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+app[layout="mobile"] .card {
+  min-width: unset;
+  padding: 10px 12px;
+}
+
+app[layout="mobile"] .col-category,
+app[layout="mobile"] .col-location,
+app[layout="mobile"] .col-worker {
+  display: none;
+}
+
+app[layout="mobile"] .quick-overview {
+  flex-direction: column;
+}
+
+app[layout="mobile"] .quick-overview .recent-reports,
+app[layout="mobile"] .quick-overview .staff-workload {
+  flex: 1;
+  width: 100%;
+}
+
+@supports (padding: max(0px)) {
+  app[layout="mobile"] tabbar {
+    padding-bottom: max(env(safe-area-inset-bottom, 4px), 4px);
+  }
+  
+  app[layout="mobile"] page {
+    padding-bottom: max(calc(70px + env(safe-area-inset-bottom)), 70px);
+  }
+}

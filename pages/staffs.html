@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="style/staffs.css">
+</head>
+<body>
+ <page name="staffs" id="staffs" onshow="loadStaffPage">
+  <section>
+    <div class="filter-bar">
+      <div class="filter-group">
+        <label>Role</label>
+        <select id="staff-filter-role">
+          <option value="all">All</option>
+          <option value="admin">Admin</option>
+          <option value="supervisor">Supervisor</option>
+          <option value="technician">Technician</option>
+          <option value="reporter">Reporter</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Department</label>
+        <select id="staff-filter-department">
+          <option value="all">All</option>
+          <option value="Electrical">Electrical</option>
+          <option value="Plumbing">Plumbing</option>
+          <option value="Carpentry">Carpentry</option>
+          <option value="Roofing">Roofing</option>
+          <option value="HVAC">HVAC</option>
+          <option value="Civil">Civil</option>
+          <option value="General">General</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Status</label>
+        <select id="staff-filter-status">
+          <option value="all">All</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+      <div class="filter-group search-group">
+        <input type="text" id="staff-search" placeholder="Search staff..." />
+      </div>
+      <button class="btn-new-staff" action="goToAddStaff">+ Add Staff</button>
+    </div>
+
+    <div class="table-container">
+      <div class="table-header">
+        <h4>Staff</h4>
+        <span class="record-count" id="staff-count">0 records</span>
+      </div>
+      <div class="table-wrapper">
+        <div class="table-head">
+          <span class="col-id">ID</span>
+          <span class="col-name">Name</span>
+          <span class="col-role">Role</span>
+          <span class="col-department">Department</span>
+          <span class="col-status">Status</span>
+          <span class="col-jobs">Active Jobs</span>
+          <span class="col-joined">Joined</span>
+        </div>
+        <div id="staffs-body">
+          <p class="loading-text">Loading staff...</p>
+        </div>
+      </div>
+      <div class="pagination-bar">
+        <button id="staffs-prev" class="pagination-btn" action="staffsPrev" disabled>Prev</button>
+        <span id="staffs-page-label" class="pagination-label">Page 1 of 1</span>
+        <button id="staffs-next" class="pagination-btn" action="staffsNext">Next</button>
+      </div>
+    </div>
+  </section>
+</page>
+</body>
+</html>

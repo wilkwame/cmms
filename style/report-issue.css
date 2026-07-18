@@ -1,0 +1,160 @@
+/* ========================================
+   REPORT ISSUE PAGE
+   ======================================== */
+
+.form-card {
+  max-width: 640px;
+  margin: 16px auto;
+  padding: 24px;
+}
+
+.form-card .field {
+  margin-bottom: 16px;
+}
+
+.form-card .field label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.form-card .field-hint {
+  font-weight: 400;
+  color: #888;
+  font-size: 12px;
+}
+
+.form-card input[type="text"],
+.form-card textarea,
+.form-card select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.field-row {
+  display: flex;
+  gap: 16px;
+}
+
+.field-row .field {
+  flex: 1;
+}
+
+.required {
+  color: #dc2626;
+}
+
+.status-banner {
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.status-banner.hidden {
+  display: none;
+}
+
+.status-banner.error {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.status-banner.success {
+  background: #ecfdf3;
+  color: #16a34a;
+}
+
+.dropzone {
+  border: 2px dashed #d1d5db;
+  border-radius: 10px;
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  color: #6b7280;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.dropzone:hover,
+.dropzone.dragover {
+  border-color: #237FEA;
+  background: rgba(35, 127, 234, 0.05);
+}
+
+.dropzone i {
+  font-size: 24px;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.photo-previews {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.photo-thumb {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+}
+
+.photo-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photo-thumb-remove {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  cursor: pointer;
+  font-size: 10px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.form-actions .btn-cancel,
+.form-actions .btn-submit {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.form-actions .btn-cancel {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.form-actions .btn-submit {
+  background: #237FEA;
+  color: #fff;
+}
+
+.form-actions .btn-submit:disabled {
+  opacity: 0.7;
+  cursor: default;
+}

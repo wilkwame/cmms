@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style/reports.css">
+</head>
+<body>
+  <page name="reports" id="reports" onshow="loadReportsPage">
+  <section>
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <div class="filter-group">
+        <label>Priority</label>
+        <select id="report-filter-priority">
+          <option value="all">All</option>
+          <option value="urgent">Urgent</option>
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Category</label>
+        <select id="report-filter-category">
+          <option value="all">All</option>
+          <option value="Electrical">Electrical</option>
+          <option value="Plumbing">Plumbing</option>
+          <option value="Carpentry">Carpentry</option>
+          <option value="Roofing">Roofing</option>
+          <option value="HVAC">HVAC</option>
+          <option value="Civil">Civil</option>
+          <option value="General">General</option>
+        </select>
+      </div>
+      <div class="filter-group search-group">
+        <input type="text" id="report-search" placeholder="Search reports..." />
+      </div>
+      <button class="btn-new-report" action="goToNewReport">+ New Report</button>
+    </div>
+
+    <div class="table-container">
+      <div class="table-header">
+        <h4>All Reports</h4>
+        <span class="record-count" id="report-count">0 records</span>
+      </div>
+      <div class="table-wrapper">
+        <div class="table-head">
+          <span class="col-id">ID</span>
+          <span class="col-issue">Issue</span>
+          <span class="col-category">Category</span>
+          <span class="col-location">Location</span>
+          <span class="col-priority">Priority</span>
+          <span class="col-date">Date</span>
+          <span class="col-action">Action</span>
+        </div>
+        <div id="reports-body">
+          <p class="loading-text">Loading reports...</p>
+        </div>
+      </div>
+      <div class="pagination-bar">
+        <button id="reports-prev" class="pagination-btn" action="reportsPrev" disabled>← Prev</button>
+        <span id="reports-page-label" class="pagination-label">Page 1 of 1</span>
+        <button id="reports-next" class="pagination-btn" action="reportsNext">Next →</button>
+      </div>
+    </div>
+  </section>
+</page>
+</body>
+</html>

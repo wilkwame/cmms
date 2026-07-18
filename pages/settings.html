@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="style/settings.css">
+</head>
+<body>
+  <page name="settings" id="settings" onshow="loadSettingsPage">
+  <section>
+    <div class="page-header">
+      <div class="header-content">
+        <h2><i class="fas fa-cog"></i> Settings</h2>
+        <p class="header-subtitle">Manage your application preferences</p>
+      </div>
+    </div>
+
+    <div class="settings-grid">
+      <div class="settings-card profile-card">
+        <div class="card-header">
+          <div class="card-header-left">
+            <span class="card-icon"><i class="fas fa-user-circle"></i></span>
+            <div>
+              <h3>Profile</h3>
+              <span class="card-subtitle">Your account information</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="setting-label"><i class="fas fa-user"></i> Full Name</span>
+              <span class="setting-value" id="settings-user-name">Loading...</span>
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="setting-label"><i class="fas fa-envelope"></i> Email Address</span>
+              <span class="setting-value" id="settings-user-email">Loading...</span>
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="setting-label"><i class="fas fa-user-shield"></i> Role</span>
+              <span class="setting-value" id="settings-user-role">Loading...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-card system-card">
+        <div class="card-header">
+          <div class="card-header-left">
+            <span class="card-icon"><i class="fas fa-server"></i></span>
+            <div>
+              <h3>System</h3>
+              <span class="card-subtitle">Application information</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="setting-label"><i class="fas fa-users"></i> Total Users</span>
+              <span class="setting-value" id="settings-total-users">0</span>
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="setting-label"><i class="fas fa-file-alt"></i> Total Reports</span>
+              <span class="setting-value" id="settings-total-reports">0</span>
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="setting-label"><i class="fas fa-tools"></i> Work Orders</span>
+              <span class="setting-value" id="settings-total-orders">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-card danger-zone">
+        <div class="card-header">
+          <div class="card-header-left">
+            <span class="card-icon"><i class="fas fa-exclamation-triangle"></i></span>
+            <div>
+              <h3>Danger Zone</h3>
+              <span class="card-subtitle">Irreversible actions</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="setting-item danger-item">
+            <div class="setting-info">
+              <span class="setting-label"><i class="fas fa-sign-out-alt"></i> Logout</span>
+              <span class="setting-desc">Sign out of your account and end session</span>
+            </div>
+            <button class="setting-action danger" action="logMeOut">
+              <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-card about-card">
+        <div class="about-content">
+          <div class="about-icon"><i class="fas fa-wrench"></i></div>
+          <h3>CMMS - Maintenance</h3>
+          <p class="about-version">Version 1.0.0</p>
+          <p class="about-desc">Computerized Maintenance Management System</p>
+          <div class="about-divider"></div>
+          <div class="about-stats">
+            <div class="about-stat">
+              <span class="stat-number" id="about-total-users">0</span>
+              <span class="stat-label">Users</span>
+            </div>
+            <div class="about-stat">
+              <span class="stat-number" id="about-total-reports">0</span>
+              <span class="stat-label">Reports</span>
+            </div>
+            <div class="about-stat">
+              <span class="stat-number" id="about-total-orders">0</span>
+              <span class="stat-label">Work Orders</span>
+            </div>
+          </div>
+          <div class="about-divider"></div>
+          <p class="about-copy">&copy; 2026 CMMS. All rights reserved.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</page>
+</body>
+</html>
