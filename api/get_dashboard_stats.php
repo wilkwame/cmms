@@ -12,17 +12,35 @@ requireRole(['admin', 'supervisor']);
 try {
     $db = connectToDatabase();
 
-    // Overall KPI counts across all work orders
-    $kpiStmt = $db->query("
+    // "Total"/"Pending" reflect reports (a report can sit pending with no
+    // work order yet, e.g. if auto-assignment found no matching staff) —
+    // pulling these from work_orders alone made them read 0 even when
+    // reports existed. "In Progress"/"Completed"/"Overdue" only apply once
+    // a work order exists, so those still come from work_orders.
+    $reportStmt = $db->query("
         SELECT
-            COUNT(*)                                                      AS total,
-            SUM(status = 'pending')                                       AS pending,
-            SUM(status = 'in_progress')                                   AS in_progress,
-            SUM(status = 'completed')                                     AS completed,
-            SUM(status = 'overdue')                                       AS overdue
+            COUNT(*)                AS total,
+            SUM(status = 'pending') AS pending
+        FROM reports
+    ");
+    $reportKpi = $reportStmt->fetch();
+
+    $woStmt = $db->query("
+        SELECT
+            SUM(status = 'in_progress') AS in_progress,
+            SUM(status = 'completed')   AS completed,
+            SUM(status = 'overdue')     AS overdue
         FROM work_orders
     ");
-    $kpi = $kpiStmt->fetch();
+    $woKpi = $woStmt->fetch();
+
+    $kpi = [
+        'total'       => $reportKpi['total'],
+        'pending'     => $reportKpi['pending'],
+        'in_progress' => $woKpi['in_progress'],
+        'completed'   => $woKpi['completed'],
+        'overdue'     => $woKpi['overdue'],
+    ];
 
     // Last 30 days breakdown for the overview chart
     $chartStmt = $db->query("

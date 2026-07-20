@@ -28,7 +28,7 @@ try {
         LEFT JOIN work_orders wo
             ON wo.assigned_to = u.id
             AND wo.status IN (\'pending\', \'in_progress\', \'overdue\')
-        WHERE u.role IN (\'technician\', \'supervisor\')
+        WHERE u.role != \'admin\'
           AND sp.is_active = 1
         GROUP BY u.id, u.name, sp.department
         ORDER BY active_jobs DESC

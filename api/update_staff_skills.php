@@ -6,21 +6,26 @@ require_once __DIR__ . '/_auth.php';
 // Turns any registered user into (or updates) assignable staff — creates
 // their staff_profiles row if they don't have one yet (e.g. someone who
 // signed up via Google as a reporter), rather than requiring a separate
-// "Add Staff" account. Role is left untouched: it only controls which
-// dashboard they land on, not whether they can receive assigned work.
+// "Add Staff" account. Optionally also changes their login role (which
+// dashboard they land on / what they're allowed to do) — kept separate
+// from skill eligibility, since a "reporter" can validly hold skills
+// without becoming a technician in the UI sense.
 //
-// Expected POST body: { "user_id": int, "department": string, "skills": int[] }
+// Expected POST body: { "user_id": int, "department": string, "skills": int[], "role"?: string }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     sendJson(false, 405, 'Method not allowed');
 }
 
-requireRole(['admin']);
+$currentAdmin = requireRole(['admin']);
 
 $body       = json_decode(file_get_contents('php://input'), true);
 $userId     = (int) ($body['user_id'] ?? 0);
 $department = isset($body['department']) ? trim($body['department']) : '';
 $skills     = isset($body['skills']) && is_array($body['skills']) ? array_map('intval', $body['skills']) : [];
+$role       = isset($body['role']) ? trim($body['role']) : null;
+
+$allowedRoles = ['admin', 'supervisor', 'technician', 'reporter'];
 
 if ($userId <= 0) {
     sendJson(false, 400, 'user_id is required');
@@ -30,6 +35,12 @@ if (empty($department)) {
 }
 if (empty($skills)) {
     sendJson(false, 400, 'At least one skill is required');
+}
+if ($role !== null && !in_array($role, $allowedRoles, true)) {
+    sendJson(false, 400, 'Invalid role');
+}
+if ($role !== null && $role !== 'admin' && $userId === $currentAdmin['id']) {
+    sendJson(false, 409, 'You cannot remove your own admin access here — have another admin do it.');
 }
 
 try {
@@ -42,6 +53,11 @@ try {
     }
 
     $db->beginTransaction();
+
+    if ($role !== null) {
+        $db->prepare('UPDATE users SET role = :role WHERE id = :id')
+            ->execute([':role' => $role, ':id' => $userId]);
+    }
 
     $namesStmt = $db->prepare('SELECT name FROM categories WHERE id IN (' . implode(',', array_fill(0, count($skills), '?')) . ')');
     $namesStmt->execute($skills);
@@ -70,8 +86,13 @@ try {
 
     $db->commit();
 
+    $roleStmt = $db->prepare('SELECT role FROM users WHERE id = :id');
+    $roleStmt->execute([':id' => $userId]);
+    $finalRole = $roleStmt->fetchColumn();
+
     sendJson(true, 200, [
         'user_id' => $userId,
+        'role' => $finalRole,
         'department' => $department,
         'skills' => $skills,
         'specialisation' => $specialisation,

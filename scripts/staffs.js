@@ -199,6 +199,16 @@ function openEditSkillsPopup(context) {
         return '<option value="' + c.name + '"' + selected + '>' + c.name + '</option>';
     }).join('');
 
+    var ROLES = ['admin', 'supervisor', 'technician', 'reporter'];
+    var isSelf = app.memory.user && app.memory.user.id === staffId;
+    var roleOptions = ROLES.map(function(r) {
+        var selected = staff.role === r ? ' selected' : '';
+        var label = r.charAt(0).toUpperCase() + r.slice(1);
+        return '<option value="' + r + '"' + selected + '>' + label + '</option>';
+    }).join('');
+
+    var selectStyle = 'width:100%;padding:8px 10px;border:1px solid #dfe3e8;border-radius:8px;font-size:13px;font-family:inherit;';
+
     openPopup(context,
         '<div class="popup-content">' +
         '  <div class="popup-header">' +
@@ -206,16 +216,23 @@ function openEditSkillsPopup(context) {
         '    <button class="popup-close" action="closePopup"><i class="fas fa-times"></i></button>' +
         '  </div>' +
         '  <div class="popup-body">' +
-        '    <p style="font-size:13px;color:#6b7280;margin-bottom:14px;">Giving this account skills makes it eligible for auto-assignment on matching reports — regardless of what role they log in with.</p>' +
+        '    <div class="popup-field">' +
+        '      <label><i class="fas fa-user-shield"></i> Role</label>' +
+        '      <select id="edit-skills-role" style="' + selectStyle + '"' + (isSelf ? ' disabled' : '') + '>' +
+        roleOptions +
+        '      </select>' +
+        (isSelf ? '      <p style="font-size:11px;color:#9aa1ac;margin-top:4px;">You can\'t change your own role here — ask another admin.</p>' : '') +
+        '    </div>' +
+        '    <p style="font-size:13px;color:#6b7280;margin-bottom:14px;">Giving this account skills makes it eligible for auto-assignment on matching reports — regardless of role.</p>' +
         '    <div class="popup-field">' +
         '      <label><i class="fas fa-building"></i> Department</label>' +
-        '      <select id="edit-skills-department" style="width:100%;padding:8px 10px;border:1px solid #dfe3e8;border-radius:8px;font-size:13px;font-family:inherit;">' +
+        '      <select id="edit-skills-department" style="' + selectStyle + '">' +
         deptOptions +
         '      </select>' +
         '    </div>' +
         '    <div class="popup-field">' +
         '      <label><i class="fas fa-toolbox"></i> Skills (auto-assignment matches on these)</label>' +
-        '      <select id="edit-skills-select" multiple style="width:100%;min-height:110px;padding:8px 10px;border:1px solid #dfe3e8;border-radius:8px;font-size:13px;font-family:inherit;">' +
+        '      <select id="edit-skills-select" multiple style="' + selectStyle + 'min-height:110px;">' +
         skillOptions +
         '      </select>' +
         '    </div>' +
@@ -230,6 +247,7 @@ function openEditSkillsPopup(context) {
 
 function saveStaffSkills(context) {
     var staffId = parseInt(context.arg);
+    var roleSelect = document.getElementById('edit-skills-role');
     var deptSelect = document.getElementById('edit-skills-department');
     var skillsSelect = document.getElementById('edit-skills-select');
     if (!staffId || !deptSelect || !skillsSelect) return;
@@ -240,9 +258,14 @@ function saveStaffSkills(context) {
         return;
     }
 
+    var payload = { user_id: staffId, department: deptSelect.value, skills: skills };
+    if (roleSelect && !roleSelect.disabled) {
+        payload.role = roleSelect.value;
+    }
+
     context.fetch('api/update_staff_skills.php', {
         method: 'POST',
-        body: { user_id: staffId, department: deptSelect.value, skills: skills }
+        body: payload
     }, function(result) {
         if (!result.ok) {
             showNotificationToast(context, (result && result.data) || 'Failed to update skills', 'error');
@@ -251,6 +274,7 @@ function saveStaffSkills(context) {
 
         for (var i = 0; i < app.memory.staff.length; i++) {
             if (app.memory.staff[i].id === staffId) {
+                app.memory.staff[i].role = result.data.role;
                 app.memory.staff[i].department = result.data.department;
                 app.memory.staff[i].specialisation = result.data.specialisation;
                 app.memory.staff[i].skill_ids = result.data.skills.join(',');
@@ -260,7 +284,7 @@ function saveStaffSkills(context) {
         }
 
         closePopup(context);
-        showNotificationToast(context, 'Skills updated', 'success');
+        showNotificationToast(context, 'Staff updated', 'success');
         applyStaffFilters(context);
     });
 }
