@@ -4,6 +4,7 @@
 
 function currentUser(): ?array {
     if (session_status() === PHP_SESSION_NONE) {
+        configureSecureSession();
         session_start();
     }
     if (empty($_SESSION['user_id'])) {

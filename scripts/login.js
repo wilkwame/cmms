@@ -108,7 +108,7 @@
         }
 
         // Send login request
-        fetch('/CMMS/api/login.php', {
+        fetch('api/login.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
@@ -184,7 +184,7 @@
             }
             
             // Send to backend
-            fetch('/CMMS/api/google-auth.php', {
+            fetch('api/google-auth.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

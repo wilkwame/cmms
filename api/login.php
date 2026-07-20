@@ -52,6 +52,7 @@ try {
     $token = bin2hex(random_bytes(32));
 
     // Start session
+    configureSecureSession();
     session_start();
     $_SESSION['user_id'] = $user['id'];
     $_SESSION['user_name'] = $user['name'];

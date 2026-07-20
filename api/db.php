@@ -25,3 +25,25 @@ function sendJson(bool $ok, int $status, mixed $data): never {
     echo json_encode(['ok' => $ok, 'status' => $status, 'data' => $data]);
     exit;
 }
+
+// Call before every session_start(). Auto-detects HTTPS (including behind
+// a reverse proxy) so the session cookie only gets the Secure flag when it
+// actually will be served over HTTPS — hardcoding it true would silently
+// break login on plain-HTTP local dev, hardcoding it false would leave
+// production sessions stealable over an unencrypted connection.
+function configureSecureSession(): void {
+    if (session_status() !== PHP_SESSION_NONE) {
+        return;
+    }
+
+    $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
+
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path'     => '/',
+        'secure'   => $isHttps,
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+}
