@@ -83,8 +83,9 @@ function renderReportsSlice(context) {
             html += '  <span class="col-date">' + date + '</span>';
             html += '  <span class="col-action">';
             html += '    <div class="action-buttons">';
-            html += '      <button class="btn-approve" action="quickApproveReport: ' + r.id + '">✓</button>';
-            html += '      <button class="btn-reject" action="openRejectPopup: ' + r.id + '">✗</button>';
+            html += '      <button class="btn-approve" action="quickApproveReport: ' + r.id + '" title="Approve">✓</button>';
+            html += '      <button class="btn-reject" action="openRejectPopup: ' + r.id + '" title="Reject">✗</button>';
+            html += '      <button class="btn-delete" action="confirmDeleteReportRow: ' + r.id + '" title="Delete"><i class="fas fa-trash"></i></button>';
             html += '    </div>';
             html += '  </span>';
             html += '</div>';
@@ -165,10 +166,23 @@ function openRejectPopup(context) {
         });
 }
 
-function openReportPopup(context) {
+// Note: openReportPopup/buildReportDetailPopup and goToNewReport live in
+// app.js — this file used to shadow both with dead placeholders (a toast
+// and a link to a page that doesn't exist) since it loads after app.js.
+
+function confirmDeleteReportRow(context) {
     var reportId = parseInt(context.arg);
     if (!reportId) return;
-    showNotificationToast(context, 'Opening report: ' + reportId, 'info');
+    if (!confirm('Delete this report? This cannot be undone.')) return;
+
+    app.php('api/delete_report.php', { id: reportId }).then(function(result) {
+        if (!result.ok) {
+            showNotificationToast(context, (result && result.data) || 'Failed to delete report', 'error');
+            return;
+        }
+        showNotificationToast(context, 'Report deleted', 'success');
+        refreshReports(context);
+    });
 }
 
 // ===== REFRESH =====
@@ -177,18 +191,11 @@ function refreshReports(context) {
     loadReportsPage(context);
 }
 
-// ===== NAVIGATION =====
-function goToNewReport(context) {
-    closeMobileMenu(context);
-    context.navigate('new-report');
-}
-
 // ===== EXPOSE =====
 window.loadReportsPage = loadReportsPage;
 window.reportsPrev = reportsPrev;
 window.reportsNext = reportsNext;
-window.goToNewReport = goToNewReport;
 window.quickApproveReport = quickApproveReport;
 window.openRejectPopup = openRejectPopup;
-window.openReportPopup = openReportPopup;
+window.confirmDeleteReportRow = confirmDeleteReportRow;
 window.refreshReports = refreshReports;

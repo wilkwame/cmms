@@ -3,15 +3,20 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="style/user-dashboard.css">
+  <link rel="stylesheet" href="style/user-dashboard.css?v=7">
 </head>
 <body>
 <page name="user-home" id="user-home" onshow="loadUserHomePage">
   <section>
     <div class="page-header">
+      <span class="avatar-widget">
+        <img class="avatar-img hidden" alt="" style="display:none;" />
+        <i class="fas fa-user-circle avatar-icon"></i>
+      </span>
       <div class="header-content">
         <p class="greeting"><i class="fas fa-hand-peace"></i> Welcome, <span id="uh-user-name">User</span></p>
         <h2><i class="fas fa-clipboard-list"></i> My Reports</h2>
+        <p class="header-date" id="uh-current-date"></p>
       </div>
       <button class="fab-btn" action="goToReportIssue" title="Report an issue">
         <i class="fas fa-plus"></i>

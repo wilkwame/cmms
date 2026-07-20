@@ -25,7 +25,7 @@ try {
     
     // Find user
     $stmt = $db->prepare('
-        SELECT u.id, u.name, u.email, u.password, u.role, 
+        SELECT u.id, u.name, u.email, u.password, u.role, u.avatar_url,
                sp.department, sp.specialisation, sp.is_active
         FROM users u
         LEFT JOIN staff_profiles sp ON sp.user_id = u.id

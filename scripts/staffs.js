@@ -18,6 +18,7 @@ function loadStaffPage(context) {
     context.render('#staffs-body', '<p class="loading-text">Loading staff...</p>');
     
     context.fetch('api/get_staff.php', { method: 'POST' }, function(result) {
+        if (handleAuthFailure(result)) return;
         if (!result.ok) {
             context.render('#staffs-body', '<p class="empty-state">Failed to load staff. Please try again.</p>');
             return;
@@ -80,21 +81,28 @@ function renderStaffSlice(context) {
         var html = '';
         for (var i = 0; i < slice.length; i++) {
             var s = slice[i];
+            var configured = !!s.department;
             var statusClass = s.is_active == 1 ? 'status-badge active' : 'status-badge inactive';
-            var statusLabel = s.is_active == 1 ? 'Active' : 'Inactive';
-            var joinDate = s.joined_at ? formatDate(s.joined_at) : 'N/A';
+            var statusLabel = configured ? (s.is_active == 1 ? 'Active' : 'Inactive') : 'Not configured';
+            var joinDate = s.joined_at ? formatDate(s.joined_at) : '—';
             var role = s.role ? s.role.charAt(0).toUpperCase() + s.role.slice(1) : 'N/A';
-            var dept = s.department || 'General';
+            var dept = s.department || '—';
             var ref = s.reference || ('S-' + String(s.id).padStart(3, '0'));
-            
+
             html += '<div class="staff-row">';
             html += '  <span class="col-id">' + ref + '</span>';
-            html += '  <span class="col-name">' + s.name + '</span>';
+            html += '  <span class="col-name">' + escapeHtml(s.name) + '</span>';
             html += '  <span class="col-role">' + role + '</span>';
-            html += '  <span class="col-department">' + dept + '</span>';
+            html += '  <span class="col-department">' + escapeHtml(dept) + '</span>';
             html += '  <span class="col-status"><span class="' + statusClass + '">' + statusLabel + '</span></span>';
             html += '  <span class="col-jobs">' + (s.active_jobs || 0) + '</span>';
             html += '  <span class="col-joined">' + joinDate + '</span>';
+            html += '  <span class="col-action">';
+            html += '    <button class="btn-delete" action="openEditSkillsPopup: ' + s.id + '" title="' + (configured ? 'Edit skills' : 'Assign skills') + '" style="color:#237FEA;"><i class="fas fa-screwdriver-wrench"></i></button>';
+            if (s.is_active == 1) {
+                html += '    <button class="btn-delete" action="confirmDeactivateStaff: ' + s.id + '" title="Deactivate staff"><i class="fas fa-trash"></i></button>';
+            }
+            html += '  </span>';
             html += '</div>';
         }
         context.render('#staffs-body', html);
@@ -132,8 +140,136 @@ function goToAddStaff(context) {
     context.navigate('add-staff');
 }
 
+// ===== DEACTIVATE STAFF =====
+// Soft-delete: staff are deactivated rather than hard-deleted, since their
+// id is referenced by report/work-order history (see deactivate_staff.php).
+function confirmDeactivateStaff(context) {
+    var staffId = parseInt(context.arg);
+    if (!staffId) return;
+    if (!confirm('Deactivate this staff member? They will stop receiving new auto-assigned work, but their history is kept. Any work orders already assigned to them are not automatically reassigned.')) return;
+
+    context.fetch('api/deactivate_staff.php', { method: 'POST', body: { id: staffId } }, function(result) {
+        if (!result.ok) {
+            showNotificationToast(context, (result && result.data) || 'Failed to deactivate staff', 'error');
+            return;
+        }
+
+        for (var i = 0; i < app.memory.staff.length; i++) {
+            if (app.memory.staff[i].id === staffId) {
+                app.memory.staff[i].is_active = 0;
+                break;
+            }
+        }
+
+        showNotificationToast(context, 'Staff member deactivated', 'success');
+        applyStaffFilters(context);
+    });
+}
+
+// ===== ASSIGN / EDIT SKILLS =====
+// Turns any registered user (including a plain reporter who signed up via
+// Google) into assignable staff, or updates an existing staff member's
+// skill set. See api/update_staff_skills.php.
+var STAFF_CATEGORIES = [
+    { id: 1, name: 'Electrical' },
+    { id: 2, name: 'Plumbing' },
+    { id: 3, name: 'Carpentry' },
+    { id: 4, name: 'Roofing' },
+    { id: 5, name: 'HVAC' },
+    { id: 6, name: 'Civil' },
+    { id: 7, name: 'General' }
+];
+
+function openEditSkillsPopup(context) {
+    var staffId = parseInt(context.arg);
+    if (!staffId) return;
+
+    var staff = (app.memory.staff || []).filter(function(s) { return s.id === staffId; })[0];
+    if (!staff) return;
+
+    var currentSkillIds = (staff.skill_ids || '').split(',').map(function(v) { return parseInt(v, 10); }).filter(Boolean);
+
+    var skillOptions = STAFF_CATEGORIES.map(function(c) {
+        var selected = currentSkillIds.indexOf(c.id) !== -1 ? ' selected' : '';
+        return '<option value="' + c.id + '"' + selected + '>' + c.name + '</option>';
+    }).join('');
+
+    var deptOptions = STAFF_CATEGORIES.map(function(c) {
+        var selected = staff.department === c.name ? ' selected' : '';
+        return '<option value="' + c.name + '"' + selected + '>' + c.name + '</option>';
+    }).join('');
+
+    openPopup(context,
+        '<div class="popup-content">' +
+        '  <div class="popup-header">' +
+        '    <h3><i class="fas fa-screwdriver-wrench"></i> ' + escapeHtml(staff.name) + '</h3>' +
+        '    <button class="popup-close" action="closePopup"><i class="fas fa-times"></i></button>' +
+        '  </div>' +
+        '  <div class="popup-body">' +
+        '    <p style="font-size:13px;color:#6b7280;margin-bottom:14px;">Giving this account skills makes it eligible for auto-assignment on matching reports — regardless of what role they log in with.</p>' +
+        '    <div class="popup-field">' +
+        '      <label><i class="fas fa-building"></i> Department</label>' +
+        '      <select id="edit-skills-department" style="width:100%;padding:8px 10px;border:1px solid #dfe3e8;border-radius:8px;font-size:13px;font-family:inherit;">' +
+        deptOptions +
+        '      </select>' +
+        '    </div>' +
+        '    <div class="popup-field">' +
+        '      <label><i class="fas fa-toolbox"></i> Skills (auto-assignment matches on these)</label>' +
+        '      <select id="edit-skills-select" multiple style="width:100%;min-height:110px;padding:8px 10px;border:1px solid #dfe3e8;border-radius:8px;font-size:13px;font-family:inherit;">' +
+        skillOptions +
+        '      </select>' +
+        '    </div>' +
+        '  </div>' +
+        '  <div class="popup-footer">' +
+        '    <button class="popup-btn secondary" action="closePopup">Cancel</button>' +
+        '    <button class="popup-btn approve" action="saveStaffSkills: ' + staffId + '"><i class="fas fa-check"></i> Save</button>' +
+        '  </div>' +
+        '</div>'
+    );
+}
+
+function saveStaffSkills(context) {
+    var staffId = parseInt(context.arg);
+    var deptSelect = document.getElementById('edit-skills-department');
+    var skillsSelect = document.getElementById('edit-skills-select');
+    if (!staffId || !deptSelect || !skillsSelect) return;
+
+    var skills = Array.prototype.map.call(skillsSelect.selectedOptions, function(o) { return parseInt(o.value, 10); });
+    if (skills.length === 0) {
+        alert('Select at least one skill.');
+        return;
+    }
+
+    context.fetch('api/update_staff_skills.php', {
+        method: 'POST',
+        body: { user_id: staffId, department: deptSelect.value, skills: skills }
+    }, function(result) {
+        if (!result.ok) {
+            showNotificationToast(context, (result && result.data) || 'Failed to update skills', 'error');
+            return;
+        }
+
+        for (var i = 0; i < app.memory.staff.length; i++) {
+            if (app.memory.staff[i].id === staffId) {
+                app.memory.staff[i].department = result.data.department;
+                app.memory.staff[i].specialisation = result.data.specialisation;
+                app.memory.staff[i].skill_ids = result.data.skills.join(',');
+                app.memory.staff[i].is_active = 1;
+                break;
+            }
+        }
+
+        closePopup(context);
+        showNotificationToast(context, 'Skills updated', 'success');
+        applyStaffFilters(context);
+    });
+}
+
 // ===== EXPOSE =====
 window.loadStaffPage = loadStaffPage;
 window.staffsPrev = staffsPrev;
 window.staffsNext = staffsNext;
 window.goToAddStaff = goToAddStaff;
+window.confirmDeactivateStaff = confirmDeactivateStaff;
+window.openEditSkillsPopup = openEditSkillsPopup;
+window.saveStaffSkills = saveStaffSkills;

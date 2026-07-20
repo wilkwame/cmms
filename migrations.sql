@@ -4,6 +4,14 @@
 
 USE cmms;
 
+-- Profile picture support (2026-07-19)
+SET @col_exists = (SELECT COUNT(*) FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'avatar_url');
+SET @sql = IF(@col_exists = 0, 'ALTER TABLE users ADD COLUMN avatar_url VARCHAR(255) NULL AFTER role', 'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
 CREATE TABLE IF NOT EXISTS report_photos (
     id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     report_id   INT UNSIGNED NOT NULL,

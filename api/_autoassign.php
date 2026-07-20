@@ -5,8 +5,11 @@
 
 // Picks the least-loaded active staff member whose skills include the given
 // category. Falls back to the least-loaded active staff member overall if
-// nobody has a matching skill (mirrors the previous specialisation-matching
-// behaviour, which never actually matched anything — see migrations.sql).
+// nobody has a matching skill. Eligibility is purely "has an active staff
+// profile" — not gated by login role — since any registered account (even
+// one that signed up as a plain reporter) becomes assignable staff the
+// moment an admin gives it a skill set via update_staff_skills.php. Only
+// admins are excluded, as a system role rather than a staff one.
 function pickBestStaffForCategory(PDO $db, int $categoryId): ?int {
     $matchStmt = $db->prepare('
         SELECT u.id, COUNT(wo.id) AS active_jobs
@@ -16,7 +19,7 @@ function pickBestStaffForCategory(PDO $db, int $categoryId): ?int {
         LEFT JOIN work_orders wo
             ON wo.assigned_to = u.id
             AND wo.status IN ("pending", "in_progress", "overdue")
-        WHERE u.role IN ("technician", "supervisor")
+        WHERE u.role != "admin"
           AND sp.is_active = 1
         GROUP BY u.id
         ORDER BY active_jobs ASC
@@ -35,7 +38,7 @@ function pickBestStaffForCategory(PDO $db, int $categoryId): ?int {
         LEFT JOIN work_orders wo
             ON wo.assigned_to = u.id
             AND wo.status IN ("pending", "in_progress", "overdue")
-        WHERE u.role IN ("technician", "supervisor")
+        WHERE u.role != "admin"
           AND sp.is_active = 1
         GROUP BY u.id
         ORDER BY active_jobs ASC

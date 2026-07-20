@@ -396,9 +396,44 @@ app {
 }
 
 #left-nav .sidebar-avatar {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 6px;
   font-size: 48px;
   color: #237FEA;
-  margin-bottom: 6px;
+  cursor: pointer;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+#left-nav .sidebar-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+#left-nav .sidebar-avatar img.hidden,
+#left-nav .sidebar-avatar i.hidden {
+  display: none;
+}
+
+.sidebar-avatar-edit {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+#left-nav .sidebar-avatar:hover .sidebar-avatar-edit {
+  opacity: 1;
 }
 
 #left-nav .sidebar-name {
@@ -416,20 +451,30 @@ app {
 #left-nav tab {
   display: flex;
   align-items: center;
-  padding: 10px 16px;
-  margin: 2px 10px;
-  border-radius: 8px;
+  padding: 8px 12px;
+  margin: 3px 12px;
+  border-radius: 11px;
   font-size: 14px;
-  color: #4a4a4a;
+  font-weight: 500;
+  color: #5b6472;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
   gap: 12px;
 }
 
 #left-nav tab i {
-  width: 20px;
-  font-size: 16px;
-  opacity: 0.6;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 15px;
+  border-radius: 9px;
+  background: #f5f7fa;
+  color: #8a919c;
+  opacity: 1;
+  transition: background 0.15s, color 0.15s;
 }
 
 #left-nav tab span {
@@ -437,32 +482,48 @@ app {
 }
 
 #left-nav tab[active] {
-  background: #237FEA;
-  color: white;
+  background: linear-gradient(135deg, #237FEA 0%, #1a5fc7 100%);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(35, 127, 234, 0.3);
 }
 
 #left-nav tab[active] i {
-  opacity: 1;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
 }
 
 #left-nav tab:not([active]):hover {
   background: #f0f4f8;
+  color: #237FEA;
+}
+
+#left-nav tab:not([active]):hover i {
+  background: #e5f0ff;
+  color: #237FEA;
 }
 
 #left-nav #log-me-out {
-  margin: 8px 10px;
+  margin: 8px 12px;
   margin-top: auto;
-  background: #ff3b30;
-  color: white;
-  border-radius: 8px;
-}
-
-#left-nav #log-me-out:hover {
-  background: #e0352b;
+  background: #fff0ef;
+  color: #ff3b30;
+  border-radius: 11px;
 }
 
 #left-nav #log-me-out i {
+  background: #ffe0de;
+  color: #ff3b30;
   opacity: 1;
+}
+
+#left-nav #log-me-out:hover {
+  background: #ff3b30;
+  color: #fff;
+}
+
+#left-nav #log-me-out:hover i {
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
 }
 
 #left-nav .sidebar-footer {
@@ -553,53 +614,116 @@ page {
 .page-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 16px;
+  align-items: center;
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, #237FEA 0%, #1a5fc7 55%, #123a82 100%);
+  border-radius: 18px;
+  padding: 22px 26px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(35, 127, 234, 0.25);
+}
+
+.page-header::before {
+  content: '';
+  position: absolute;
+  top: -60px;
+  right: -40px;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.page-header::after {
+  content: '';
+  position: absolute;
+  bottom: -70px;
+  right: 80px;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .header-content {
   flex: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.avatar-widget {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-right: 16px;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+  font-size: 26px;
+  color: #fff;
+}
+
+.avatar-widget .avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 .greeting {
   font-size: 14px;
-  color: #666;
-  margin-bottom: 2px;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 #user-name {
-  font-weight: 600;
-  color: #237FEA;
+  font-weight: 700;
+  color: #fff;
 }
 
-#home h2 {
+.page-header h2 {
   font-size: 26px;
   font-weight: 700;
-  color: #1a1a1a;
+  color: #fff;
   margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .header-date {
   font-size: 13px;
-  color: #999;
-  margin-top: 2px;
+  color: rgba(255, 255, 255, 0.75);
+  margin-top: 6px;
 }
 
 .fab-btn {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: #237FEA;
-  color: white;
+  background: #fff;
+  color: #237FEA;
   border: none;
   font-size: 22px;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(35, 127, 234, 0.4);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   transition: transform 0.2s;
+  position: relative;
+  z-index: 1;
 }
 
 .fab-btn:active {
@@ -1290,3 +1414,51 @@ page {
 .priority-badge.high    { background: #ffe5cc; color: #853d00; }
 .priority-badge.medium  { background: #fff3cd; color: #856404; }
 .priority-badge.low     { background: #e9ecef; color: #495057; }
+
+/* ========================================
+   SHARED ROW ACTION BUTTONS
+   Used on the Reports, Work Orders and Staff tables.
+   ======================================== */
+
+.col-action {
+  flex: 0 0 80px;
+  max-width: 80px;
+  text-align: center;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn-approve,
+.btn-reject,
+.btn-delete {
+  border: none;
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.btn-approve { background: #cdffcf; color: #2d7a2d; }
+.btn-approve:hover { background: #9bef9d; }
+
+.btn-reject { background: #ffdbdb; color: #cc0000; }
+.btn-reject:hover { background: #ffb3b3; }
+
+.btn-delete {
+  background: #f3f4f6;
+  color: #6b7280;
+  padding: 4px 8px;
+}
+
+.btn-delete:hover {
+  background: #ffdbdb;
+  color: #cc0000;
+}

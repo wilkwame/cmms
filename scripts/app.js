@@ -86,8 +86,97 @@ function applyRoleVisibility() {
     }
 }
 
+// Runs at boot (not just inside loadHomePage, which never fires for
+// reporters since their landing page is user-home) so the sidebar shows
+// the real name for every role, not the "User" placeholder.
+function renderSidebarUserName() {
+    var el = document.getElementById('sidebar-user-name');
+    if (!el || !app.memory.user || !app.memory.user.name) return;
+    el.textContent = app.memory.user.name.trim().split(/\s+/)[0];
+}
+
+// ===== PROFILE PHOTO =====
+// Updates every avatar_img/avatar_icon pair on the page (sidebar + any
+// decorative header widgets) — not just one — so a photo upload or fresh
+// boot reflects everywhere at once. Inline styles are used alongside the
+// CSS class toggle so this still works correctly even if a browser is
+// holding a stale cached copy of main.css.
+function renderSidebarAvatar() {
+    var url = app.memory.user ? app.memory.user.avatar_url : null;
+
+    document.querySelectorAll('.avatar-img').forEach(function(img) {
+        if (url) {
+            img.src = url;
+            img.classList.remove('hidden');
+            img.style.display = '';
+        } else {
+            img.classList.add('hidden');
+            img.style.display = 'none';
+        }
+    });
+
+    document.querySelectorAll('.avatar-icon').forEach(function(icon) {
+        if (url) {
+            icon.classList.add('hidden');
+            icon.style.display = 'none';
+        } else {
+            icon.classList.remove('hidden');
+            icon.style.display = '';
+        }
+    });
+}
+
+function triggerAvatarUpload() {
+    var input = document.getElementById('avatar-file-input');
+    if (input) input.click();
+}
+
+function wireAvatarUpload() {
+    var input = document.getElementById('avatar-file-input');
+    if (!input || input.dataset.wired === '1') return;
+    input.dataset.wired = '1';
+
+    input.addEventListener('change', async function() {
+        var file = input.files && input.files[0];
+        input.value = '';
+        if (!file) return;
+
+        if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+            alert('Please choose a JPEG, PNG or WEBP image.');
+            return;
+        }
+        if (file.size > 2 * 1024 * 1024) {
+            alert('Photo must be under 2MB.');
+            return;
+        }
+
+        var formData = new FormData();
+        formData.append('avatar', file);
+
+        try {
+            var response = await fetch('api/upload_avatar.php', { method: 'POST', body: formData });
+            var result = await response.json();
+
+            if (!result.ok) {
+                alert('Failed to upload photo: ' + (result.data || 'Unknown error'));
+                return;
+            }
+
+            app.memory.user.avatar_url = result.data.avatar_url;
+            var store = localStorage.getItem('cmms_user') ? localStorage : sessionStorage;
+            store.setItem('cmms_user', JSON.stringify(app.memory.user));
+            renderSidebarAvatar();
+        } catch (e) {
+            alert('Network error while uploading photo.');
+        }
+    });
+}
+
 applyRoleVisibility();
 startNotificationPolling();
+renderSidebarAvatar();
+wireAvatarUpload();
+renderSidebarUserName();
 
 app.config({
     persistPage: true,
@@ -109,10 +198,26 @@ app.start({
 });
 
 // ===== LOGOUT =====
-// Real navigation to the standalone login page, not an in-app page switch.
 function logoutUser(context) {
-    if (!confirm('Are you sure you want to logout?')) return;
+    openPopup(context,
+        '<div class="popup-content">' +
+        '  <div class="popup-header">' +
+        '    <h3><i class="fas fa-sign-out-alt"></i> Log out?</h3>' +
+        '    <button class="popup-close" action="closePopup"><i class="fas fa-times"></i></button>' +
+        '  </div>' +
+        '  <div class="popup-body">' +
+        '    <p>Are you sure you want to log out of your account?</p>' +
+        '  </div>' +
+        '  <div class="popup-footer">' +
+        '    <button class="popup-btn secondary" action="closePopup">Cancel</button>' +
+        '    <button class="popup-btn reject" action="performLogout"><i class="fas fa-sign-out-alt"></i> Log Out</button>' +
+        '  </div>' +
+        '</div>'
+    );
+}
 
+// Real navigation to the standalone login page, not an in-app page switch.
+function performLogout() {
     localStorage.removeItem('cmms_user');
     localStorage.removeItem('cmms_token');
     sessionStorage.removeItem('cmms_user');
@@ -122,8 +227,27 @@ function logoutUser(context) {
     window.location.href = 'login.html';
 }
 
+// If the server says the session is gone (expired, or the account was
+// deleted/deactivated after this browser tab logged in), stop showing a
+// generic "failed to load" and send the user back to login instead.
+function handleAuthFailure(result) {
+    if (result && result.status === 401) {
+        localStorage.removeItem('cmms_user');
+        localStorage.removeItem('cmms_token');
+        sessionStorage.removeItem('cmms_user');
+        sessionStorage.removeItem('cmms_token');
+        localStorage.removeItem('CLERA_ACTIVE_PAGE');
+        window.location.href = 'login.html';
+        return true;
+    }
+    return false;
+}
+
 // ===== EXPOSE AUTH FUNCTIONS =====
 window.checkAuth = checkAuth;
+window.performLogout = performLogout;
+window.handleAuthFailure = handleAuthFailure;
+window.triggerAvatarUpload = triggerAvatarUpload;
 window.logoutUser = logoutUser;
 
 // ========================================
@@ -375,11 +499,15 @@ function domContext() {
 }
 
 // Polls for new notifications every 30s so the bell badge stays current
-// without the user having to open the panel.
+// without the user having to open the panel. Respects the Settings page's
+// Notifications toggle (localStorage.cmms_notifications).
 function startNotificationPolling() {
     if (app.memory.notificationPollStarted) return;
     app.memory.notificationPollStarted = true;
-    setInterval(function() { loadNotifications(domContext()); }, 30000);
+    setInterval(function() {
+        if (localStorage.getItem('cmms_notifications') === 'false') return;
+        loadNotifications(domContext());
+    }, 30000);
 }
 
 function renderNotifications(context) {
@@ -413,6 +541,16 @@ function renderNotifications(context) {
     list.html(html);
 }
 
+// Notifications don't carry a specific report/work-order id (see
+// get_notifications.php), so clicking one marks it read and takes the
+// user to the page where they'd actually find it, based on their role.
+function notificationTargetPage() {
+    var role = app.memory.user ? app.memory.user.role : null;
+    if (role === 'reporter') return 'user-home';
+    if (role === 'technician') return 'workorders';
+    return 'reports';
+}
+
 function markNotificationRead(context) {
     var notifId = parseInt(context.arg);
     if (!notifId) return;
@@ -427,6 +565,11 @@ function markNotificationRead(context) {
     renderNotifications(context);
     updateNotificationBadge(context);
     context.fetch('api/mark_notification_read.php', { method: 'POST', body: { id: notifId } }, function() {});
+
+    var popup = context.query('#notification-popup');
+    if (popup.exists) popup.element.classList.remove('active');
+    closeMobileMenu(context);
+    context.navigate(notificationTargetPage());
 }
 
 function markAllNotificationsRead(context) {
@@ -616,40 +759,41 @@ function openWorkOrderPopup(context) {
     openPopup(context, html);
 }
 
-function buildWorkOrderDetailPopup(order) {
+function buildWorkOrderDetailPopup(order, reassignPanelHtml) {
     var dueDate = formatDate(order.due_date);
     var priorityClass = getPriorityClass(order.priority);
     var statusClass = getStatusClass(order.status);
     var assignedTo = order.assigned_to || 'Unassigned';
+    var canReassign = ['completed', 'cancelled'].indexOf(order.status) === -1;
 
     return '<div class="popup-content">' +
         '<div class="popup-header">' +
-        '  <h3><i class="fas fa-tools"></i> ' + order.reference + '</h3>' +
+        '  <h3><i class="fas fa-tools"></i> ' + escapeHtml(order.reference) + '</h3>' +
         '  <button class="popup-close" action="closePopup"><i class="fas fa-times"></i></button>' +
         '</div>' +
         '<div class="popup-body">' +
         '  <div class="popup-field">' +
         '    <label><i class="fas fa-exclamation-circle"></i> Issue</label>' +
-        '    <p>' + order.issue + '</p>' +
+        '    <p>' + escapeHtml(order.issue) + '</p>' +
         '  </div>' +
         '  <div class="popup-field">' +
         '    <label><i class="fas fa-align-left"></i> Description</label>' +
-        '    <p>' + (order.description || 'No description provided') + '</p>' +
+        '    <p>' + escapeHtml(order.description || 'No description provided') + '</p>' +
         '  </div>' +
         '  <div class="popup-row">' +
         '    <div class="popup-field">' +
         '      <label><i class="fas fa-tag"></i> Category</label>' +
-        '      <p>' + order.category + '</p>' +
+        '      <p>' + escapeHtml(order.category) + '</p>' +
         '    </div>' +
         '    <div class="popup-field">' +
         '      <label><i class="fas fa-map-marker-alt"></i> Location</label>' +
-        '      <p>' + (order.location || '-') + '</p>' +
+        '      <p>' + escapeHtml(order.location || '-') + '</p>' +
         '    </div>' +
         '  </div>' +
         '  <div class="popup-row">' +
         '    <div class="popup-field">' +
         '      <label><i class="fas fa-user"></i> Assigned To</label>' +
-        '      <p>' + assignedTo + '</p>' +
+        '      <p>' + escapeHtml(assignedTo) + '</p>' +
         '    </div>' +
         '    <div class="popup-field">' +
         '      <label><i class="fas fa-calendar-alt"></i> Due Date</label>' +
@@ -666,11 +810,107 @@ function buildWorkOrderDetailPopup(order) {
         '      <p><span class="' + statusClass + '">' + statusLabel(order.status) + '</span></p>' +
         '    </div>' +
         '  </div>' +
+        (reassignPanelHtml || '') +
         '</div>' +
         '<div class="popup-footer">' +
         '  <button class="popup-btn secondary" action="closePopup"><i class="fas fa-times"></i> Close</button>' +
+        (canReassign ? '<button class="popup-btn reassign" action="toggleReassignPanel: ' + order.id + '"><i class="fas fa-people-arrows"></i> Reassign</button>' : '') +
+        '  <button class="popup-btn reject" action="confirmDeleteWorkOrder: ' + order.id + '"><i class="fas fa-trash"></i> Delete</button>' +
         '</div>' +
         '</div>';
+}
+
+// ===== REASSIGN WORK ORDER =====
+function toggleReassignPanel(context) {
+    var orderId = parseInt(context.arg);
+    if (!orderId) return;
+
+    var order = (app.memory.workOrders || []).filter(function(o) { return o.id === orderId; })[0];
+    if (!order) return;
+
+    var existingPanel = document.getElementById('reassign-panel');
+    if (existingPanel) {
+        // Toggle off: re-render without the panel.
+        openPopup(context, buildWorkOrderDetailPopup(order));
+        return;
+    }
+
+    openPopup(context, buildWorkOrderDetailPopup(order, '<div class="popup-field" id="reassign-panel"><label><i class="fas fa-people-arrows"></i> Reassign to</label><p class="loading-text">Loading staff...</p></div>'));
+
+    app.php('api/get_staff.php', {}).then(function(result) {
+        var panel = document.getElementById('reassign-panel');
+        if (!panel) return;
+
+        if (!result.ok) {
+            panel.innerHTML = '<label><i class="fas fa-people-arrows"></i> Reassign to</label><p class="empty-state">Failed to load staff.</p>';
+            return;
+        }
+
+        var eligible = (result.data.staff || []).filter(function(s) {
+            return s.is_active == 1 && s.role !== 'admin';
+        });
+
+        var options = eligible.map(function(s) {
+            var selected = s.name === order.assigned_to ? ' selected' : '';
+            return '<option value="' + s.id + '"' + selected + '>' + escapeHtml(s.name) + ' (' + s.active_jobs + ' active — ' + escapeHtml(s.department || 'General') + ')</option>';
+        }).join('');
+
+        panel.innerHTML =
+            '<label><i class="fas fa-people-arrows"></i> Reassign to</label>' +
+            '<div class="reassign-controls">' +
+            '  <select id="reassign-select">' + (options || '<option>No active staff available</option>') + '</select>' +
+            '  <button class="popup-btn approve" action="confirmReassign: ' + order.id + '"><i class="fas fa-check"></i> Confirm</button>' +
+            '</div>';
+    });
+}
+
+function confirmReassign(context) {
+    var orderId = parseInt(context.arg);
+    var select = document.getElementById('reassign-select');
+    if (!orderId || !select || !select.value) return;
+
+    var newAssignee = parseInt(select.value, 10);
+
+    context.fetch('api/reassign_work_order.php', {
+        method: 'POST',
+        body: { work_order_id: orderId, assigned_to: newAssignee }
+    }, function(result) {
+        if (!result.ok) {
+            showNotificationToast(context, (result && result.data) || 'Failed to reassign', 'error');
+            return;
+        }
+
+        for (var i = 0; i < app.memory.workOrders.length; i++) {
+            if (app.memory.workOrders[i].id === orderId) {
+                app.memory.workOrders[i] = result.data;
+                break;
+            }
+        }
+
+        closePopup(context);
+        showNotificationToast(context, 'Reassigned to ' + result.data.assigned_to, 'success');
+        if (typeof renderWorkOrdersSlice === 'function') renderWorkOrdersSlice(context);
+    });
+}
+
+function confirmDeleteWorkOrder(context) {
+    var orderId = parseInt(context.arg);
+    if (!orderId) return;
+    if (!confirm('Delete this work order? This cannot be undone.')) return;
+
+    context.fetch('api/delete_work_order.php', { method: 'POST', body: { id: orderId } }, function(result) {
+        if (!result.ok) {
+            showNotificationToast(context, (result && result.data) || 'Failed to delete work order', 'error');
+            return;
+        }
+
+        app.memory.workOrders = (app.memory.workOrders || []).filter(function(o) { return o.id !== orderId; });
+        app.memory.filteredWorkOrders = (app.memory.filteredWorkOrders || []).filter(function(o) { return o.id !== orderId; });
+
+        closePopup(context);
+        showNotificationToast(context, 'Work order deleted', 'success');
+        if (typeof renderWorkOrdersSlice === 'function') renderWorkOrdersSlice(context);
+    });
 }
 
 // ========================================
@@ -736,6 +976,7 @@ function updateDashboardStatsUI(context, data) {
 
 async function loadDashboardReports(context) {
     var result = await app.php('api/get_reports.php', {});
+    if (handleAuthFailure(result)) return;
     if (!result.ok) {
         context.render('#dashboard-reports-body', '<p class="loading-text">Failed to load reports</p>');
         return;
@@ -950,19 +1191,9 @@ function goToSettings(context) {
     context.navigate('settings');
 }
 
-// ========================================
-// LOGOUT
-// ========================================
-
-function logMeOut(context) {
-    if (!confirm('Are you sure you want to logout?')) return;
-    closeMobileMenu(context);
-    localStorage.removeItem('CLERA_ACTIVE_PAGE');
-    localStorage.removeItem('cmms_dark_mode');
-    localStorage.removeItem('cmms_notifications');
-    localStorage.removeItem('cmms_auto_assign');
-    showNotificationToast(context, 'Logged out successfully', 'success');
-}
+// Note: logout lives in the single logoutUser()/performLogout() pair above —
+// this used to be a second, broken copy that showed a "Logged out" toast
+// without ever actually clearing the session or leaving the page.
 
 // ========================================
 // CONFIRMATION POPUP FUNCTIONS
@@ -1150,7 +1381,6 @@ window.goToWorkOrders = goToWorkOrders;
 window.goToStaff = goToStaff;
 window.goToNewReport = goToNewReport;
 window.goToSettings = goToSettings;
-window.logMeOut = logMeOut;
 window.toggleMobileMenu = toggleMobileMenu;
 window.closeMobileMenu = closeMobileMenu;
 window.toggleNotifications = toggleNotifications;
@@ -1160,6 +1390,9 @@ window.openPopup = openPopup;
 window.closePopup = closePopup;
 window.openReportPopup = openReportPopup;
 window.openWorkOrderPopup = openWorkOrderPopup;
+window.toggleReassignPanel = toggleReassignPanel;
+window.confirmReassign = confirmReassign;
+window.confirmDeleteWorkOrder = confirmDeleteWorkOrder;
 window.quickApproveReport = quickApproveReport;
 window.openRejectPopup = openRejectPopup;
 window.approveReportFromPopup = approveReportFromPopup;

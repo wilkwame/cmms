@@ -201,6 +201,31 @@
   background: #e0352b;
 }
 
+.popup-btn.reassign {
+  background: #eef2ff;
+  color: #4338ca;
+}
+
+.popup-btn.reassign:hover {
+  background: #e0e7ff;
+}
+
+.reassign-controls {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.reassign-controls select {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid #dfe3e8;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: inherit;
+  background: #fff;
+}
+
 @media (max-width: 600px) {
   .popup-row {
     grid-template-columns: 1fr;

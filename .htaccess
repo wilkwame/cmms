@@ -1,0 +1,12 @@
+# Never let browsers cache the HTML shell itself. Without this, a browser
+# can serve a stale index.html whose <script>/<link> tags point at old,
+# unversioned asset URLs — bypassing the ?v=N cache-busting entirely, since
+# the versioned tags never even get parsed. JS/CSS/images are still cached
+# normally; only .html documents are forced to always revalidate.
+<IfModule mod_headers.c>
+  <FilesMatch "\.html$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+  </FilesMatch>
+</IfModule>

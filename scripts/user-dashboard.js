@@ -5,10 +5,13 @@
 function loadUserHomePage(context) {
     var userName = app.memory.user ? app.memory.user.name : 'User';
     context.query('#uh-user-name').text(userName);
+    var dateEl = context.query('#uh-current-date');
+    if (dateEl.exists) dateEl.text(getCurrentDate());
 
     context.render('#uh-reports-body', '<p class="loading-text">Loading your reports...</p>');
 
     app.php('api/get_reports.php', {}).then(function(result) {
+        if (handleAuthFailure(result)) return;
         if (!result.ok) {
             context.render('#uh-reports-body', '<p class="empty-state"><i class="fas fa-triangle-exclamation"></i>Failed to load your reports.</p>');
             return;

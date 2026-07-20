@@ -4,15 +4,19 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <link rel="stylesheet" href="style/settings.css">
+  <link rel="stylesheet" href="style/settings.css?v=7">
 </head>
 <body>
   <page name="settings" id="settings" onshow="loadSettingsPage">
   <section>
     <div class="page-header">
+      <span class="avatar-widget">
+        <img class="avatar-img hidden" alt="" style="display:none;" />
+        <i class="fas fa-user-circle avatar-icon"></i>
+      </span>
       <div class="header-content">
         <h2><i class="fas fa-cog"></i> Settings</h2>
-        <p class="header-subtitle">Manage your application preferences</p>
+        <p class="header-subtitle">Manage your account and application preferences</p>
       </div>
     </div>
 
@@ -46,6 +50,70 @@
               <span class="setting-value" id="settings-user-role">Loading...</span>
             </div>
           </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="setting-label"><i class="fas fa-camera"></i> Profile Photo</span>
+              <span class="setting-desc">Click your photo at the top of this card to change it</span>
+            </div>
+            <button class="setting-action" action="triggerAvatarUpload">
+              <i class="fas fa-upload"></i> Change
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-card preferences-card">
+        <div class="card-header">
+          <div class="card-header-left">
+            <span class="card-icon"><i class="fas fa-sliders-h"></i></span>
+            <div>
+              <h3>Preferences</h3>
+              <span class="card-subtitle">Display options for this browser</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="setting-item toggle-item">
+            <div class="setting-info">
+              <span class="setting-label"><i class="fas fa-moon"></i> Dark Mode</span>
+              <span class="setting-desc">Switch the dashboard to a dark theme</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="dark-mode-toggle-input" action="toggleDarkMode" />
+              <span class="toggle-slider" id="dark-mode-toggle"></span>
+            </label>
+          </div>
+          <div class="setting-item toggle-item">
+            <div class="setting-info">
+              <span class="setting-label"><i class="fas fa-bell"></i> Notifications</span>
+              <span class="setting-desc">Show the notification bell badge and poll for updates</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="notif-toggle-input" action="toggleNotificationsPref" />
+              <span class="toggle-slider" id="notif-toggle"></span>
+            </label>
+          </div>
+          <div class="setting-item toggle-item">
+            <div class="setting-info">
+              <span class="setting-label"><i class="fas fa-compress"></i> Compact Mode</span>
+              <span class="setting-desc">Tighter spacing on this page</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="compact-toggle-input" action="toggleCompactMode" />
+              <span class="toggle-slider" id="compact-toggle"></span>
+            </label>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="setting-label"><i class="fas fa-text-height"></i> Font Size</span>
+              <span class="setting-desc">Adjust text size across the app</span>
+            </div>
+            <div class="font-size-controls">
+              <button class="size-btn" action="decreaseFontSize"><i class="fas fa-minus"></i></button>
+              <span class="size-value" id="font-size-value">14px</span>
+              <button class="size-btn" action="increaseFontSize"><i class="fas fa-plus"></i></button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -55,27 +123,39 @@
             <span class="card-icon"><i class="fas fa-server"></i></span>
             <div>
               <h3>System</h3>
-              <span class="card-subtitle">Application information</span>
+              <span class="card-subtitle">Live counts from the database</span>
             </div>
           </div>
         </div>
         <div class="card-body">
           <div class="setting-item">
             <div class="setting-info">
-              <span class="setting-label"><i class="fas fa-users"></i> Total Users</span>
-              <span class="setting-value" id="settings-total-users">0</span>
+              <span class="setting-label"><i class="fas fa-users"></i> Total Registered Users</span>
+              <span class="setting-value" id="settings-total-users">—</span>
             </div>
           </div>
           <div class="setting-item">
             <div class="setting-info">
-              <span class="setting-label"><i class="fas fa-file-alt"></i> Total Reports</span>
-              <span class="setting-value" id="settings-total-reports">0</span>
+              <span class="setting-label"><i class="fas fa-user-check"></i> Configured Staff</span>
+              <span class="setting-value" id="settings-total-staff">—</span>
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="setting-label"><i class="fas fa-file-alt"></i> Reports Awaiting Review</span>
+              <span class="setting-value" id="settings-total-reports">—</span>
             </div>
           </div>
           <div class="setting-item">
             <div class="setting-info">
               <span class="setting-label"><i class="fas fa-tools"></i> Work Orders</span>
-              <span class="setting-value" id="settings-total-orders">0</span>
+              <span class="setting-value" id="settings-total-orders">—</span>
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="setting-label"><i class="fas fa-magic"></i> Skill-Based Auto-Assignment</span>
+              <span class="setting-desc">Always on for every report — matches the least-loaded active staff member with a matching skill</span>
             </div>
           </div>
         </div>
@@ -97,7 +177,7 @@
               <span class="setting-label"><i class="fas fa-sign-out-alt"></i> Logout</span>
               <span class="setting-desc">Sign out of your account and end session</span>
             </div>
-            <button class="setting-action danger" action="logMeOut">
+            <button class="setting-action danger" action="logoutUser">
               <i class="fas fa-sign-out-alt"></i> Logout
             </button>
           </div>
@@ -113,15 +193,15 @@
           <div class="about-divider"></div>
           <div class="about-stats">
             <div class="about-stat">
-              <span class="stat-number" id="about-total-users">0</span>
+              <span class="stat-number" id="about-total-users">—</span>
               <span class="stat-label">Users</span>
             </div>
             <div class="about-stat">
-              <span class="stat-number" id="about-total-reports">0</span>
+              <span class="stat-number" id="about-total-reports">—</span>
               <span class="stat-label">Reports</span>
             </div>
             <div class="about-stat">
-              <span class="stat-number" id="about-total-orders">0</span>
+              <span class="stat-number" id="about-total-orders">—</span>
               <span class="stat-label">Work Orders</span>
             </div>
           </div>

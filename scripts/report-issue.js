@@ -12,6 +12,7 @@ function loadReportIssuePage(context) {
     var locationSelect = context.query('#ri-location');
     if (locationSelect.exists) {
         app.php('api/get_locations.php', {}).then(function(result) {
+            if (handleAuthFailure(result)) return;
             if (!result.ok || !Array.isArray(result.data)) {
                 locationSelect.html('<option value="">Failed to load locations</option>');
                 return;
@@ -169,6 +170,7 @@ async function submitReportIssue(context) {
         });
         var result = await response.json();
 
+        if (handleAuthFailure(result)) return;
         if (!result.ok) {
             showReportIssueBanner(banner, 'Failed to submit report: ' + (result.data || 'Unknown error'), 'error');
             return;

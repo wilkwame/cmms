@@ -95,6 +95,9 @@ function renderWorkOrdersSlice(context) {
             html += '  <span class="col-priority"><span class="' + priorityClass + '">' + wo.priority + '</span></span>';
             html += '  <span class="col-status"><span class="' + statusClass + '">' + statusLabel(wo.status) + '</span></span>';
             html += '  <span class="col-date">' + dueDate + '</span>';
+            html += '  <span class="col-action">';
+            html += '    <button class="btn-delete" action="confirmDeleteWorkOrder: ' + wo.id + '" title="Delete work order"><i class="fas fa-trash"></i></button>';
+            html += '  </span>';
             html += '</div>';
         }
         context.render('#workorders-body', html);
@@ -133,15 +136,12 @@ function goToNewWorkOrder(context) {
     context.navigate('new-workorder');
 }
 
-// ===== POPUP PLACEHOLDER =====
-function openWorkOrderPopup(context) {
-    var orderId = context.arg;
-    showNotificationToast(context, 'Opening work order: ' + orderId, 'info');
-}
+// Note: openWorkOrderPopup/buildWorkOrderDetailPopup live in app.js — this
+// file used to shadow them with a toast-only placeholder since it loads
+// after app.js, silently disabling the real popup.
 
 // ===== EXPOSE GLOBAL FUNCTIONS =====
 window.loadWorkOrdersPage = loadWorkOrdersPage;
 window.workOrdersPrev = workOrdersPrev;
 window.workOrdersNext = workOrdersNext;
 window.goToNewWorkOrder = goToNewWorkOrder;
-window.openWorkOrderPopup = openWorkOrderPopup;

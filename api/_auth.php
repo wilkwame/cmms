@@ -9,12 +9,34 @@ function currentUser(): ?array {
     if (empty($_SESSION['user_id'])) {
         return null;
     }
-    return [
-        'id'    => (int) $_SESSION['user_id'],
-        'name'  => $_SESSION['user_name'] ?? '',
-        'email' => $_SESSION['user_email'] ?? '',
-        'role'  => $_SESSION['user_role'] ?? '',
+
+    static $cached = null;
+    if ($cached !== null) {
+        return $cached;
+    }
+
+    // The session only proves who logged in, not that the account still
+    // exists — a deleted/deactivated user's still-valid session would
+    // otherwise pass every check here and then fail downstream with a
+    // confusing foreign-key error the first time it tries to write anything.
+    $db = connectToDatabase();
+    $stmt = $db->prepare('SELECT id, name, email, role FROM users WHERE id = :id');
+    $stmt->execute([':id' => $_SESSION['user_id']]);
+    $user = $stmt->fetch();
+
+    if (!$user) {
+        session_unset();
+        session_destroy();
+        return null;
+    }
+
+    $cached = [
+        'id'    => (int) $user['id'],
+        'name'  => $user['name'],
+        'email' => $user['email'],
+        'role'  => $user['role'],
     ];
+    return $cached;
 }
 
 function requireLogin(): array {
