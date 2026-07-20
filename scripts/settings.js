@@ -20,27 +20,31 @@ function loadSettingsPage(context) {
 // happened to already be cached in app.memory from other pages (which was
 // often empty/stale — e.g. showing 0 users even when accounts existed).
 async function loadSettingsStats(context) {
-    var staffResult = await app.php('api/get_staff.php', {});
-    if (staffResult.ok) {
-        var allUsers = staffResult.data.staff || [];
-        var configuredStaff = allUsers.filter(function(s) { return s.department; }).length;
-        context.query('#settings-total-users').text(allUsers.length);
-        context.query('#settings-total-staff').text(configuredStaff);
-        context.query('#about-total-users').text(allUsers.length);
-    }
+    try {
+        var staffResult = await app.php('api/get_staff.php', {});
+        if (staffResult.ok) {
+            var allUsers = staffResult.data.staff || [];
+            var configuredStaff = allUsers.filter(function(s) { return s.department; }).length;
+            context.query('#settings-total-users').text(allUsers.length);
+            context.query('#settings-total-staff').text(configuredStaff);
+            context.query('#about-total-users').text(allUsers.length);
+        }
 
-    var reportsResult = await app.php('api/get_reports.php', {});
-    if (reportsResult.ok) {
-        var reportCount = (reportsResult.data.reports || []).length;
-        context.query('#settings-total-reports').text(reportCount);
-        context.query('#about-total-reports').text(reportCount);
-    }
+        var reportsResult = await app.php('api/get_reports.php', {});
+        if (reportsResult.ok) {
+            var reportCount = (reportsResult.data.reports || []).length;
+            context.query('#settings-total-reports').text(reportCount);
+            context.query('#about-total-reports').text(reportCount);
+        }
 
-    var ordersResult = await app.php('api/get_work_orders.php', {});
-    if (ordersResult.ok) {
-        var orderCount = (ordersResult.data.work_orders || []).length;
-        context.query('#settings-total-orders').text(orderCount);
-        context.query('#about-total-orders').text(orderCount);
+        var ordersResult = await app.php('api/get_work_orders.php', {});
+        if (ordersResult.ok) {
+            var orderCount = (ordersResult.data.work_orders || []).length;
+            context.query('#settings-total-orders').text(orderCount);
+            context.query('#about-total-orders').text(orderCount);
+        }
+    } catch (error) {
+        console.error('Failed to load settings stats:', error);
     }
 }
 

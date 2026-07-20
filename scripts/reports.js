@@ -12,16 +12,24 @@ app.memory.reportsPage = 0;
 // ===== LOAD REPORTS PAGE =====
 function loadReportsPage(context) {
     context.render('#reports-body', '<p class="loading-text">Loading reports...</p>');
-    
+
     if (app.memory.reports.length === 0) {
         app.php('api/get_reports.php', {})
             .then(function(result) {
+                if (handleAuthFailure(result)) return;
                 if (!result.ok) {
                     context.render('#reports-body', '<p class="empty-state">Failed to load reports.</p>');
                     return;
                 }
                 app.memory.reports = result.data.reports || [];
                 applyReportFilters(context);
+            })
+            .catch(function(error) {
+                // Without this, a request that rejects (network error, or a
+                // response body that isn't valid JSON) leaves the page stuck
+                // on "Loading reports..." forever with no visible feedback.
+                console.error('Failed to load reports:', error);
+                context.render('#reports-body', '<p class="empty-state">Failed to load reports. Please try again.</p>');
             });
     } else {
         applyReportFilters(context);

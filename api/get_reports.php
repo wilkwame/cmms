@@ -33,12 +33,12 @@ try {
         FROM reports r
         JOIN categories c ON c.id = r.category_id
         JOIN locations  l ON l.id = r.location_id
-        LEFT JOIN (
-            SELECT report_id, assigned_to,
-                   ROW_NUMBER() OVER (PARTITION BY report_id ORDER BY id DESC) AS rn
-            FROM work_orders
-            WHERE status != "cancelled"
-        ) wo ON wo.report_id = r.id AND wo.rn = 1
+        LEFT JOIN work_orders wo ON wo.id = (
+            SELECT wo2.id FROM work_orders wo2
+            WHERE wo2.report_id = r.id AND wo2.status != "cancelled"
+            ORDER BY wo2.id DESC
+            LIMIT 1
+        )
         LEFT JOIN users u_to ON u_to.id = wo.assigned_to
     ';
 

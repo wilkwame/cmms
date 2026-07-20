@@ -12,16 +12,26 @@ app.memory.workOrdersPage = 0;
 // ===== LOAD WORK ORDERS PAGE =====
 async function loadWorkOrdersPage(context) {
     context.render('#workorders-body', '<p class="loading-text">Loading work orders...</p>');
-    
+
     if (app.memory.workOrders.length === 0) {
-        var result = await app.php('api/get_work_orders.php', {});
+        try {
+            var result = await app.php('api/get_work_orders.php', {});
+        } catch (error) {
+            // An unguarded await that rejects (network error, non-JSON
+            // response) would otherwise leave this stuck on "Loading work
+            // orders..." forever with no feedback.
+            console.error('Failed to load work orders:', error);
+            context.render('#workorders-body', '<p class="empty-state">Failed to load work orders. Please try again.</p>');
+            return;
+        }
+        if (handleAuthFailure(result)) return;
         if (!result.ok) {
             context.render('#workorders-body', '<p class="empty-state">Failed to load work orders.</p>');
             return;
         }
         app.memory.workOrders = result.data.work_orders || [];
     }
-    
+
     applyWorkOrderFilters(context);
 }
 

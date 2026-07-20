@@ -2,6 +2,23 @@
    REPORT ISSUE PAGE
    ======================================== */
 
+/* Every other page defines this padding for its own <section> — this one
+   was missing it entirely, so the header banner sat flush against the
+   sticky top nav with zero gap between them. */
+#report-issue section {
+  padding: 16px 20px 20px;
+  max-width: 720px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  #report-issue section {
+    padding: 12px 14px 20px;
+  }
+}
+
 .form-card {
   max-width: 640px;
   margin: 16px auto;

@@ -959,12 +959,20 @@ async function loadHomePage(context) {
 }
 
 async function loadDashboardStats(context) {
-    var result = await app.php('api/get_dashboard_stats.php', {});
+    var sampleStats = {
+        kpi: { total: 0, pending: 0, in_progress: 0, completed: 0, overdue: 0 },
+        chart: { completed: 0, in_progress: 0, overdue: 0 }
+    };
+
+    try {
+        var result = await app.php('api/get_dashboard_stats.php', {});
+    } catch (error) {
+        console.error('Failed to load dashboard stats:', error);
+        updateDashboardStatsUI(context, sampleStats);
+        return;
+    }
+
     if (!result.ok) {
-        var sampleStats = {
-            kpi: { total: 0, pending: 0, in_progress: 0, completed: 0, overdue: 0 },
-            chart: { completed: 0, in_progress: 0, overdue: 0 }
-        };
         updateDashboardStatsUI(context, sampleStats);
         return;
     }
@@ -993,7 +1001,13 @@ function updateDashboardStatsUI(context, data) {
 }
 
 async function loadDashboardReports(context) {
-    var result = await app.php('api/get_reports.php', {});
+    try {
+        var result = await app.php('api/get_reports.php', {});
+    } catch (error) {
+        console.error('Failed to load dashboard reports:', error);
+        context.render('#dashboard-reports-body', '<p class="loading-text">Failed to load reports</p>');
+        return;
+    }
     if (handleAuthFailure(result)) return;
     if (!result.ok) {
         context.render('#dashboard-reports-body', '<p class="loading-text">Failed to load reports</p>');
@@ -1035,7 +1049,13 @@ function buildDashboardReportRows(reports) {
 }
 
 async function loadDashboardStaff(context) {
-    var result = await app.php('api/get_staff_workload.php', {});
+    try {
+        var result = await app.php('api/get_staff_workload.php', {});
+    } catch (error) {
+        console.error('Failed to load staff workload:', error);
+        context.render('#dashboard-workload-body', '<p class="loading-text">Failed to load staff</p>');
+        return;
+    }
     if (!result.ok) {
         context.render('#dashboard-workload-body', '<p class="loading-text">Failed to load staff</p>');
         return;
@@ -1064,7 +1084,13 @@ async function loadDashboardStaff(context) {
 }
 
 async function loadDashboardWorkOrders(context) {
-    var result = await app.php('api/get_work_orders.php', {});
+    try {
+        var result = await app.php('api/get_work_orders.php', {});
+    } catch (error) {
+        console.error('Failed to load dashboard work orders:', error);
+        context.render('#dashboard-workorders-body', '<p class="loading-text">Failed to load work orders</p>');
+        return;
+    }
     if (!result.ok) {
         context.render('#dashboard-workorders-body', '<p class="loading-text">Failed to load work orders</p>');
         return;
