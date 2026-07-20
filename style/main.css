@@ -1183,11 +1183,53 @@ page {
   #home section {
     padding: 12px 14px 80px;
   }
-  
+
+  /* Compact header banner — the full-size version ate too much vertical
+     space on small screens, pushing the actual page content (forms,
+     lists) below the fold. */
+  .page-header {
+    padding: 12px 14px;
+    border-radius: 14px;
+    margin-bottom: 12px;
+  }
+
+  .page-header .avatar-widget {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+    margin-right: 10px;
+  }
+
+  .page-header h2 {
+    font-size: 16px;
+    gap: 6px;
+  }
+
+  .page-header .greeting {
+    font-size: 11px;
+    margin-bottom: 1px;
+  }
+
+  .page-header .header-date {
+    font-size: 11px;
+    margin-top: 2px;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .page-header .fab-btn {
+    width: 34px;
+    height: 34px;
+    font-size: 15px;
+  }
+
   .greeting {
     font-size: 13px;
   }
-  
+
   #home h2 {
     font-size: 22px;
   }

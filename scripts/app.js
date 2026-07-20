@@ -198,22 +198,40 @@ app.start({
 });
 
 // ===== LOGOUT =====
+// Defensive on purpose: logout is too important to risk breaking silently
+// if the popup system has an issue we haven't caught. If the styled popup
+// doesn't actually appear for any reason, fall back to a plain confirm()
+// that always works, rather than leaving the user stuck with no way out.
 function logoutUser(context) {
-    openPopup(context,
-        '<div class="popup-content">' +
-        '  <div class="popup-header">' +
-        '    <h3><i class="fas fa-sign-out-alt"></i> Log out?</h3>' +
-        '    <button class="popup-close" action="closePopup"><i class="fas fa-times"></i></button>' +
-        '  </div>' +
-        '  <div class="popup-body">' +
-        '    <p>Are you sure you want to log out of your account?</p>' +
-        '  </div>' +
-        '  <div class="popup-footer">' +
-        '    <button class="popup-btn secondary" action="closePopup">Cancel</button>' +
-        '    <button class="popup-btn reject" action="performLogout"><i class="fas fa-sign-out-alt"></i> Log Out</button>' +
-        '  </div>' +
-        '</div>'
-    );
+    closeMobileMenu(context);
+
+    try {
+        openPopup(context,
+            '<div class="popup-content">' +
+            '  <div class="popup-header">' +
+            '    <h3><i class="fas fa-sign-out-alt"></i> Log out?</h3>' +
+            '    <button class="popup-close" action="closePopup"><i class="fas fa-times"></i></button>' +
+            '  </div>' +
+            '  <div class="popup-body">' +
+            '    <p>Are you sure you want to log out of your account?</p>' +
+            '  </div>' +
+            '  <div class="popup-footer">' +
+            '    <button class="popup-btn secondary" action="closePopup">Cancel</button>' +
+            '    <button class="popup-btn reject" action="performLogout"><i class="fas fa-sign-out-alt"></i> Log Out</button>' +
+            '  </div>' +
+            '</div>'
+        );
+
+        var overlay = document.getElementById('popup-overlay');
+        if (!overlay || !overlay.classList.contains('active')) {
+            throw new Error('Popup did not open');
+        }
+    } catch (e) {
+        console.error('Logout popup failed, falling back to confirm():', e);
+        if (confirm('Are you sure you want to log out?')) {
+            performLogout();
+        }
+    }
 }
 
 // Real navigation to the standalone login page, not an in-app page switch.
