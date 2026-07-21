@@ -64,13 +64,17 @@ function submitNewStaff(context) {
     if (!department) errors.push('Please select a department');
     if (skills.length === 0) errors.push('Please select at least one skill');
 
-    // Show errors if any
+    // Show errors if any. #form-status is a persistent inline status line;
+    // showErrorPopup is the app's proven, always-visible feedback path — used
+    // as well so a missing/renamed status element never means a silent
+    // no-op click, which is exactly what happened before this was added.
     if (errors.length > 0) {
         var status = context.query('#form-status');
         if (status.exists) {
             status.text('⚠️ ' + errors.join(' • '));
             status.element.style.color = '#ff3b30';
         }
+        showErrorPopup(errors.join(' • '), 'Check the form');
         return;
     }
 
