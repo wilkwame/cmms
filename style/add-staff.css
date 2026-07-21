@@ -35,8 +35,50 @@
   margin-top: 4px;
 }
 
-#staff-skills {
-  min-height: 110px;
+/* ========================================
+   SKILLS CHIPS
+   ======================================== */
+
+.skills-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 2px 0;
+}
+
+.skill-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #4b5563;
+  background: white;
+  cursor: pointer;
+  user-select: none;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.skill-chip:hover {
+  border-color: #237FEA;
+}
+
+.skill-chip input {
+  width: 15px;
+  height: 15px;
+  accent-color: #237FEA;
+  cursor: pointer;
+  margin: 0;
+}
+
+.skill-chip:has(input:checked) {
+  background: rgba(35, 127, 234, 0.08);
+  border-color: #237FEA;
+  color: #237FEA;
+  font-weight: 700;
 }
 
 /* ========================================

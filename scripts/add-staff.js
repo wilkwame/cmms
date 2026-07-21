@@ -43,11 +43,11 @@ function submitNewStaff(context) {
     var joinedAt = context.values.joined_at || '';
     var isActive = context.values.is_active || '1';
 
-    var skillsSelect = context.query('#staff-skills');
+    var skillsGroup = context.query('#staff-skills');
     var skills = [];
-    if (skillsSelect.exists) {
-        Array.prototype.forEach.call(skillsSelect.element.selectedOptions, function(opt) {
-            skills.push(parseInt(opt.value, 10));
+    if (skillsGroup.exists) {
+        Array.prototype.forEach.call(skillsGroup.element.querySelectorAll('input[type="checkbox"]:checked'), function(cb) {
+            skills.push(parseInt(cb.value, 10));
         });
     }
 

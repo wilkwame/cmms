@@ -17,7 +17,7 @@
         </div>
       </div>
 
-      <form class="staff-form" id="staff-form">
+      <form class="staff-form" id="staff-form" action="submitNewStaff">
         <div class="form-section">
           <h3><i class="fas fa-user"></i> Personal Information</h3>
           <div class="form-row">
@@ -69,19 +69,21 @@
             </div>
           </div>
           <div class="form-row">
-            <div class="form-group">
+            <div class="form-group full-width">
               <label>Skills <span class="required">*</span></label>
-              <select name="skills" id="staff-skills" multiple required>
-                <option value="1">Electrical</option>
-                <option value="2">Plumbing</option>
-                <option value="3">Carpentry</option>
-                <option value="4">Roofing</option>
-                <option value="5">HVAC</option>
-                <option value="6">Civil</option>
-                <option value="7">General</option>
-              </select>
-              <p class="field-hint">Hold Ctrl/Cmd to select multiple — this is what auto-assignment matches on.</p>
+              <div class="skills-grid" id="staff-skills">
+                <label class="skill-chip"><input type="checkbox" name="skills" value="1" /> Electrical</label>
+                <label class="skill-chip"><input type="checkbox" name="skills" value="2" /> Plumbing</label>
+                <label class="skill-chip"><input type="checkbox" name="skills" value="3" /> Carpentry</label>
+                <label class="skill-chip"><input type="checkbox" name="skills" value="4" /> Roofing</label>
+                <label class="skill-chip"><input type="checkbox" name="skills" value="5" /> HVAC</label>
+                <label class="skill-chip"><input type="checkbox" name="skills" value="6" /> Civil</label>
+                <label class="skill-chip"><input type="checkbox" name="skills" value="7" /> General</label>
+              </div>
+              <p class="field-hint">Click to select any number of skills — this is what auto-assignment matches on.</p>
             </div>
+          </div>
+          <div class="form-row">
             <div class="form-group">
               <label>Joined Date</label>
               <input type="date" name="joined_at" id="joined-date" />
