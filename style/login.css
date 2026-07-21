@@ -31,9 +31,12 @@
   display: flex;
   align-items: stretch;
   justify-content: center;
-  background: var(--color-mist);
   margin: 0;
   font-family: var(--font-body);
+  background:
+    linear-gradient(160deg, rgba(9, 20, 41, 0.7), rgba(9, 20, 41, 0.5)),
+    url('../assets/campus-login-bg.png') center / cover no-repeat;
+  background-color: var(--color-mist);
 }
 
 #login * {
@@ -57,7 +60,8 @@
   overflow: hidden;
   background:
     radial-gradient(circle at 15% 15%, rgba(35, 127, 234, 0.35), transparent 45%),
-    linear-gradient(160deg, var(--color-primary-deep), #08172f 75%);
+    linear-gradient(160deg, rgba(15, 42, 82, 0.85), rgba(8, 23, 47, 0.92) 75%),
+    url('../assets/campus-login-bg.png') center / cover no-repeat;
   color: white;
 }
 
@@ -612,6 +616,29 @@
 
   .login-form-side {
     padding: 32px 48px;
+    /* Opaque on desktop so the campus photo stays the left-panel's hero
+       image only — the form side keeps its clean, light look rather than
+       showing the same photo dimmed through its gutters. */
+    background: var(--color-mist);
+  }
+}
+
+/* Below 1024px .login-panel (and its photo) is hidden, so #login's own
+   photo background is what's visible around the floating card — lighten
+   the logo/footer text here to stay readable against it. .login-card
+   itself is unaffected: it's always opaque white regardless of breakpoint. */
+@media (max-width: 1023.98px) {
+  .login-logo-name {
+    color: white;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
+  }
+
+  .logo-subtitle {
+    color: rgba(255, 255, 255, 0.75);
+  }
+
+  .login-footer-bottom p {
+    color: rgba(255, 255, 255, 0.7);
   }
 }
 
