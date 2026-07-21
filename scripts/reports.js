@@ -145,10 +145,10 @@ function quickApproveReport(context) {
                 .then(function(woData) {
                     if (woData.ok) {
                         showNotificationToast(context, 'Report approved and work order created!', 'success');
-                        refreshReports(context);
+                        refreshAllData(context);
                     } else {
                         showNotificationToast(context, 'Report approved but work order creation failed', 'error');
-                        refreshReports(context);
+                        refreshAllData(context);
                     }
                 });
         });
@@ -166,7 +166,7 @@ function openRejectPopup(context) {
                 showNotificationToast(context, 'Report rejected', 'success');
                 app.php('api/delete_report.php', { id: reportId })
                     .then(function() {
-                        refreshReports(context);
+                        refreshAllData(context);
                     });
             } else {
                 showNotificationToast(context, 'Failed to reject report', 'error');
@@ -189,14 +189,8 @@ function confirmDeleteReportRow(context) {
             return;
         }
         showNotificationToast(context, 'Report deleted', 'success');
-        refreshReports(context);
+        refreshAllData(context);
     });
-}
-
-// ===== REFRESH =====
-function refreshReports(context) {
-    app.memory.reports = [];
-    loadReportsPage(context);
 }
 
 // ===== EXPOSE =====
@@ -206,4 +200,3 @@ window.reportsNext = reportsNext;
 window.quickApproveReport = quickApproveReport;
 window.openRejectPopup = openRejectPopup;
 window.confirmDeleteReportRow = confirmDeleteReportRow;
-window.refreshReports = refreshReports;

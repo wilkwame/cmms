@@ -29,7 +29,8 @@ try {
             r.priority,
             r.status,
             r.submitted_at,
-            u_to.name AS assigned_to
+            u_to.name AS assigned_to,
+            GROUP_CONCAT(DISTINCT rp.url ORDER BY rp.id SEPARATOR \',\') AS photo_urls
         FROM reports r
         JOIN categories c ON c.id = r.category_id
         JOIN locations  l ON l.id = r.location_id
@@ -40,13 +41,15 @@ try {
             LIMIT 1
         )
         LEFT JOIN users u_to ON u_to.id = wo.assigned_to
+        LEFT JOIN report_photos rp ON rp.report_id = r.id
     ';
+    $groupBy = ' GROUP BY r.id, r.reference, r.issue, r.description, c.name, l.name, r.priority, r.status, r.submitted_at, u_to.name';
 
     if ($user['role'] === 'reporter') {
-        $stmt = $db->prepare($baseSql . ' WHERE r.submitted_by = :submitted_by ORDER BY r.submitted_at DESC');
+        $stmt = $db->prepare($baseSql . ' WHERE r.submitted_by = :submitted_by' . $groupBy . ' ORDER BY r.submitted_at DESC');
         $stmt->execute([':submitted_by' => $user['id']]);
     } else {
-        $stmt = $db->prepare($baseSql . ' WHERE r.status = "pending" ORDER BY r.submitted_at DESC');
+        $stmt = $db->prepare($baseSql . ' WHERE r.status = "pending"' . $groupBy . ' ORDER BY r.submitted_at DESC');
         $stmt->execute();
     }
 

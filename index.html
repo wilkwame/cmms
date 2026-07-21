@@ -17,7 +17,7 @@
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <link rel="stylesheet" href="style/main.css?v=10">
+  <link rel="stylesheet" href="style/main.css?v=11">
   <link rel="stylesheet" href="style/mobile.css?v=10">
   <link rel="stylesheet" href="style/staffs.css?v=10">
   <link rel="stylesheet" href="style/confirmation.css?v=10">
@@ -261,8 +261,8 @@
               </div>
             </div>
 
-            <!-- Staff Workload -->
-            <div class="staff-workload card-panel">
+            <!-- Staff Workload (admin-only — staff directory visibility is restricted to admin) -->
+            <div class="staff-workload card-panel" data-roles="admin">
               <div class="panel-header">
                 <h4><i class="fas fa-users"></i> Staff Workload</h4>
                 <span class="view-more" action="goToStaff">See All <i class="fas fa-arrow-right"></i></span>
@@ -328,8 +328,8 @@
   </app>
 
   <script src="runtime/clera.js?v=10"></script>
-  <script src="scripts/app.js?v=10"></script>
-  <script src="scripts/reports.js?v=10"></script>
+  <script src="scripts/app.js?v=11"></script>
+  <script src="scripts/reports.js?v=11"></script>
   <script src="scripts/workorders.js?v=10"></script>
   <script src="scripts/staffs.js?v=10"></script>
   <script src="scripts/add-staff.js?v=12"></script>

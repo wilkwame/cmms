@@ -24,6 +24,7 @@ try {
             r.description,
             c.name          AS category,
             l.name          AS location,
+            wo.assigned_to  AS assigned_to_id,
             u_to.name       AS assigned_to,
             wo.priority,
             wo.status,

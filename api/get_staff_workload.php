@@ -7,7 +7,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     sendJson(false, 405, 'Method not allowed');
 }
 
-requireRole(['admin', 'supervisor', 'technician']);
+// Staff directory visibility is admin-only — see get_staff.php.
+requireRole(['admin']);
 
 try {
     $db = connectToDatabase();

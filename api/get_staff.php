@@ -11,7 +11,10 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     sendJson(false, 405, 'Method not allowed');
 }
 
-requireRole(['admin', 'supervisor', 'technician']);
+// Staff directory visibility is admin-only — supervisors and technicians
+// don't get to see the full staff roster, even though they can see who a
+// specific work order is assigned to via get_work_orders.php.
+requireRole(['admin']);
 
 try {
     $db = connectToDatabase();

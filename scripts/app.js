@@ -75,9 +75,12 @@ checkAuth();
 function applyRoleVisibility() {
     var role = app.memory.user ? app.memory.user.role : null;
 
-    document.querySelectorAll('tab[data-roles]').forEach(function(tab) {
-        var allowed = tab.getAttribute('data-roles').split(',');
-        tab.style.display = (role && allowed.indexOf(role) !== -1) ? '' : 'none';
+    // Applies to <tab> nav entries and any other element opting in via
+    // data-roles (e.g. the Staff Workload dashboard panel, which shouldn't
+    // render for anyone but admin — staff directory visibility is admin-only).
+    document.querySelectorAll('[data-roles]').forEach(function(el) {
+        var allowed = el.getAttribute('data-roles').split(',');
+        el.style.display = (role && allowed.indexOf(role) !== -1) ? '' : 'none';
     });
 
     var roleLabel = document.getElementById('sidebar-user-role');
@@ -688,6 +691,7 @@ function buildReportDetailPopup(report) {
     var date = formatDateTime(report.submitted_at);
     var priorityClass = getPriorityClass(report.priority);
     var statusClass = getStatusClass(report.status);
+    var photosHtml = buildPhotosHtml(report);
 
     return '<div class="popup-content">' +
         '<div class="popup-header">' +
@@ -727,6 +731,7 @@ function buildReportDetailPopup(report) {
         '    <label><i class="fas fa-calendar-alt"></i> Submitted</label>' +
         '    <p>' + date + '</p>' +
         '  </div>' +
+        photosHtml +
         '</div>' +
         '<div class="popup-footer">' +
         '  <button class="popup-btn secondary" action="closePopup"><i class="fas fa-times"></i> Close</button>' +
@@ -777,9 +782,9 @@ function openWorkOrderPopup(context) {
     openPopup(context, html);
 }
 
-function buildWorkOrderPhotosHtml(order) {
-    if (!order.photo_urls) return '';
-    var urls = order.photo_urls.split(',').filter(Boolean);
+function buildPhotosHtml(item) {
+    if (!item.photo_urls) return '';
+    var urls = item.photo_urls.split(',').filter(Boolean);
     if (urls.length === 0) return '';
 
     var thumbs = urls.map(function(url) {
@@ -799,8 +804,31 @@ function buildWorkOrderDetailPopup(order, reassignPanelHtml) {
     var priorityClass = getPriorityClass(order.priority);
     var statusClass = getStatusClass(order.status);
     var assignedTo = order.assigned_to || 'Unassigned';
-    var canReassign = ['completed', 'cancelled'].indexOf(order.status) === -1;
-    var photosHtml = buildWorkOrderPhotosHtml(order);
+    var photosHtml = buildPhotosHtml(order);
+
+    var role = app.memory.user ? app.memory.user.role : null;
+    var isAdmin = role === 'admin';
+    var isPrivileged = role === 'admin' || role === 'supervisor';
+    var isOwner = !!(app.memory.user && order.assigned_to_id === app.memory.user.id);
+    var isTerminal = ['completed', 'cancelled'].indexOf(order.status) !== -1;
+    // Reassigning requires the staff roster, which is admin-only visibility
+    // (see get_staff.php) — so only admin gets the Reassign button.
+    var canReassign = !isTerminal && isAdmin;
+    var canDelete = isPrivileged;
+    // A technician can move their own work order through start/complete/
+    // cancel; admin/supervisor can do the same on any work order.
+    var canManageStatus = !isTerminal && (isOwner || isPrivileged);
+
+    var statusButtonsHtml = '';
+    if (canManageStatus) {
+        if (order.status === 'pending') {
+            statusButtonsHtml += '<button class="popup-btn reassign" action="startWorkOrder: ' + order.id + '"><i class="fas fa-play"></i> Start Work</button>';
+        }
+        if (order.status === 'in_progress') {
+            statusButtonsHtml += '<button class="popup-btn approve" action="completeWorkOrder: ' + order.id + '"><i class="fas fa-check"></i> Mark Complete</button>';
+        }
+        statusButtonsHtml += '<button class="popup-btn reject" action="cancelWorkOrderStatus: ' + order.id + '"><i class="fas fa-ban"></i> Cancel Work</button>';
+    }
 
     return '<div class="popup-content">' +
         '<div class="popup-header">' +
@@ -851,10 +879,50 @@ function buildWorkOrderDetailPopup(order, reassignPanelHtml) {
         '</div>' +
         '<div class="popup-footer">' +
         '  <button class="popup-btn secondary" action="closePopup"><i class="fas fa-times"></i> Close</button>' +
+        statusButtonsHtml +
         (canReassign ? '<button class="popup-btn reassign" action="toggleReassignPanel: ' + order.id + '"><i class="fas fa-people-arrows"></i> Reassign</button>' : '') +
-        '  <button class="popup-btn reject" action="confirmDeleteWorkOrder: ' + order.id + '"><i class="fas fa-trash"></i> Delete</button>' +
+        (canDelete ? '  <button class="popup-btn reject" action="confirmDeleteWorkOrder: ' + order.id + '"><i class="fas fa-trash"></i> Delete</button>' : '') +
         '</div>' +
         '</div>';
+}
+
+// ===== WORK ORDER STATUS ACTIONS (technician-owned, or admin/supervisor) =====
+function doUpdateWorkOrderStatus(context, orderId, newStatus, confirmMsg) {
+    if (!orderId) return;
+    if (confirmMsg && !confirm(confirmMsg)) return;
+
+    context.fetch('api/update_work_order_status.php', {
+        method: 'POST',
+        body: { work_order_id: orderId, status: newStatus }
+    }, function(result) {
+        if (!result.ok) {
+            showNotificationToast(context, (result && result.data) || 'Failed to update work order', 'error');
+            return;
+        }
+
+        for (var i = 0; i < (app.memory.workOrders || []).length; i++) {
+            if (app.memory.workOrders[i].id === orderId) {
+                app.memory.workOrders[i] = result.data;
+                break;
+            }
+        }
+
+        closePopup(context);
+        showNotificationToast(context, 'Work order marked ' + statusLabel(newStatus).toLowerCase(), 'success');
+        if (typeof renderWorkOrdersSlice === 'function') renderWorkOrdersSlice(context);
+    });
+}
+
+function startWorkOrder(context) {
+    doUpdateWorkOrderStatus(context, parseInt(context.arg, 10), 'in_progress');
+}
+
+function completeWorkOrder(context) {
+    doUpdateWorkOrderStatus(context, parseInt(context.arg, 10), 'completed', 'Mark this work order as complete?');
+}
+
+function cancelWorkOrderStatus(context) {
+    doUpdateWorkOrderStatus(context, parseInt(context.arg, 10), 'cancelled', 'Cancel this work order? This cannot be undone.');
 }
 
 // ===== REASSIGN WORK ORDER =====
@@ -1068,6 +1136,13 @@ function buildDashboardReportRows(reports) {
 }
 
 async function loadDashboardStaff(context) {
+    // Staff directory visibility is admin-only (see get_staff_workload.php)
+    // and the panel itself is hidden for other roles — skip the call
+    // entirely rather than firing a request that's guaranteed to 403.
+    if (!app.memory.user || app.memory.user.role !== 'admin') {
+        return;
+    }
+
     try {
         var result = await app.php('api/get_staff_workload.php', {});
     } catch (error) {
@@ -1456,6 +1531,9 @@ window.openWorkOrderPopup = openWorkOrderPopup;
 window.toggleReassignPanel = toggleReassignPanel;
 window.confirmReassign = confirmReassign;
 window.confirmDeleteWorkOrder = confirmDeleteWorkOrder;
+window.startWorkOrder = startWorkOrder;
+window.completeWorkOrder = completeWorkOrder;
+window.cancelWorkOrderStatus = cancelWorkOrderStatus;
 window.quickApproveReport = quickApproveReport;
 window.openRejectPopup = openRejectPopup;
 window.approveReportFromPopup = approveReportFromPopup;

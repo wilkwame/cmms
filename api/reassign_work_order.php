@@ -10,7 +10,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     sendJson(false, 405, 'Method not allowed');
 }
 
-$user = requireRole(['admin', 'supervisor']);
+// Reassigning requires picking from the staff roster, and staff visibility
+// is admin-only — see get_staff.php.
+$user = requireRole(['admin']);
 
 $body = json_decode(file_get_contents('php://input'), true);
 $workOrderId = (int) ($body['work_order_id'] ?? 0);
