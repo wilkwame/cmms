@@ -131,26 +131,22 @@ function reportsNext(context) {
 function quickApproveReport(context) {
     var reportId = parseInt(context.arg);
     if (!reportId) return;
-    
+
     if (!confirm('Approve this report and create a work order?')) return;
-    
-    app.php('api/update_report_status.php', { id: reportId, status: 'approved' })
-        .then(function(data) {
-            if (!data.ok) {
-                showNotificationToast(context, 'Failed to approve report', 'error');
-                return;
+
+    // create_work_order.php only marks the report "approved" once it finds
+    // a staff member with a matching skill and actually creates the work
+    // order — calling it directly (instead of flipping status first) means
+    // a report with no skill match just stays "pending" and visible in the
+    // queue, instead of vanishing into an orphaned "approved" limbo state.
+    app.php('api/create_work_order.php', { report_id: reportId })
+        .then(function(woData) {
+            if (woData.ok) {
+                showNotificationToast(context, 'Report approved and work order created!', 'success');
+                refreshAllData(context);
+            } else {
+                showNotificationToast(context, (woData && woData.data) || 'No matching staff available — report stays pending', 'error');
             }
-            
-            app.php('api/create_work_order.php', { report_id: reportId })
-                .then(function(woData) {
-                    if (woData.ok) {
-                        showNotificationToast(context, 'Report approved and work order created!', 'success');
-                        refreshAllData(context);
-                    } else {
-                        showNotificationToast(context, 'Report approved but work order creation failed', 'error');
-                        refreshAllData(context);
-                    }
-                });
         });
 }
 

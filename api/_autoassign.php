@@ -4,12 +4,15 @@
 // automatic assignment on report submission (insert_report.php).
 
 // Picks the least-loaded active staff member whose skills include the given
-// category. Falls back to the least-loaded active staff member overall if
-// nobody has a matching skill. Eligibility is purely "has an active staff
-// profile" — not gated by login role — since any registered account (even
-// one that signed up as a plain reporter) becomes assignable staff the
-// moment an admin gives it a skill set via update_staff_skills.php. Only
-// admins are excluded, as a system role rather than a staff one.
+// category. Returns null if nobody has a matching skill — a report with no
+// eligible staff simply stays "pending" for an admin to handle manually,
+// rather than being auto-assigned to someone whose skill set doesn't match
+// the actual problem (e.g. a Carpentry report landing on an Electrical-only
+// technician). Eligibility is purely "has an active staff profile" — not
+// gated by login role — since any registered account (even one that signed
+// up as a plain reporter) becomes assignable staff the moment an admin
+// gives it a skill set via update_staff_skills.php. Only admins are
+// excluded, as a system role rather than a staff one.
 function pickBestStaffForCategory(PDO $db, int $categoryId): ?int {
     $matchStmt = $db->prepare('
         SELECT u.id, COUNT(wo.id) AS active_jobs
@@ -27,25 +30,7 @@ function pickBestStaffForCategory(PDO $db, int $categoryId): ?int {
     ');
     $matchStmt->execute([':category_id' => $categoryId]);
     $match = $matchStmt->fetch();
-    if ($match) {
-        return (int) $match['id'];
-    }
-
-    $fallbackStmt = $db->query('
-        SELECT u.id, COUNT(wo.id) AS active_jobs
-        FROM users u
-        JOIN staff_profiles sp ON sp.user_id = u.id
-        LEFT JOIN work_orders wo
-            ON wo.assigned_to = u.id
-            AND wo.status IN ("pending", "in_progress", "overdue")
-        WHERE u.role != "admin"
-          AND sp.is_active = 1
-        GROUP BY u.id
-        ORDER BY active_jobs ASC
-        LIMIT 1
-    ');
-    $fallback = $fallbackStmt->fetch();
-    return $fallback ? (int) $fallback['id'] : null;
+    return $match ? (int) $match['id'] : null;
 }
 
 // Creates a work order for a report, auto-picking staff unless $forcedAssignee

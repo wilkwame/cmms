@@ -22,11 +22,20 @@ if ($reportId <= 0) {
 try {
     $db = connectToDatabase();
 
-    $reportStmt = $db->prepare('SELECT id FROM reports WHERE id = :id AND status = "approved"');
+    // Accepts a "pending" report directly — createWorkOrderForReport() only
+    // flips status to "approved" once assignment actually succeeds, so the
+    // report never gets stranded in an "approved" limbo state with no work
+    // order and no way back into the pending queue if no staff match. Also
+    // accepts an already-"approved" report, so a previously stranded one
+    // (from before this fix) can still be retried here.
+    $reportStmt = $db->prepare('SELECT id, status FROM reports WHERE id = :id');
     $reportStmt->execute([':id' => $reportId]);
     $report = $reportStmt->fetch();
     if (!$report) {
-        sendJson(false, 404, 'Approved report not found');
+        sendJson(false, 404, 'Report not found');
+    }
+    if (!in_array($report['status'], ['pending', 'approved'], true)) {
+        sendJson(false, 409, 'Report is ' . $report['status'] . ' and cannot be turned into a work order');
     }
 
     $dupeStmt = $db->prepare('SELECT id FROM work_orders WHERE report_id = :report_id LIMIT 1');
