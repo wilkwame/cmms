@@ -2,7 +2,14 @@
 // REPORTS MODULE
 // ========================================
 
-const REPORT_PAGE_SIZE = 10;
+// REPORT_PAGE_SIZE is declared once in app.js — classic <script> tags on the
+// same page share one top-level scope, so a second `const` here with the
+// same name threw "Identifier 'REPORT_PAGE_SIZE' has already been declared"
+// on every load, which is a fatal SyntaxError: it aborted this entire file
+// before any of its functions (quickApproveReport, openRejectPopup, etc.)
+// could be defined. That's why Approve/Reject looked broken no matter what
+// the actual approve/reject logic did — the file crashed before that logic
+// ever ran.
 
 // ===== STATE =====
 app.memory.reports = [];
