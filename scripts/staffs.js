@@ -146,8 +146,13 @@ function goToAddStaff(context) {
 function confirmDeactivateStaff(context) {
     var staffId = parseInt(context.arg);
     if (!staffId) return;
-    if (!confirm('Deactivate this staff member? They will stop receiving new auto-assigned work, but their history is kept. Any work orders already assigned to them are not automatically reassigned.')) return;
 
+    requestConfirm(context, 'Deactivate this staff member? They will stop receiving new auto-assigned work, but their history is kept. Any work orders already assigned to them are not automatically reassigned.', 'Deactivate Staff', function() {
+        deactivateStaffConfirmed(context, staffId);
+    }, 'reject');
+}
+
+function deactivateStaffConfirmed(context, staffId) {
     context.fetch('api/deactivate_staff.php', { method: 'POST', body: { id: staffId } }, function(result) {
         if (!result.ok) {
             showNotificationToast(context, (result && result.data) || 'Failed to deactivate staff', 'error');

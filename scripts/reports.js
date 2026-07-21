@@ -132,42 +132,47 @@ function quickApproveReport(context) {
     var reportId = parseInt(context.arg);
     if (!reportId) return;
 
-    if (!confirm('Approve this report and create a work order?')) return;
-
-    // create_work_order.php only marks the report "approved" once it finds
-    // a staff member with a matching skill and actually creates the work
-    // order — calling it directly (instead of flipping status first) means
-    // a report with no skill match just stays "pending" and visible in the
-    // queue, instead of vanishing into an orphaned "approved" limbo state.
-    app.php('api/create_work_order.php', { report_id: reportId })
-        .then(function(woData) {
-            if (woData.ok) {
-                showNotificationToast(context, 'Report approved and work order created!', 'success');
-                refreshAllData(context);
-            } else {
-                showNotificationToast(context, (woData && woData.data) || 'No matching staff available — report stays pending', 'error');
-            }
-        });
+    // requestConfirm/runPendingConfirm live in app.js — a popup-based
+    // confirm is used instead of window.confirm() because Chrome silently
+    // auto-suppresses confirm() after a page has shown a few in a session,
+    // which made Approve/Reject look like dead buttons with no feedback.
+    requestConfirm(context, 'Approve this report and create a work order?', 'Approve Report', function() {
+        // create_work_order.php only marks the report "approved" once it
+        // finds a staff member with a matching skill and actually creates
+        // the work order — calling it directly (instead of flipping status
+        // first) means a report with no skill match just stays "pending"
+        // and visible in the queue, instead of vanishing into an orphaned
+        // "approved" limbo state.
+        app.php('api/create_work_order.php', { report_id: reportId })
+            .then(function(woData) {
+                if (woData.ok) {
+                    showNotificationToast(context, 'Report approved and work order created!', 'success');
+                    refreshAllData(context);
+                } else {
+                    showNotificationToast(context, (woData && woData.data) || 'No matching staff available — report stays pending', 'error');
+                }
+            });
+    }, 'approve');
 }
 
 function openRejectPopup(context) {
     var reportId = parseInt(context.arg);
     if (!reportId) return;
-    
-    if (!confirm('Reject this report? This cannot be undone.')) return;
-    
-    app.php('api/update_report_status.php', { id: reportId, status: 'rejected' })
-        .then(function(data) {
-            if (data.ok) {
-                showNotificationToast(context, 'Report rejected', 'success');
-                app.php('api/delete_report.php', { id: reportId })
-                    .then(function() {
-                        refreshAllData(context);
-                    });
-            } else {
-                showNotificationToast(context, 'Failed to reject report', 'error');
-            }
-        });
+
+    requestConfirm(context, 'Reject this report? This cannot be undone.', 'Reject Report', function() {
+        app.php('api/update_report_status.php', { id: reportId, status: 'rejected' })
+            .then(function(data) {
+                if (data.ok) {
+                    showNotificationToast(context, 'Report rejected', 'success');
+                    app.php('api/delete_report.php', { id: reportId })
+                        .then(function() {
+                            refreshAllData(context);
+                        });
+                } else {
+                    showNotificationToast(context, 'Failed to reject report', 'error');
+                }
+            });
+    }, 'reject');
 }
 
 // Note: openReportPopup/buildReportDetailPopup and goToNewReport live in
@@ -177,16 +182,17 @@ function openRejectPopup(context) {
 function confirmDeleteReportRow(context) {
     var reportId = parseInt(context.arg);
     if (!reportId) return;
-    if (!confirm('Delete this report? This cannot be undone.')) return;
 
-    app.php('api/delete_report.php', { id: reportId }).then(function(result) {
-        if (!result.ok) {
-            showNotificationToast(context, (result && result.data) || 'Failed to delete report', 'error');
-            return;
-        }
-        showNotificationToast(context, 'Report deleted', 'success');
-        refreshAllData(context);
-    });
+    requestConfirm(context, 'Delete this report? This cannot be undone.', 'Delete Report', function() {
+        app.php('api/delete_report.php', { id: reportId }).then(function(result) {
+            if (!result.ok) {
+                showNotificationToast(context, (result && result.data) || 'Failed to delete report', 'error');
+                return;
+            }
+            showNotificationToast(context, 'Report deleted', 'success');
+            refreshAllData(context);
+        });
+    }, 'reject');
 }
 
 // ===== EXPOSE =====

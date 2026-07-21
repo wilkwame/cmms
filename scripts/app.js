@@ -651,6 +651,40 @@ function openPopup(context, html) {
     overlay.element.classList.add('active');
 }
 
+// ===== POPUP-BASED CONFIRM (replaces window.confirm()) =====
+// Native confirm() is unreliable here: after a page has shown a few of
+// them in a session, Chrome silently auto-suppresses further confirm()
+// calls — no error, no visible feedback, the call just returns false as
+// if the user clicked Cancel. Every "Are you sure?" action in this app
+// used to rely on confirm(), so after enough clicks in one tab, buttons
+// like Approve/Reject/Delete would silently stop doing anything. This
+// popup can't be suppressed that way.
+var _pendingConfirmAction = null;
+
+function requestConfirm(context, message, title, onConfirm, confirmClass) {
+    _pendingConfirmAction = onConfirm;
+    openPopup(context,
+        '<div class="popup-content">' +
+        '  <div class="popup-header">' +
+        '    <h3><i class="fas fa-question-circle"></i> ' + escapeHtml(title || 'Please confirm') + '</h3>' +
+        '    <button class="popup-close" action="closePopup"><i class="fas fa-times"></i></button>' +
+        '  </div>' +
+        '  <div class="popup-body"><p>' + escapeHtml(message) + '</p></div>' +
+        '  <div class="popup-footer">' +
+        '    <button class="popup-btn secondary" action="closePopup">Cancel</button>' +
+        '    <button class="popup-btn ' + (confirmClass || 'reject') + '" action="runPendingConfirm">Confirm</button>' +
+        '  </div>' +
+        '</div>'
+    );
+}
+
+function runPendingConfirm(context) {
+    var cb = _pendingConfirmAction;
+    _pendingConfirmAction = null;
+    closePopup(context);
+    if (typeof cb === 'function') cb();
+}
+
 function closePopup(context) {
     var overlay = context.query('#popup-overlay');
     var dialog = context.query('#popup-dialog');
@@ -887,9 +921,8 @@ function buildWorkOrderDetailPopup(order, reassignPanelHtml) {
 }
 
 // ===== WORK ORDER STATUS ACTIONS (technician-owned, or admin/supervisor) =====
-function doUpdateWorkOrderStatus(context, orderId, newStatus, confirmMsg) {
+function doUpdateWorkOrderStatus(context, orderId, newStatus) {
     if (!orderId) return;
-    if (confirmMsg && !confirm(confirmMsg)) return;
 
     context.fetch('api/update_work_order_status.php', {
         method: 'POST',
@@ -918,11 +951,17 @@ function startWorkOrder(context) {
 }
 
 function completeWorkOrder(context) {
-    doUpdateWorkOrderStatus(context, parseInt(context.arg, 10), 'completed', 'Mark this work order as complete?');
+    var orderId = parseInt(context.arg, 10);
+    requestConfirm(context, 'Mark this work order as complete?', 'Complete Work Order', function() {
+        doUpdateWorkOrderStatus(context, orderId, 'completed');
+    }, 'approve');
 }
 
 function cancelWorkOrderStatus(context) {
-    doUpdateWorkOrderStatus(context, parseInt(context.arg, 10), 'cancelled', 'Cancel this work order? This cannot be undone.');
+    var orderId = parseInt(context.arg, 10);
+    requestConfirm(context, 'Cancel this work order? This cannot be undone.', 'Cancel Work Order', function() {
+        doUpdateWorkOrderStatus(context, orderId, 'cancelled');
+    }, 'reject');
 }
 
 // ===== REASSIGN WORK ORDER =====
@@ -1001,20 +1040,21 @@ function confirmReassign(context) {
 function confirmDeleteWorkOrder(context) {
     var orderId = parseInt(context.arg);
     if (!orderId) return;
-    if (!confirm('Delete this work order? This cannot be undone.')) return;
 
-    context.fetch('api/delete_work_order.php', { method: 'POST', body: { id: orderId } }, function(result) {
-        if (!result.ok) {
-            showNotificationToast(context, (result && result.data) || 'Failed to delete work order', 'error');
-            return;
-        }
+    requestConfirm(context, 'Delete this work order? This cannot be undone.', 'Delete Work Order', function() {
+        context.fetch('api/delete_work_order.php', { method: 'POST', body: { id: orderId } }, function(result) {
+            if (!result.ok) {
+                showNotificationToast(context, (result && result.data) || 'Failed to delete work order', 'error');
+                return;
+            }
 
-        app.memory.workOrders = (app.memory.workOrders || []).filter(function(o) { return o.id !== orderId; });
-        app.memory.filteredWorkOrders = (app.memory.filteredWorkOrders || []).filter(function(o) { return o.id !== orderId; });
+            app.memory.workOrders = (app.memory.workOrders || []).filter(function(o) { return o.id !== orderId; });
+            app.memory.filteredWorkOrders = (app.memory.filteredWorkOrders || []).filter(function(o) { return o.id !== orderId; });
 
-        closePopup(context);
-        showNotificationToast(context, 'Work order deleted', 'success');
-        if (typeof renderWorkOrdersSlice === 'function') renderWorkOrdersSlice(context);
+            closePopup(context);
+            showNotificationToast(context, 'Work order deleted', 'success');
+            if (typeof renderWorkOrdersSlice === 'function') renderWorkOrdersSlice(context);
+        });
     });
 }
 
@@ -1229,48 +1269,49 @@ function quickApproveReport(context) {
     var reportId = parseInt(context.arg);
     if (!reportId) return;
 
-    if (!confirm('Approve this report and create a work order?')) return;
-
-    // create_work_order.php only marks the report "approved" once it finds
-    // a staff member with a matching skill and actually creates the work
-    // order — calling it directly (instead of flipping status first) means
-    // a report with no skill match just stays "pending" and visible in the
-    // queue, instead of vanishing into an orphaned "approved" limbo state.
-    context.fetch('api/create_work_order.php', {
-        method: 'POST',
-        body: { report_id: reportId }
-    }, function(woData) {
-        if (woData.ok) {
-            showNotificationToast(context, 'Report approved and work order created!', 'success');
-            refreshAllData(context);
-        } else {
-            showNotificationToast(context, (woData && woData.data) || 'No matching staff available — report stays pending', 'error');
-        }
-    });
+    requestConfirm(context, 'Approve this report and create a work order?', 'Approve Report', function() {
+        // create_work_order.php only marks the report "approved" once it
+        // finds a staff member with a matching skill and actually creates
+        // the work order — calling it directly (instead of flipping status
+        // first) means a report with no skill match just stays "pending"
+        // and visible in the queue, instead of vanishing into an orphaned
+        // "approved" limbo state.
+        context.fetch('api/create_work_order.php', {
+            method: 'POST',
+            body: { report_id: reportId }
+        }, function(woData) {
+            if (woData.ok) {
+                showNotificationToast(context, 'Report approved and work order created!', 'success');
+                refreshAllData(context);
+            } else {
+                showNotificationToast(context, (woData && woData.data) || 'No matching staff available — report stays pending', 'error');
+            }
+        });
+    }, 'approve');
 }
 
 function openRejectPopup(context) {
     var reportId = parseInt(context.arg);
     if (!reportId) return;
 
-    if (!confirm('Reject this report? This action cannot be undone.')) return;
-
-    context.fetch('api/update_report_status.php', {
-        method: 'POST',
-        body: { id: reportId, status: 'rejected' }
-    }, function(data) {
-        if (data.ok) {
-            showNotificationToast(context, 'Report rejected', 'success');
-            context.fetch('api/delete_report.php', {
-                method: 'POST',
-                body: { id: reportId }
-            }, function(deleteData) {
-                refreshAllData(context);
-            });
-        } else {
-            showNotificationToast(context, 'Failed to reject report', 'error');
-        }
-    });
+    requestConfirm(context, 'Reject this report? This action cannot be undone.', 'Reject Report', function() {
+        context.fetch('api/update_report_status.php', {
+            method: 'POST',
+            body: { id: reportId, status: 'rejected' }
+        }, function(data) {
+            if (data.ok) {
+                showNotificationToast(context, 'Report rejected', 'success');
+                context.fetch('api/delete_report.php', {
+                    method: 'POST',
+                    body: { id: reportId }
+                }, function(deleteData) {
+                    refreshAllData(context);
+                });
+            } else {
+                showNotificationToast(context, 'Failed to reject report', 'error');
+            }
+        });
+    }, 'reject');
 }
 
 function refreshAllData(context) {
@@ -1520,6 +1561,8 @@ window.markNotificationRead = markNotificationRead;
 window.markAllNotificationsRead = markAllNotificationsRead;
 window.openPopup = openPopup;
 window.closePopup = closePopup;
+window.requestConfirm = requestConfirm;
+window.runPendingConfirm = runPendingConfirm;
 window.openReportPopup = openReportPopup;
 window.openWorkOrderPopup = openWorkOrderPopup;
 window.toggleReassignPanel = toggleReassignPanel;
