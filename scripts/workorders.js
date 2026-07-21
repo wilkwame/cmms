@@ -141,9 +141,14 @@ function workOrdersNext(context) {
 }
 
 // ===== NAVIGATION =====
+// Work orders are always created from an approved report (report_id is a
+// required FK on work_orders — see schema.sql), so there's no standalone
+// "blank" work order form. This sends the admin to Reports, where approving
+// a pending report auto-creates its work order.
 function goToNewWorkOrder(context) {
     closeMobileMenu(context);
-    context.navigate('new-workorder');
+    showNotificationToast(context, 'Work orders are created by approving a pending report', 'warning');
+    context.navigate('reports');
 }
 
 // Note: openWorkOrderPopup/buildWorkOrderDetailPopup live in app.js — this

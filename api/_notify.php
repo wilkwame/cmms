@@ -14,18 +14,23 @@ function notifyAdmins(PDO $db, string $title, string $body): void {
     }
 }
 
-// Notifies the assignee, the submitter, and admins that a work order was
-// auto-created, and emails the assignee. $workOrder is the row shape
-// returned by createWorkOrderForReport() in _autoassign.php.
-function notifyWorkOrderAssignment(PDO $db, array $workOrder, int $submittedBy): void {
+// Notifies the assignee and admins that a work order was auto-created, and
+// emails the assignee. $workOrder is the row shape returned by
+// createWorkOrderForReport() in _autoassign.php (including photo_urls).
+//
+// The reporter is deliberately not notified here — reporters don't receive
+// notifications about their own reports, by design.
+function notifyWorkOrderAssignment(PDO $db, array $workOrder): void {
     $refLine = $workOrder['reference'] . ' (' . $workOrder['issue'] . ')';
+    $photoCount = empty($workOrder['photo_urls']) ? 0 : count(explode(',', $workOrder['photo_urls']));
+    $photoNote = $photoCount > 0 ? ' ' . $photoCount . ' photo' . ($photoCount === 1 ? '' : 's') . ' attached.' : '';
 
     if (!empty($workOrder['assigned_to_id'])) {
         notifyUser(
             $db,
             (int) $workOrder['assigned_to_id'],
             'New Work Order Assigned',
-            $refLine . ' has been assigned to you. Due ' . $workOrder['due_date'] . '.'
+            $refLine . ' has been assigned to you. Due ' . $workOrder['due_date'] . '.' . $photoNote
         );
 
         $assigneeStmt = $db->prepare('SELECT name, email FROM users WHERE id = :id');
@@ -36,13 +41,6 @@ function notifyWorkOrderAssignment(PDO $db, array $workOrder, int $submittedBy):
             sendAssignmentEmail($assignee['email'], $assignee['name'], $workOrder);
         }
     }
-
-    notifyUser(
-        $db,
-        $submittedBy,
-        'Report Assigned',
-        'Your report ' . $refLine . ' has been assigned to ' . ($workOrder['assigned_to'] ?: 'a technician') . '.'
-    );
 
     notifyAdmins($db, 'Work Order Created', $refLine . ' was auto-assigned to ' . ($workOrder['assigned_to'] ?: 'nobody yet') . '.');
 }

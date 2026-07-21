@@ -82,13 +82,16 @@ try {
             wo.assigned_to AS assigned_to_id,
             r.issue, r.description,
             c.name AS category, l.name AS location,
-            u.name AS assigned_to
+            u.name AS assigned_to,
+            GROUP_CONCAT(rp.url ORDER BY rp.id SEPARATOR \',\') AS photo_urls
         FROM work_orders wo
         JOIN reports r ON r.id = wo.report_id
         JOIN categories c ON c.id = r.category_id
         JOIN locations l ON l.id = r.location_id
         LEFT JOIN users u ON u.id = wo.assigned_to
+        LEFT JOIN report_photos rp ON rp.report_id = r.id
         WHERE wo.id = :id
+        GROUP BY wo.id
     ');
     $fetchStmt->execute([':id' => $workOrderId]);
 

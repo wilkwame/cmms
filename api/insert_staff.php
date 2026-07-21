@@ -21,6 +21,12 @@ $skills = isset($body['skills']) && is_array($body['skills']) ? array_map('intva
 $joinedAt = isset($body['joined_at']) && $body['joined_at'] ? $body['joined_at'] : null;
 $isActive = isset($body['is_active']) ? (int) $body['is_active'] : 1;
 
+// This form exists strictly to add workers (technicians/supervisors) with a
+// skill set — admins are provisioned separately, and everyone else signs up
+// on their own as a "reporter" via Google login. Both roles allowed here
+// are staff, matching the "assignable staff" concept in _autoassign.php.
+$allowedRoles = ['supervisor', 'technician'];
+
 // Validation
 $errors = [];
 if (empty($name)) $errors[] = 'Name is required';
@@ -29,6 +35,7 @@ if ($email && !filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'Invalid e
 if (empty($password)) $errors[] = 'Password is required';
 if (strlen($password) < 6) $errors[] = 'Password must be at least 6 characters';
 if (empty($role)) $errors[] = 'Role is required';
+if ($role && !in_array($role, $allowedRoles, true)) $errors[] = 'Role must be Supervisor or Technician';
 if (empty($department)) $errors[] = 'Department is required';
 if (empty($skills)) $errors[] = 'At least one skill is required';
 

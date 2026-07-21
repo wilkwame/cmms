@@ -44,6 +44,21 @@ function sendMail(string $toEmail, string $toName, string $subject, string $body
 
 function sendAssignmentEmail(string $toEmail, string $toName, array $workOrder): bool {
     $subject = 'New Work Order Assigned: ' . $workOrder['reference'];
+
+    $photosHtml = '';
+    if (!empty($workOrder['photo_urls'])) {
+        $baseUrl = appBaseUrl();
+        $urls = explode(',', $workOrder['photo_urls']);
+        $photosHtml = '<p><strong>Photos:</strong></p><div>';
+        foreach ($urls as $url) {
+            $absoluteUrl = $baseUrl . '/' . ltrim($url, '/');
+            $photosHtml .= '<a href="' . htmlspecialchars($absoluteUrl) . '" style="display:inline-block;margin:0 8px 8px 0;">'
+                . '<img src="' . htmlspecialchars($absoluteUrl) . '" alt="Report photo" width="150" style="border-radius:6px;border:1px solid #dfe3e8;" />'
+                . '</a>';
+        }
+        $photosHtml .= '</div>';
+    }
+
     $body = '
         <p>Hi ' . htmlspecialchars($toName) . ',</p>
         <p>A new issue has been reported and assigned to you:</p>
@@ -56,6 +71,7 @@ function sendAssignmentEmail(string $toEmail, string $toName, array $workOrder):
             <tr><td><strong>Due Date</strong></td><td>' . htmlspecialchars($workOrder['due_date']) . '</td></tr>
         </table>
         <p>' . htmlspecialchars($workOrder['description'] ?? '') . '</p>
+        ' . $photosHtml . '
         <p>Please acknowledge this assignment as soon as possible.</p>
         <p>Thank you,<br>CMMS System</p>
     ';

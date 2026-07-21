@@ -22,7 +22,7 @@ if ($reportId <= 0) {
 try {
     $db = connectToDatabase();
 
-    $reportStmt = $db->prepare('SELECT id, submitted_by FROM reports WHERE id = :id AND status = "approved"');
+    $reportStmt = $db->prepare('SELECT id FROM reports WHERE id = :id AND status = "approved"');
     $reportStmt->execute([':id' => $reportId]);
     $report = $reportStmt->fetch();
     if (!$report) {
@@ -41,7 +41,7 @@ try {
         sendJson(false, 409, 'No active staff available to assign');
     }
 
-    notifyWorkOrderAssignment($db, $workOrder, (int) $report['submitted_by']);
+    notifyWorkOrderAssignment($db, $workOrder);
 
     sendJson(true, 201, $workOrder);
 

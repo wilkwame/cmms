@@ -2,8 +2,6 @@
 
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/_auth.php';
-require_once __DIR__ . '/_autoassign.php';
-require_once __DIR__ . '/_notify.php';
 
 // Expected POST body:
 // {
@@ -73,20 +71,15 @@ try {
 
     $newId = (int) $db->lastInsertId();
 
-    notifyUser($db, $submittedBy, 'Report Submitted', $reference . ' (' . $issue . ') has been submitted.');
-
-    // Try to auto-assign immediately. If no eligible staff is found, the
-    // report simply stays "pending" for an admin to handle manually.
-    $workOrder = createWorkOrderForReport($db, $newId, $submittedBy);
-
-    if ($workOrder) {
-        notifyWorkOrderAssignment($db, $workOrder, $submittedBy);
-    }
-
+    // Auto-assignment is deliberately not done here: the client uploads
+    // photos in a second call (report_photos.report_id is a FK, so photos
+    // can't be attached before the report row exists), then calls
+    // finalize_report.php to trigger assignment + notifications once any
+    // photos are actually attached. Reporters aren't notified about their
+    // own reports, by design — see finalize_report.php / _notify.php.
     sendJson(true, 201, [
-        'id'         => $newId,
-        'reference'  => $reference,
-        'work_order' => $workOrder,
+        'id'        => $newId,
+        'reference' => $reference,
     ]);
 
 } catch (PDOException $e) {

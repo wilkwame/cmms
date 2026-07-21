@@ -31,12 +31,15 @@ try {
             wo.started_at,
             wo.completed_at,
             wo.notes,
-            wo.created_at
+            wo.created_at,
+            GROUP_CONCAT(DISTINCT rp.url ORDER BY rp.id SEPARATOR \',\') AS photo_urls
         FROM work_orders wo
         JOIN reports   r    ON r.id  = wo.report_id
         JOIN categories c   ON c.id  = r.category_id
         JOIN locations  l   ON l.id  = r.location_id
         LEFT JOIN users u_to ON u_to.id = wo.assigned_to
+        LEFT JOIN report_photos rp ON rp.report_id = r.id
+        GROUP BY wo.id
         ORDER BY wo.created_at DESC
     ');
 

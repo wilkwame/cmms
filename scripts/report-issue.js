@@ -180,12 +180,32 @@ async function submitReportIssue(context) {
         var photos = app.memory.reportIssuePhotos;
 
         if (photos.length > 0) {
-            var formData = new FormData();
-            formData.append('report_id', reportId);
-            photos.forEach(function(photo, i) {
-                formData.append('photos[]', photo, photo.name || ('photo-' + i + '.jpg'));
+            try {
+                var formData = new FormData();
+                formData.append('report_id', reportId);
+                photos.forEach(function(photo, i) {
+                    formData.append('photos[]', photo, photo.name || ('photo-' + i + '.jpg'));
+                });
+                await fetch('api/upload_report_photos.php', { method: 'POST', body: formData });
+            } catch (e) {
+                // Best-effort: even if the photo upload fails, the report
+                // itself was created successfully — still finalize below so
+                // it doesn't sit unassigned forever over a photo hiccup.
+            }
+        }
+
+        // Only now — after any photos are attached — trigger auto-assignment
+        // and notify the assigned technician, so the email/in-app alert can
+        // actually include the photos if the reporter added any.
+        try {
+            await fetch('api/finalize_report.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ report_id: reportId })
             });
-            await fetch('api/upload_report_photos.php', { method: 'POST', body: formData });
+        } catch (e) {
+            // Best-effort: if this fails, the report stays "pending" and an
+            // admin can still approve it manually from the Reports page.
         }
 
         clearReportIssueForm(context);

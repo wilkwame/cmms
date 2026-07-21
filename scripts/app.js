@@ -777,12 +777,30 @@ function openWorkOrderPopup(context) {
     openPopup(context, html);
 }
 
+function buildWorkOrderPhotosHtml(order) {
+    if (!order.photo_urls) return '';
+    var urls = order.photo_urls.split(',').filter(Boolean);
+    if (urls.length === 0) return '';
+
+    var thumbs = urls.map(function(url) {
+        return '<a href="' + encodeURI(url) + '" target="_blank" rel="noopener" style="display:inline-block;margin:0 8px 8px 0;">' +
+            '<img src="' + encodeURI(url) + '" alt="Report photo" style="width:90px;height:90px;object-fit:cover;border-radius:8px;border:1px solid #dfe3e8;" />' +
+            '</a>';
+    }).join('');
+
+    return '<div class="popup-field">' +
+        '  <label><i class="fas fa-camera"></i> Photos</label>' +
+        '  <div>' + thumbs + '</div>' +
+        '</div>';
+}
+
 function buildWorkOrderDetailPopup(order, reassignPanelHtml) {
     var dueDate = formatDate(order.due_date);
     var priorityClass = getPriorityClass(order.priority);
     var statusClass = getStatusClass(order.status);
     var assignedTo = order.assigned_to || 'Unassigned';
     var canReassign = ['completed', 'cancelled'].indexOf(order.status) === -1;
+    var photosHtml = buildWorkOrderPhotosHtml(order);
 
     return '<div class="popup-content">' +
         '<div class="popup-header">' +
@@ -828,6 +846,7 @@ function buildWorkOrderDetailPopup(order, reassignPanelHtml) {
         '      <p><span class="' + statusClass + '">' + statusLabel(order.status) + '</span></p>' +
         '    </div>' +
         '  </div>' +
+        photosHtml +
         (reassignPanelHtml || '') +
         '</div>' +
         '<div class="popup-footer">' +
