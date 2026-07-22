@@ -4,11 +4,15 @@
 
 // ===== LOAD ADD STAFF PAGE =====
 function loadAddStaffPage(context) {
-    // Auto-fill joined date
+    // Joined date can't be backdated — only today or later. min is set
+    // fresh on every visit since "today" changes daily.
     var today = new Date().toISOString().split('T')[0];
     var dateInput = context.query('#joined-date');
-    if (dateInput.exists && !dateInput.element.value) {
-        dateInput.element.value = today;
+    if (dateInput.exists) {
+        dateInput.element.min = today;
+        if (!dateInput.element.value) {
+            dateInput.element.value = today;
+        }
     }
     
     // Reset form status

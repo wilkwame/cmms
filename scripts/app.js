@@ -29,6 +29,19 @@ if (!app.memory.filteredStaff) {
 
 const REPORT_PAGE_SIZE = 10;
 
+// Matches categories.id in schema.sql's seed data — used to filter the
+// Reassign panel down to staff whose skill set matches the work order's
+// category (see toggleReassignPanel).
+const CATEGORY_NAME_TO_ID = {
+    Electrical: 1,
+    Plumbing: 2,
+    Carpentry: 3,
+    Roofing: 4,
+    HVAC: 5,
+    Civil: 6,
+    General: 7
+};
+
 // ===== CHECK LOGIN STATUS =====
 function checkAuth() {
     // Check localStorage first
@@ -990,8 +1003,14 @@ function toggleReassignPanel(context) {
             return;
         }
 
+        // Only staff whose skill set actually matches this work order's
+        // category — reassigning an Electrical job to a Carpentry-only
+        // technician would be the same mismatch auto-assignment avoids.
+        var categoryId = CATEGORY_NAME_TO_ID[order.category];
         var eligible = (result.data.staff || []).filter(function(s) {
-            return s.is_active == 1 && s.role !== 'admin';
+            if (s.is_active != 1 || s.role === 'admin') return false;
+            var skillIds = (s.skill_ids || '').split(',').map(function(v) { return parseInt(v, 10); });
+            return categoryId && skillIds.indexOf(categoryId) !== -1;
         });
 
         var options = eligible.map(function(s) {
@@ -1000,10 +1019,10 @@ function toggleReassignPanel(context) {
         }).join('');
 
         panel.innerHTML =
-            '<label><i class="fas fa-people-arrows"></i> Reassign to</label>' +
+            '<label><i class="fas fa-people-arrows"></i> Reassign to (matching ' + escapeHtml(order.category) + ' skill)</label>' +
             '<div class="reassign-controls">' +
-            '  <select id="reassign-select">' + (options || '<option>No active staff available</option>') + '</select>' +
-            '  <button class="popup-btn approve" action="confirmReassign: ' + order.id + '"><i class="fas fa-check"></i> Confirm</button>' +
+            '  <select id="reassign-select">' + (options || '<option value="">No staff with this skill available</option>') + '</select>' +
+            (options ? '  <button class="popup-btn approve" action="confirmReassign: ' + order.id + '"><i class="fas fa-check"></i> Confirm</button>' : '') +
             '</div>';
     });
 }

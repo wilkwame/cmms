@@ -12,7 +12,7 @@
     <div class="filter-bar">
       <div class="filter-group">
         <label>Priority</label>
-        <select id="report-filter-priority">
+        <select id="report-filter-priority" onchange="applyReportFilters">
           <option value="all">All</option>
           <option value="urgent">Urgent</option>
           <option value="high">High</option>
@@ -22,7 +22,7 @@
       </div>
       <div class="filter-group">
         <label>Category</label>
-        <select id="report-filter-category">
+        <select id="report-filter-category" onchange="applyReportFilters">
           <option value="all">All</option>
           <option value="Electrical">Electrical</option>
           <option value="Plumbing">Plumbing</option>
@@ -34,7 +34,7 @@
         </select>
       </div>
       <div class="filter-group search-group">
-        <input type="text" id="report-search" placeholder="Search reports..." />
+        <input type="text" id="report-search" placeholder="Search reports..." oninput="applyReportFilters" />
       </div>
       <button class="btn-new-report" action="goToNewReport">+ New Report</button>
     </div>
