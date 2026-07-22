@@ -124,7 +124,8 @@ try {
         LEFT JOIN users u ON u.id = wo.assigned_to
         LEFT JOIN report_photos rp ON rp.report_id = r.id
         WHERE wo.id = :id
-        GROUP BY wo.id
+        GROUP BY wo.id, wo.reference, wo.priority, wo.status, wo.due_date, wo.started_at,
+                 wo.completed_at, wo.assigned_to, r.issue, r.description, c.name, l.name, u.name
     ');
     $fetchStmt->execute([':id' => $workOrderId]);
 

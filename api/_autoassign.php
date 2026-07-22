@@ -98,7 +98,8 @@ function createWorkOrderForReport(PDO $db, int $reportId, int $assignedByUserId,
         LEFT JOIN users u ON u.id = wo.assigned_to
         LEFT JOIN report_photos rp ON rp.report_id = r.id
         WHERE wo.id = :id
-        GROUP BY wo.id
+        GROUP BY wo.id, wo.reference, wo.priority, wo.status, wo.due_date, wo.assigned_to,
+                 r.issue, r.description, c.name, l.name, u.name, r.submitted_by
     ');
     $fetchStmt->execute([':id' => $newId]);
     return $fetchStmt->fetch() ?: null;

@@ -40,7 +40,9 @@ try {
         JOIN locations  l   ON l.id  = r.location_id
         LEFT JOIN users u_to ON u_to.id = wo.assigned_to
         LEFT JOIN report_photos rp ON rp.report_id = r.id
-        GROUP BY wo.id
+        GROUP BY wo.id, wo.reference, r.issue, r.description, c.name, l.name,
+                 wo.assigned_to, u_to.name, wo.priority, wo.status, wo.due_date,
+                 wo.started_at, wo.completed_at, wo.notes, wo.created_at
         ORDER BY wo.created_at DESC
     ');
 
