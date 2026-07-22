@@ -209,7 +209,13 @@ app.start({
         // a path relative to the current page ("api/x.php", never "/api/x.php")
         // and lets the browser resolve it correctly either way.
         baseUrl: "",
-        timeout: 10000
+        // InfinityFree (free-tier shared hosting) can have real latency —
+        // cold PHP-FPM starts, DB connection overhead — that occasionally
+        // exceeds 10s under normal conditions, not just when something's
+        // actually broken. That produced AbortError "Request timed out" on
+        // otherwise-successful actions (approve/reject/delete). 30s gives
+        // slow responses room to complete instead of aborting mid-flight.
+        timeout: 30000
     }
 });
 
