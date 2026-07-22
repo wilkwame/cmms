@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/_auth.php';
+require_once __DIR__ . '/_notify.php';
 
 // Expected POST body:
 // {
@@ -70,6 +71,8 @@ try {
     ]);
 
     $newId = (int) $db->lastInsertId();
+
+    notifyReportSubmitted($db, $submittedBy, $reference, $issue);
 
     // Auto-assignment is deliberately not done here: the client uploads
     // photos in a second call (report_photos.report_id is a FK, so photos

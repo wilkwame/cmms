@@ -89,6 +89,7 @@ function createWorkOrderForReport(PDO $db, int $reportId, int $assignedByUserId,
             c.name AS category,
             l.name AS location,
             u.name AS assigned_to,
+            r.submitted_by,
             GROUP_CONCAT(rp.url ORDER BY rp.id SEPARATOR \',\') AS photo_urls
         FROM work_orders wo
         JOIN reports r ON r.id = wo.report_id

@@ -10,7 +10,14 @@ function loadUserHomePage(context) {
 
     context.render('#uh-reports-body', '<p class="loading-text">Loading your reports...</p>');
 
-    app.php('api/get_reports.php', {}).then(function(result) {
+    var pendingOffline = typeof offlineQueueGetAll === 'function'
+        ? offlineQueueGetAll().catch(function() { return []; })
+        : Promise.resolve([]);
+
+    Promise.all([app.php('api/get_reports.php', {}), pendingOffline]).then(function(results) {
+        var result = results[0];
+        var offlineItems = results[1] || [];
+
         if (handleAuthFailure(result)) return;
         if (!result.ok) {
             context.render('#uh-reports-body', '<p class="empty-state"><i class="fas fa-triangle-exclamation"></i>Failed to load your reports.</p>');
@@ -18,23 +25,49 @@ function loadUserHomePage(context) {
         }
 
         var reports = result.data.reports || [];
-        context.query('#uh-report-count').text(reports.length + (reports.length === 1 ? ' record' : ' records'));
-        renderUserStats(context, reports);
+        var totalCount = reports.length + offlineItems.length;
+        context.query('#uh-report-count').text(totalCount + (totalCount === 1 ? ' record' : ' records'));
+        renderUserStats(context, reports, offlineItems.length);
 
-        if (reports.length === 0) {
+        if (totalCount === 0) {
             context.render('#uh-reports-body', buildEmptyReportsState());
             return;
         }
 
         var html = '';
-        for (var i = 0; i < reports.length; i++) {
-            html += buildMyReportCard(reports[i]);
+        // Newest-first, and reports still waiting to leave the device are
+        // the most actionable thing to surface — show those first.
+        for (var i = offlineItems.length - 1; i >= 0; i--) {
+            html += buildOfflinePendingCard(offlineItems[i]);
+        }
+        for (var j = 0; j < reports.length; j++) {
+            html += buildMyReportCard(reports[j]);
         }
         context.render('#uh-reports-body', html);
     });
 }
 
-function renderUserStats(context, reports) {
+function buildOfflinePendingCard(item) {
+    var r = item.report;
+    var photoNote = item.photos && item.photos.length > 0
+        ? '<span class="mrc-tag"><i class="fas fa-image"></i> ' + item.photos.length + ' photo' + (item.photos.length === 1 ? '' : 's') + '</span>'
+        : '';
+
+    return '<div class="mrc-card mrc-card-offline">' +
+        '  <div class="mrc-top">' +
+        '    <span class="mrc-ref"><i class="fas fa-cloud-arrow-up"></i> Not sent yet</span>' +
+        '    <span class="status-badge pending">Pending Sync</span>' +
+        '  </div>' +
+        '  <h4 class="mrc-issue">' + escapeHtml(r.issue) + '</h4>' +
+        '  <div class="mrc-meta">' +
+        '    <span class="mrc-tag mrc-tag-muted"><i class="fas fa-hourglass-half"></i> Saved on this device</span>' +
+        photoNote +
+        '    <span class="' + getPriorityClass(r.priority) + '">' + priorityLabel(r.priority) + '</span>' +
+        '  </div>' +
+        '</div>';
+}
+
+function renderUserStats(context, reports, offlineCount) {
     var open = 0, inProgress = 0, resolved = 0;
     reports.forEach(function(r) {
         if (r.status === 'pending') open++;
@@ -42,8 +75,10 @@ function renderUserStats(context, reports) {
         else if (r.status === 'rejected' || r.status === 'closed') resolved++;
     });
 
+    var total = reports.length + (offlineCount || 0);
+
     var html =
-        '<div class="uh-stat"><span class="uh-stat-count">' + reports.length + '</span><span class="uh-stat-label">Total</span></div>' +
+        '<div class="uh-stat"><span class="uh-stat-count">' + total + '</span><span class="uh-stat-label">Total</span></div>' +
         '<div class="uh-stat uh-stat-pending"><span class="uh-stat-count">' + open + '</span><span class="uh-stat-label">Awaiting Assignment</span></div>' +
         '<div class="uh-stat uh-stat-progress"><span class="uh-stat-count">' + inProgress + '</span><span class="uh-stat-label">Assigned</span></div>' +
         '<div class="uh-stat uh-stat-done"><span class="uh-stat-count">' + resolved + '</span><span class="uh-stat-label">Closed</span></div>';

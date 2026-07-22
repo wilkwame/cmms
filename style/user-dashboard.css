@@ -97,6 +97,27 @@
   transform: translateY(0);
 }
 
+.mrc-card-offline {
+  cursor: default;
+  background: #fffbf0;
+  border: 1px dashed #f0c674;
+  padding: 14px 16px;
+}
+
+.mrc-card-offline:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: #f0c674;
+}
+
+.mrc-card-offline .mrc-ref {
+  color: #b5820a;
+}
+
+.mrc-card-offline .mrc-ref i {
+  margin-right: 4px;
+}
+
 .mrc-top {
   display: flex;
   align-items: center;

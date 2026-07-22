@@ -34,8 +34,10 @@ try {
     $db = connectToDatabase();
 
     $woStmt = $db->prepare('
-        SELECT wo.id, wo.reference, wo.status, wo.assigned_to, wo.report_id, wo.started_at
+        SELECT wo.id, wo.reference, wo.status, wo.assigned_to, wo.report_id, wo.started_at,
+               r.submitted_by, r.issue
         FROM work_orders wo
+        JOIN reports r ON r.id = wo.report_id
         WHERE wo.id = :id
     ');
     $woStmt->execute([':id' => $workOrderId]);
@@ -98,6 +100,13 @@ try {
     $db->commit();
 
     notifyAdmins($db, 'Work Order ' . ucfirst(str_replace('_', ' ', $newStatus)), $workOrder['reference'] . ' was marked ' . $newStatus . ' by ' . $user['name'] . '.');
+
+    if (!empty($workOrder['submitted_by']) && in_array($newStatus, ['in_progress', 'completed'], true)) {
+        $reporterMessage = $newStatus === 'completed'
+            ? 'Your report "' . $workOrder['issue'] . '" (' . $workOrder['reference'] . ') has been resolved.'
+            : 'Work has started on your report "' . $workOrder['issue'] . '" (' . $workOrder['reference'] . ').';
+        notifyUser($db, (int) $workOrder['submitted_by'], 'Report Status Update', $reporterMessage);
+    }
 
     $fetchStmt = $db->prepare('
         SELECT

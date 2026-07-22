@@ -152,21 +152,34 @@ async function submitReportIssue(context) {
     if (!categoryId) return showReportIssueBanner(banner, 'Category is required.', 'error');
     if (!locationId) return showReportIssueBanner(banner, 'Location is required.', 'error');
 
+    var reportPayload = {
+        issue: issue,
+        description: description,
+        category_id: parseInt(categoryId, 10),
+        location_id: parseInt(locationId, 10),
+        priority: priority
+    };
+    var photos = app.memory.reportIssuePhotos;
+
     var submitBtn = context.query('#ri-submit-btn');
     submitBtn.element.disabled = true;
     submitBtn.html('<i class="fas fa-spinner fa-spin"></i> Submitting...');
+
+    // Offline: skip the network attempt entirely (avoids a slow timeout)
+    // and queue locally straight away — the report is still "sent" from
+    // the reporter's point of view, just held until connectivity returns.
+    if (!navigator.onLine) {
+        await queueReportOffline(context, reportPayload, photos);
+        submitBtn.element.disabled = false;
+        submitBtn.html('<i class="fas fa-paper-plane"></i> Submit Report');
+        return;
+    }
 
     try {
         var response = await fetch('api/insert_report.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                issue: issue,
-                description: description,
-                category_id: parseInt(categoryId, 10),
-                location_id: parseInt(locationId, 10),
-                priority: priority
-            })
+            body: JSON.stringify(reportPayload)
         });
         var result = await response.json();
 
@@ -177,7 +190,6 @@ async function submitReportIssue(context) {
         }
 
         var reportId = result.data.id;
-        var photos = app.memory.reportIssuePhotos;
 
         if (photos.length > 0) {
             try {
@@ -215,10 +227,29 @@ async function submitReportIssue(context) {
             function() { context.navigate('user-home'); }
         );
     } catch (e) {
-        showReportIssueBanner(banner, 'Network error. Check your connection and try again.', 'error');
+        // A network error here (not navigator.onLine being false, but the
+        // actual request failing — flaky connection, DNS hiccup, etc.) gets
+        // the same offline-safe fallback rather than just losing the report.
+        await queueReportOffline(context, reportPayload, photos);
     } finally {
         submitBtn.element.disabled = false;
         submitBtn.html('<i class="fas fa-paper-plane"></i> Submit Report');
+    }
+}
+
+async function queueReportOffline(context, reportPayload, photos) {
+    try {
+        await offlineQueueAdd(reportPayload, photos);
+        clearReportIssueForm(context);
+        showSuccessPopup(
+            'You\'re offline, so this report is saved on your device. It\'ll be sent and matched to staff automatically the moment you\'re back online.',
+            'Saved — Will Send When Online',
+            function() { context.navigate('user-home'); }
+        );
+    } catch (e) {
+        console.error('Failed to queue report offline:', e);
+        var banner = context.query('#report-issue-banner');
+        showReportIssueBanner(banner, 'Could not save this report, even offline. Please try again.', 'error');
     }
 }
 

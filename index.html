@@ -96,6 +96,12 @@
       </div>
     </nav>
 
+    <!-- Offline / pending-sync status strip -->
+    <div id="offline-indicator" class="offline-indicator hidden">
+      <i class="fas fa-cloud-slash"></i>
+      <span id="offline-indicator-text">You're offline — reports you submit will be saved and sent automatically once you're back online.</span>
+    </div>
+
     <!-- Left Navigation / Sidebar -->
     <nav default="left" id="left-nav" class="app-nav">
       <div id="mobile-menu-close" action="closeMobileMenu"><i class="fas fa-times"></i></div>
@@ -349,13 +355,14 @@
   </app>
 
   <script src="runtime/clera.js?v=11"></script>
-  <script src="scripts/app.js?v=19"></script>
+  <script src="scripts/offline-queue.js?v=1"></script>
+  <script src="scripts/app.js?v=20"></script>
   <script src="scripts/reports.js?v=15"></script>
   <script src="scripts/workorders.js?v=10"></script>
   <script src="scripts/staffs.js?v=12"></script>
   <script src="scripts/add-staff.js?v=13"></script>
   <script src="scripts/settings.js?v=10"></script>
-  <script src="scripts/report-issue.js?v=10"></script>
-  <script src="scripts/user-dashboard.js?v=10"></script>
+  <script src="scripts/report-issue.js?v=11"></script>
+  <script src="scripts/user-dashboard.js?v=11"></script>
 </body>
 </html>

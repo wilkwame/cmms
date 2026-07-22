@@ -111,6 +111,63 @@ function renderSidebarUserName() {
     el.textContent = app.memory.user.name.trim().split(/\s+/)[0];
 }
 
+// ===== OFFLINE / PENDING-SYNC INDICATOR =====
+function wireOfflineIndicator() {
+    updateOfflineIndicator();
+    window.addEventListener('online', updateOfflineIndicator);
+    window.addEventListener('offline', updateOfflineIndicator);
+
+    // Covers reopening the app already online with reports queued from a
+    // previous offline session — the 'online' event alone wouldn't fire
+    // again since connectivity was never lost during this page load.
+    if (navigator.onLine && typeof offlineQueueSync === 'function') {
+        offlineQueueSync();
+    }
+}
+
+function updateOfflineIndicator() {
+    var el = document.getElementById('offline-indicator');
+    var text = document.getElementById('offline-indicator-text');
+    if (!el || !text) return;
+
+    if (!navigator.onLine) {
+        el.classList.remove('hidden', 'syncing');
+        text.textContent = "You're offline — reports you submit will be saved and sent automatically once you're back online.";
+        return;
+    }
+
+    if (typeof offlineQueueCount !== 'function') {
+        el.classList.add('hidden');
+        return;
+    }
+
+    offlineQueueCount().then(function(count) {
+        if (count > 0) {
+            el.classList.remove('hidden');
+            el.classList.add('syncing');
+            text.textContent = 'Back online — syncing ' + count + ' saved report' + (count === 1 ? '' : 's') + '...';
+        } else {
+            el.classList.add('hidden');
+            el.classList.remove('syncing');
+        }
+    });
+}
+
+// Called by offline-queue.js once a queued report has actually been sent
+// for real. Refreshes "My Reports" if a reporter is looking at it, and
+// gives a clear confirmation the offline report made it through.
+function onOfflineReportSynced(savedReport) {
+    updateOfflineIndicator();
+    showNotificationToast(domContext(), 'Offline report ' + savedReport.reference + ' sent successfully.', 'success');
+
+    if (app.memory.user && app.memory.user.role === 'reporter' && typeof loadUserHomePage === 'function') {
+        var activePage = document.querySelector('page[active]');
+        if (activePage && activePage.id === 'user-home') {
+            loadUserHomePage(domContext());
+        }
+    }
+}
+
 // ===== PROFILE PHOTO =====
 // Updates every avatar_img/avatar_icon pair on the page (sidebar + any
 // decorative header widgets) — not just one — so a photo upload or fresh
@@ -193,6 +250,7 @@ startNotificationPolling();
 renderSidebarAvatar();
 wireAvatarUpload();
 renderSidebarUserName();
+wireOfflineIndicator();
 
 app.config({
     persistPage: true,
@@ -510,6 +568,9 @@ function domContext() {
                 text: function(value) { if (element) element.textContent = value; },
                 html: function(value) { if (element) element.innerHTML = value; }
             };
+        },
+        timeout: function(fn, ms) {
+            return setTimeout(fn, ms);
         }
     };
 }

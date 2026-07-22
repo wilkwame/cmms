@@ -14,12 +14,10 @@ function notifyAdmins(PDO $db, string $title, string $body): void {
     }
 }
 
-// Notifies the assignee and admins that a work order was auto-created, and
-// emails the assignee. $workOrder is the row shape returned by
-// createWorkOrderForReport() in _autoassign.php (including photo_urls).
-//
-// The reporter is deliberately not notified here — reporters don't receive
-// notifications about their own reports, by design.
+// Notifies the assignee, the reporter who submitted it, and admins that a
+// work order was auto-created, and emails the assignee. $workOrder is the
+// row shape returned by createWorkOrderForReport() in _autoassign.php
+// (including photo_urls and submitted_by).
 function notifyWorkOrderAssignment(PDO $db, array $workOrder): void {
     $refLine = $workOrder['reference'] . ' (' . $workOrder['issue'] . ')';
     $photoCount = empty($workOrder['photo_urls']) ? 0 : count(explode(',', $workOrder['photo_urls']));
@@ -42,5 +40,28 @@ function notifyWorkOrderAssignment(PDO $db, array $workOrder): void {
         }
     }
 
+    if (!empty($workOrder['submitted_by'])) {
+        notifyUser(
+            $db,
+            (int) $workOrder['submitted_by'],
+            'Report Assigned',
+            'Your report ' . $refLine . ' has been assigned to ' . ($workOrder['assigned_to'] ?: 'a technician') . '.'
+        );
+    }
+
     notifyAdmins($db, 'Work Order Created', $refLine . ' was auto-assigned to ' . ($workOrder['assigned_to'] ?: 'nobody yet') . '.');
+}
+
+// Confirms receipt to the reporter the moment they submit — separate from
+// assignment, since auto-assignment can fail to find a match and the
+// reporter should still know their report went through.
+function notifyReportSubmitted(PDO $db, int $reporterId, string $reference, string $issue): void {
+    notifyUser($db, $reporterId, 'Report Submitted', $reference . ' (' . $issue . ') has been submitted.');
+}
+
+// Auto-assignment found nobody with a matching skill — the report is stuck
+// "pending" until an admin steps in, so they need to know it needs manual
+// attention rather than silently sitting unnoticed in the queue.
+function notifyAdminsUnassigned(PDO $db, string $reference, string $issue): void {
+    notifyAdmins($db, 'Report Needs Manual Assignment', $reference . ' (' . $issue . ') has no matching staff — assign manually.');
 }

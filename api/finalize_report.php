@@ -31,7 +31,7 @@ if ($reportId <= 0) {
 try {
     $db = connectToDatabase();
 
-    $reportStmt = $db->prepare('SELECT id, submitted_by, status FROM reports WHERE id = :id');
+    $reportStmt = $db->prepare('SELECT id, submitted_by, status, reference, issue FROM reports WHERE id = :id');
     $reportStmt->execute([':id' => $reportId]);
     $report = $reportStmt->fetch();
 
@@ -56,11 +56,14 @@ try {
     }
 
     // Try to auto-assign. If no eligible staff is found, the report simply
-    // stays "pending" for an admin to handle manually.
+    // stays "pending" for an admin to handle manually — but admins need to
+    // actually be told that, rather than it silently sitting unnoticed.
     $workOrder = createWorkOrderForReport($db, $reportId, $user['id']);
 
     if ($workOrder) {
         notifyWorkOrderAssignment($db, $workOrder);
+    } else {
+        notifyAdminsUnassigned($db, $report['reference'], $report['issue']);
     }
 
     sendJson(true, 200, ['work_order' => $workOrder]);
