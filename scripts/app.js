@@ -1147,6 +1147,14 @@ function updateDashboardStatsUI(context, data) {
 }
 
 async function loadDashboardReports(context) {
+    // The pending-approval queue is admin/supervisor only (see
+    // get_reports.php) and the panel itself is hidden for technicians —
+    // skip the call entirely rather than firing a request guaranteed to 403.
+    var role = app.memory.user ? app.memory.user.role : null;
+    if (role !== 'admin' && role !== 'supervisor') {
+        return;
+    }
+
     try {
         var result = await app.php('api/get_reports.php', {});
     } catch (error) {

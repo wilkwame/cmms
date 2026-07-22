@@ -44,7 +44,7 @@
         <span class="tab-icon"><i class="fas fa-home"></i></span>
         <span class="tab-label">Home</span>
       </tab>
-      <tab page="reports" data-roles="admin,supervisor,technician">
+      <tab page="reports" data-roles="admin,supervisor">
         <span class="tab-icon"><i class="fas fa-clipboard-list"></i></span>
         <span class="tab-label">Reports</span>
       </tab>
@@ -115,7 +115,7 @@
         <i class="fas fa-home"></i>
         <span>Dashboard</span>
       </tab>
-      <tab page="reports" data-roles="admin,supervisor,technician">
+      <tab page="reports" data-roles="admin,supervisor">
         <i class="fas fa-clipboard-list"></i>
         <span>Reports</span>
       </tab>
@@ -242,8 +242,10 @@
         <!-- Content Area -->
         <div class="content">
           <div class="quick-overview">
-            <!-- Recent Reports -->
-            <div class="recent-reports card-panel">
+            <!-- Recent Reports (admin/supervisor only — the pending-approval
+                 queue isn't a technician's to see or act on; they work off
+                 Work Orders once a report has actually been approved) -->
+            <div class="recent-reports card-panel" data-roles="admin,supervisor">
               <div class="panel-header">
                 <h4><i class="fas fa-clipboard-list"></i> Recent Reports</h4>
                 <span class="view-more" action="goToReports">See All <i class="fas fa-arrow-right"></i></span>
@@ -328,7 +330,7 @@
   </app>
 
   <script src="runtime/clera.js?v=11"></script>
-  <script src="scripts/app.js?v=14"></script>
+  <script src="scripts/app.js?v=15"></script>
   <script src="scripts/reports.js?v=14"></script>
   <script src="scripts/workorders.js?v=10"></script>
   <script src="scripts/staffs.js?v=11"></script>

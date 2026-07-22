@@ -7,13 +7,20 @@ require_once __DIR__ . '/_auth.php';
 // POST body is intentionally empty: no parameters needed.
 //
 // - reporter: all of their own reports, any status (for "My Reports").
-// - admin/supervisor/technician: the pending approval queue (existing behaviour).
+// - admin/supervisor: the pending approval queue.
+// - technician: not this endpoint — the pending-approval queue is an
+//   admin/supervisor decision, not something a technician sees or acts on.
+//   Technicians work off get_work_orders.php once a report is approved.
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     sendJson(false, 405, 'Method not allowed');
 }
 
 $user = requireLogin();
+
+if ($user['role'] !== 'reporter' && !in_array($user['role'], ['admin', 'supervisor'], true)) {
+    sendJson(false, 403, 'You do not have permission to view the reports queue');
+}
 
 try {
     $db = connectToDatabase();
