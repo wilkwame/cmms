@@ -159,7 +159,7 @@ function quickApproveReport(context) {
                     showNotificationToast(context, (woData && woData.data) || 'No matching staff available — report stays pending', 'error');
                 }
             });
-    }, 'approve');
+    }, 'approve', 'fa-check');
 }
 
 function openRejectPopup(context) {
@@ -179,7 +179,7 @@ function openRejectPopup(context) {
                     showNotificationToast(context, 'Failed to reject report', 'error');
                 }
             });
-    }, 'reject');
+    }, 'reject', 'fa-xmark');
 }
 
 // Note: openReportPopup/buildReportDetailPopup and goToNewReport live in
@@ -199,7 +199,7 @@ function confirmDeleteReportRow(context) {
             showNotificationToast(context, 'Report deleted', 'success');
             refreshAllData(context);
         });
-    }, 'reject');
+    }, 'reject', 'fa-trash');
 }
 
 // ===== EXPOSE =====

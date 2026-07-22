@@ -223,15 +223,12 @@ function logoutUser(context) {
 
     try {
         openPopup(context,
-            '<div class="popup-content">' +
-            '  <div class="popup-header">' +
-            '    <h3><i class="fas fa-sign-out-alt"></i> Log out?</h3>' +
-            '    <button class="popup-close" action="closePopup"><i class="fas fa-times"></i></button>' +
-            '  </div>' +
-            '  <div class="popup-body">' +
-            '    <p>Are you sure you want to log out of your account?</p>' +
-            '  </div>' +
-            '  <div class="popup-footer">' +
+            '<div class="popup-content confirm-popup">' +
+            '  <button class="popup-close confirm-popup-close" action="closePopup"><i class="fas fa-times"></i></button>' +
+            '  <div class="confirm-icon-badge reject"><i class="fas fa-sign-out-alt"></i></div>' +
+            '  <h3 class="confirm-title">Log out?</h3>' +
+            '  <p class="confirm-message">Are you sure you want to log out of your account?</p>' +
+            '  <div class="confirm-actions">' +
             '    <button class="popup-btn secondary" action="closePopup">Cancel</button>' +
             '    <button class="popup-btn reject" action="performLogout"><i class="fas fa-sign-out-alt"></i> Log Out</button>' +
             '  </div>' +
@@ -674,18 +671,18 @@ function openPopup(context, html) {
 // popup can't be suppressed that way.
 var _pendingConfirmAction = null;
 
-function requestConfirm(context, message, title, onConfirm, confirmClass) {
+function requestConfirm(context, message, title, onConfirm, confirmClass, icon) {
     _pendingConfirmAction = onConfirm;
+    var tone = confirmClass || 'reject';
     openPopup(context,
-        '<div class="popup-content">' +
-        '  <div class="popup-header">' +
-        '    <h3><i class="fas fa-question-circle"></i> ' + escapeHtml(title || 'Please confirm') + '</h3>' +
-        '    <button class="popup-close" action="closePopup"><i class="fas fa-times"></i></button>' +
-        '  </div>' +
-        '  <div class="popup-body"><p>' + escapeHtml(message) + '</p></div>' +
-        '  <div class="popup-footer">' +
+        '<div class="popup-content confirm-popup">' +
+        '  <button class="popup-close confirm-popup-close" action="closePopup"><i class="fas fa-times"></i></button>' +
+        '  <div class="confirm-icon-badge ' + tone + '"><i class="fas ' + (icon || 'fa-question') + '"></i></div>' +
+        '  <h3 class="confirm-title">' + escapeHtml(title || 'Please confirm') + '</h3>' +
+        '  <p class="confirm-message">' + escapeHtml(message) + '</p>' +
+        '  <div class="confirm-actions">' +
         '    <button class="popup-btn secondary" action="closePopup">Cancel</button>' +
-        '    <button class="popup-btn ' + (confirmClass || 'reject') + '" action="runPendingConfirm">Confirm</button>' +
+        '    <button class="popup-btn ' + tone + '" action="runPendingConfirm">Confirm</button>' +
         '  </div>' +
         '</div>'
     );
@@ -967,14 +964,14 @@ function completeWorkOrder(context) {
     var orderId = parseInt(context.arg, 10);
     requestConfirm(context, 'Mark this work order as complete?', 'Complete Work Order', function() {
         doUpdateWorkOrderStatus(context, orderId, 'completed');
-    }, 'approve');
+    }, 'approve', 'fa-check');
 }
 
 function cancelWorkOrderStatus(context) {
     var orderId = parseInt(context.arg, 10);
     requestConfirm(context, 'Cancel this work order? This cannot be undone.', 'Cancel Work Order', function() {
         doUpdateWorkOrderStatus(context, orderId, 'cancelled');
-    }, 'reject');
+    }, 'reject', 'fa-ban');
 }
 
 // ===== REASSIGN WORK ORDER =====
@@ -1074,7 +1071,7 @@ function confirmDeleteWorkOrder(context) {
             showNotificationToast(context, 'Work order deleted', 'success');
             if (typeof renderWorkOrdersSlice === 'function') renderWorkOrdersSlice(context);
         });
-    });
+    }, 'reject', 'fa-trash');
 }
 
 // ========================================
@@ -1350,7 +1347,7 @@ function quickApproveReport(context) {
                 showNotificationToast(context, (woData && woData.data) || 'No matching staff available — report stays pending', 'error');
             }
         });
-    }, 'approve');
+    }, 'approve', 'fa-check');
 }
 
 function openRejectPopup(context) {
@@ -1374,7 +1371,7 @@ function openRejectPopup(context) {
                 showNotificationToast(context, 'Failed to reject report', 'error');
             }
         });
-    }, 'reject');
+    }, 'reject', 'fa-xmark');
 }
 
 function refreshAllData(context) {

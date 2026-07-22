@@ -149,7 +149,7 @@ function confirmDeactivateStaff(context) {
 
     requestConfirm(context, 'Deactivate this staff member? They will stop receiving new auto-assigned work, but their history is kept. Any work orders already assigned to them are not automatically reassigned.', 'Deactivate Staff', function() {
         deactivateStaffConfirmed(context, staffId);
-    }, 'reject');
+    }, 'reject', 'fa-user-slash');
 }
 
 function deactivateStaffConfirmed(context, staffId) {

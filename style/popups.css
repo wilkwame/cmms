@@ -226,6 +226,85 @@
   background: #fff;
 }
 
+/* ========================================
+   CONFIRM POPUP (requestConfirm() in app.js)
+   Centered, icon-forward layout — distinct from the detail popups above,
+   which are field-oriented and left-aligned.
+   ======================================== */
+
+#popup-dialog:has(.confirm-popup) {
+  max-width: 380px;
+}
+
+.confirm-popup {
+  position: relative;
+  align-items: center;
+  text-align: center;
+  padding: 36px 28px 26px;
+}
+
+.confirm-popup-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+}
+
+.confirm-icon-badge {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin-bottom: 18px;
+}
+
+.confirm-icon-badge.approve {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.confirm-icon-badge.reject {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.confirm-icon-badge.reassign {
+  background: #eef2ff;
+  color: #4338ca;
+}
+
+.confirm-icon-badge.secondary {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.confirm-title {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.confirm-message {
+  margin: 0 0 24px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #6b7280;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.confirm-actions .popup-btn {
+  flex: 1;
+  justify-content: center;
+}
+
 @media (max-width: 600px) {
   .popup-row {
     grid-template-columns: 1fr;
