@@ -36,8 +36,9 @@ function sendMail(string $toEmail, string $toName, string $subject, string $body
 
         $mail->send();
         return true;
-    } catch (Exception $e) {
-        error_log('[_mail.php] Failed to send email: ' . $mail->ErrorInfo);
+    } catch (\Throwable $e) {
+        $detail = ($e instanceof Exception) ? $mail->ErrorInfo : $e->getMessage();
+        error_log('[_mail.php] Failed to send email: ' . $detail);
         return false;
     }
 }

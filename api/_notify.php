@@ -31,12 +31,27 @@ function notifyWorkOrderAssignment(PDO $db, array $workOrder): void {
             $refLine . ' has been assigned to you. Due ' . $workOrder['due_date'] . '.' . $photoNote
         );
 
-        $assigneeStmt = $db->prepare('SELECT name, email FROM users WHERE id = :id');
-        $assigneeStmt->execute([':id' => $workOrder['assigned_to_id']]);
-        $assignee = $assigneeStmt->fetch();
-        if ($assignee) {
-            require_once __DIR__ . '/_mail.php';
-            sendAssignmentEmail($assignee['email'], $assignee['name'], $workOrder);
+        // Email is a nice-to-have side effect of assignment, not a
+        // precondition for it. Skip loading PHPMailer entirely while SMTP
+        // isn't configured (defined(SMTP_HOST) is false before config.php's
+        // constants exist at all, empty() covers the unconfigured-but-defined
+        // case) — avoids depending on a third-party library's behavior on a
+        // given host for functionality that isn't even in use yet. Still
+        // wrapped in try/catch(Throwable) for when it is configured, so a
+        // fatal error loading/using it can never take down the actual
+        // work-order creation this is attached to.
+        if (defined('SMTP_HOST') && !empty(SMTP_HOST)) {
+            $assigneeStmt = $db->prepare('SELECT name, email FROM users WHERE id = :id');
+            $assigneeStmt->execute([':id' => $workOrder['assigned_to_id']]);
+            $assignee = $assigneeStmt->fetch();
+            if ($assignee) {
+                try {
+                    require_once __DIR__ . '/_mail.php';
+                    sendAssignmentEmail($assignee['email'], $assignee['name'], $workOrder);
+                } catch (\Throwable $e) {
+                    error_log('[_notify.php] Assignment email failed, continuing without it: ' . $e->getMessage());
+                }
+            }
         }
     }
 
