@@ -263,6 +263,25 @@
               </div>
             </div>
 
+            <!-- My Recent Work (technician only — their own assigned/
+                 completed work orders, in place of the admin/supervisor
+                 pending-approval queue this role doesn't get) -->
+            <div class="recent-reports card-panel" data-roles="technician">
+              <div class="panel-header">
+                <h4><i class="fas fa-toolbox"></i> My Recent Work</h4>
+                <span class="view-more" action="goToWorkOrders">See All <i class="fas fa-arrow-right"></i></span>
+              </div>
+              <div class="report-header">
+                <span class="col-id">ID</span>
+                <span class="col-issue">Issue</span>
+                <span class="col-status">Status</span>
+                <span class="col-date">Due</span>
+              </div>
+              <div id="dashboard-mywork-body">
+                <p class="loading-text">Loading your work...</p>
+              </div>
+            </div>
+
             <!-- Staff Workload (admin-only — staff directory visibility is restricted to admin) -->
             <div class="staff-workload card-panel" data-roles="admin">
               <div class="panel-header">
@@ -330,7 +349,7 @@
   </app>
 
   <script src="runtime/clera.js?v=11"></script>
-  <script src="scripts/app.js?v=15"></script>
+  <script src="scripts/app.js?v=16"></script>
   <script src="scripts/reports.js?v=14"></script>
   <script src="scripts/workorders.js?v=10"></script>
   <script src="scripts/staffs.js?v=11"></script>

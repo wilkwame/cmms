@@ -1258,6 +1258,8 @@ async function loadDashboardWorkOrders(context) {
     }
 
     app.memory.workOrders = result.data.work_orders || [];
+    renderMyWorkPanel(context);
+
     var orders = app.memory.workOrders.slice(0, 5);
 
     if (orders.length === 0) {
@@ -1286,6 +1288,40 @@ async function loadDashboardWorkOrders(context) {
     }
 
     context.render('#dashboard-workorders-body', html);
+}
+
+// Technicians don't see the pending-approval queue (see loadDashboardReports),
+// so the panel that would occupy that grid slot instead shows their own most
+// recent work — newly assigned tasks and recently completed ones alike, since
+// sorting by recency naturally surfaces both without separate queries.
+function renderMyWorkPanel(context) {
+    if (!app.memory.user || app.memory.user.role !== 'technician') return;
+
+    var mine = (app.memory.workOrders || [])
+        .filter(function(o) { return o.assigned_to_id === app.memory.user.id; })
+        .sort(function(a, b) { return new Date(b.created_at) - new Date(a.created_at); })
+        .slice(0, 5);
+
+    if (mine.length === 0) {
+        context.render('#dashboard-mywork-body', '<p class="loading-text">No work assigned to you yet</p>');
+        return;
+    }
+
+    var html = '';
+    for (var i = 0; i < mine.length; i++) {
+        var o = mine[i];
+        var statusClass = getStatusClass(o.status);
+        var date = formatDate(o.due_date);
+
+        html += '<div class="report-row" action="openWorkOrderPopup: ' + o.id + '">';
+        html += '  <span class="col-id">' + o.reference + '</span>';
+        html += '  <span class="col-issue">' + escapeHtml(o.issue) + '</span>';
+        html += '  <span class="col-status"><span class="' + statusClass + '">' + statusLabel(o.status) + '</span></span>';
+        html += '  <span class="col-date">' + date + '</span>';
+        html += '</div>';
+    }
+
+    context.render('#dashboard-mywork-body', html);
 }
 
 // ========================================
