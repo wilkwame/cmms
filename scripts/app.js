@@ -220,37 +220,16 @@ app.start({
 });
 
 // ===== LOGOUT =====
-// Defensive on purpose: logout is too important to risk breaking silently
-// if the popup system has an issue we haven't caught. If the styled popup
-// doesn't actually appear for any reason, fall back to a plain confirm()
-// that always works, rather than leaving the user stuck with no way out.
+// Uses the same requestConfirm() every other confirmation in the app uses,
+// rather than a one-off popup with its own native-confirm() fallback — that
+// fallback was meant as a safety net, but it meant logout had a different,
+// more fragile code path than everything else, and could show the ugly
+// unstyled browser dialog if anything caused it to trip.
 function logoutUser(context) {
     closeMobileMenu(context);
-
-    try {
-        openPopup(context,
-            '<div class="popup-content confirm-popup">' +
-            '  <button class="popup-close confirm-popup-close" action="closePopup"><i class="fas fa-times"></i></button>' +
-            '  <div class="confirm-icon-badge reject"><i class="fas fa-sign-out-alt"></i></div>' +
-            '  <h3 class="confirm-title">Log out?</h3>' +
-            '  <p class="confirm-message">Are you sure you want to log out of your account?</p>' +
-            '  <div class="confirm-actions">' +
-            '    <button class="popup-btn secondary" action="closePopup">Cancel</button>' +
-            '    <button class="popup-btn reject" action="performLogout"><i class="fas fa-sign-out-alt"></i> Log Out</button>' +
-            '  </div>' +
-            '</div>'
-        );
-
-        var overlay = document.getElementById('popup-overlay');
-        if (!overlay || !overlay.classList.contains('active')) {
-            throw new Error('Popup did not open');
-        }
-    } catch (e) {
-        console.error('Logout popup failed, falling back to confirm():', e);
-        if (confirm('Are you sure you want to log out?')) {
-            performLogout();
-        }
-    }
+    requestConfirm(context, 'Are you sure you want to log out of your account?', 'Log out?', function() {
+        performLogout();
+    }, 'reject', 'fa-sign-out-alt');
 }
 
 // Real navigation to the standalone login page, not an in-app page switch.
