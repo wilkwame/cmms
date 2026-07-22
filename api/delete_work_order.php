@@ -22,6 +22,14 @@ try {
     $db = connectToDatabase();
     $db->beginTransaction();
 
+    // Deleting the work order without resetting the report status would
+    // leave the report stuck "approved" forever with no work order and no
+    // way back into the pending queue (get_reports.php's admin view only
+    // shows status = "pending") — an invisible orphan nobody could recover.
+    $reportIdStmt = $db->prepare('SELECT report_id FROM work_orders WHERE id = :id');
+    $reportIdStmt->execute([':id' => $id]);
+    $reportId = $reportIdStmt->fetchColumn();
+
     $db->prepare('DELETE FROM work_order_activity WHERE work_order_id = :id')->execute([':id' => $id]);
 
     $stmt = $db->prepare('DELETE FROM work_orders WHERE id = :id');
@@ -30,6 +38,11 @@ try {
     if ($stmt->rowCount() === 0) {
         $db->rollBack();
         sendJson(false, 404, 'Work order not found');
+    }
+
+    if ($reportId) {
+        $db->prepare('UPDATE reports SET status = "pending" WHERE id = :id AND status IN ("approved", "closed")')
+            ->execute([':id' => $reportId]);
     }
 
     $db->commit();

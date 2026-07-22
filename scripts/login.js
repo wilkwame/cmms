@@ -39,6 +39,98 @@
         el.className = 'login-error visible';
     }
 
+    function hideLoginError() {
+        var el = $('login-error');
+        if (!el) return;
+        el.className = 'login-error hidden';
+        el.textContent = '';
+    }
+
+    // ===== PASSWORD TOGGLE =====
+    function togglePasswordVisibility() {
+        var input = $('password');
+        if (!input) return;
+
+        var icon = document.querySelector('.toggle-password i');
+        if (!icon) return;
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.className = 'fas fa-eye-slash';
+        } else {
+            input.type = 'password';
+            icon.className = 'fas fa-eye';
+        }
+    }
+
+    // ===== HANDLE REGULAR LOGIN =====
+    function handleLogin(event) {
+        event.preventDefault();
+        hideLoginError();
+
+        var emailInput = $('email');
+        var passwordInput = $('password');
+        var rememberCheck = $('remember-checkbox');
+
+        var email = (emailInput ? emailInput.value : '').trim();
+        var password = passwordInput ? passwordInput.value : '';
+        var remember = rememberCheck ? rememberCheck.checked : false;
+
+        if (!email) {
+            showLoginError('Please enter your email address.');
+            return;
+        }
+        if (email.indexOf('@') === -1) {
+            showLoginError('Please enter a valid email address.');
+            return;
+        }
+        if (!password) {
+            showLoginError('Please enter your password.');
+            return;
+        }
+        if (password.length < 6) {
+            showLoginError('Password must be at least 6 characters.');
+            return;
+        }
+
+        var btn = $('login-btn');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in...';
+        }
+
+        fetch('api/login.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email, password: password, remember: remember })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(result) {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
+            }
+
+            if (result && result.ok && result.data && result.data.user) {
+                var store = remember ? localStorage : sessionStorage;
+                store.setItem('cmms_user', JSON.stringify(result.data.user));
+                store.setItem('cmms_token', result.data.token);
+                window.location.href = 'index.html';
+            } else {
+                var msg = (result && result.data) || 'Invalid email or password. Please try again.';
+                showLoginError(typeof msg === 'string' ? msg : 'Invalid email or password. Please try again.');
+            }
+        })
+        .catch(function(error) {
+            console.error('Login error:', error);
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
+            }
+            showLoginError('Could not reach the server. Please try again.');
+        });
+    }
+
     // ===== HANDLE GOOGLE CREDENTIAL RESPONSE =====
     window.handleGoogleCredentialResponse = function(response) {
         console.log('Google response received:', response);
@@ -192,12 +284,36 @@
     document.addEventListener('DOMContentLoaded', function() {
         console.log('DOM loaded, setting up login page...');
 
+        // Login form
+        var loginForm = $('login-form');
+        if (loginForm) {
+            loginForm.addEventListener('submit', handleLogin);
+        }
+
+        // Password toggle
+        var toggleBtn = $('toggle-password-btn');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', togglePasswordVisibility);
+        }
+
         // Google login button
         var googleBtn = $('google-login-btn');
         if (googleBtn) {
             googleBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 triggerGoogleSignIn();
+            });
+        }
+
+        // Forgot password link
+        var forgotLink = $('forgot-password-link');
+        if (forgotLink) {
+            forgotLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                showInfoModal(
+                    'Contact your system administrator to reset your password.',
+                    'Forgot Password?'
+                );
             });
         }
 

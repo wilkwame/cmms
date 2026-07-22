@@ -38,7 +38,7 @@ if (empty($role)) $errors[] = 'Role is required';
 if ($role && !in_array($role, $allowedRoles, true)) $errors[] = 'Role must be Supervisor or Technician';
 if (empty($department)) $errors[] = 'Department is required';
 if (empty($skills)) $errors[] = 'At least one skill is required';
-if ($joinedAt !== null && $joinedAt < date('Y-m-d')) $errors[] = 'Joined date cannot be in the past';
+if ($joinedAt !== null && $joinedAt > date('Y-m-d')) $errors[] = 'Joined date cannot be in the future';
 
 if (!empty($errors)) {
     sendJson(false, 400, implode(', ', $errors));

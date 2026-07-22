@@ -168,11 +168,9 @@ function submitNewStaff(context) {
     });
 }
 
-// ===== GO BACK TO STAFF =====
-function goToStaff(context) {
-    closeMobileMenu(context);
-    context.navigate('staffs');
-}
+// goToStaff() lives in app.js — this file used to carry its own identical
+// copy, silently overriding nothing useful (both did the same thing) but
+// adding a maintenance trap if the two ever drifted apart.
 
 // ========================================
 // EXPOSE - ONCE ONLY
@@ -180,4 +178,3 @@ function goToStaff(context) {
 
 window.loadAddStaffPage = loadAddStaffPage;
 window.submitNewStaff = submitNewStaff;
-window.goToStaff = goToStaff;

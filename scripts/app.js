@@ -1129,9 +1129,13 @@ async function loadHomePage(context) {
 
     var greeting = getGreeting();
     var userName = app.memory.user ? app.memory.user.name : 'User';
+    // Setting .greeting's text directly (rather than just #user-name inside
+    // it) replaces its child nodes, which is why the #user-name/
+    // #sidebar-user-name updates below used to silently fail to find
+    // anything — that span no longer existed by the time they ran, and
+    // #sidebar-user-name lives outside this page anyway (see
+    // renderSidebarUserName(), which handles it correctly at boot).
     context.query('.greeting').text(greeting + ', ' + userName);
-    context.query('#sidebar-user-name').text(userName);
-    context.query('#user-name').text(userName);
 
     context.render('#dashboard-reports-body', '<p class="loading-text">Loading reports...</p>');
     context.render('#dashboard-workload-body', '<p class="loading-text">Loading staff...</p>');
@@ -1369,56 +1373,10 @@ function renderMyWorkPanel(context) {
 
 // ========================================
 // REPORT ACTIONS (Approve / Reject)
+// quickApproveReport() and openRejectPopup() live in reports.js, not here —
+// this file used to carry its own duplicate copies, which reports.js
+// silently shadowed (it loads after app.js), leaving these unreachable.
 // ========================================
-
-function quickApproveReport(context) {
-    var reportId = parseInt(context.arg);
-    if (!reportId) return;
-
-    requestConfirm(context, 'Approve this report and create a work order?', 'Approve Report', function() {
-        // create_work_order.php only marks the report "approved" once it
-        // finds a staff member with a matching skill and actually creates
-        // the work order — calling it directly (instead of flipping status
-        // first) means a report with no skill match just stays "pending"
-        // and visible in the queue, instead of vanishing into an orphaned
-        // "approved" limbo state.
-        context.fetch('api/create_work_order.php', {
-            method: 'POST',
-            body: { report_id: reportId }
-        }, function(woData) {
-            if (woData.ok) {
-                showNotificationToast(context, 'Report approved and work order created!', 'success');
-                refreshAllData(context);
-            } else {
-                showNotificationToast(context, (woData && woData.data) || 'No matching staff available — report stays pending', 'error');
-            }
-        });
-    }, 'approve', 'fa-check');
-}
-
-function openRejectPopup(context) {
-    var reportId = parseInt(context.arg);
-    if (!reportId) return;
-
-    requestConfirm(context, 'Reject this report? This action cannot be undone.', 'Reject Report', function() {
-        context.fetch('api/update_report_status.php', {
-            method: 'POST',
-            body: { id: reportId, status: 'rejected' }
-        }, function(data) {
-            if (data.ok) {
-                showNotificationToast(context, 'Report rejected', 'success');
-                context.fetch('api/delete_report.php', {
-                    method: 'POST',
-                    body: { id: reportId }
-                }, function(deleteData) {
-                    refreshAllData(context);
-                });
-            } else {
-                showNotificationToast(context, 'Failed to reject report', 'error');
-            }
-        });
-    }, 'reject', 'fa-xmark');
-}
 
 function refreshAllData(context) {
     app.memory.reports = [];
@@ -1677,8 +1635,6 @@ window.confirmDeleteWorkOrder = confirmDeleteWorkOrder;
 window.startWorkOrder = startWorkOrder;
 window.completeWorkOrder = completeWorkOrder;
 window.cancelWorkOrderStatus = cancelWorkOrderStatus;
-window.quickApproveReport = quickApproveReport;
-window.openRejectPopup = openRejectPopup;
 window.approveReportFromPopup = approveReportFromPopup;
 window.rejectReportFromPopup = rejectReportFromPopup;
 window.showConfirmation = showConfirmation;
