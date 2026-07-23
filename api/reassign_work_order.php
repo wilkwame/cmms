@@ -57,8 +57,17 @@ try {
         sendJson(false, 404, 'Selected staff member is not active or not found');
     }
 
-    $db->prepare('UPDATE work_orders SET assigned_to = :assigned_to WHERE id = :id')
-        ->execute([':assigned_to' => $newAssignee, ':id' => $workOrderId]);
+    // Reassigning a "pending_review" work order (the previous assignee
+    // submitted it, but the admin isn't approving it — they're handing it
+    // to someone else instead) sends it back to "in_progress" so the new
+    // assignee has an actual next action; every other status is untouched.
+    $setClauses = ['assigned_to = :assigned_to'];
+    $params = [':assigned_to' => $newAssignee, ':id' => $workOrderId];
+    if ($workOrder['status'] === 'pending_review') {
+        $setClauses[] = 'status = "in_progress"';
+    }
+    $db->prepare('UPDATE work_orders SET ' . implode(', ', $setClauses) . ' WHERE id = :id')
+        ->execute($params);
 
     $db->prepare('
         INSERT INTO work_order_activity (work_order_id, actor_id, activity_type, previous_value, new_value, note)
@@ -85,13 +94,15 @@ try {
             r.issue, r.description,
             c.name AS category, l.name AS location,
             u.name AS assigned_to,
-            GROUP_CONCAT(rp.url ORDER BY rp.id SEPARATOR \',\') AS photo_urls
+            GROUP_CONCAT(DISTINCT rp.url ORDER BY rp.id SEPARATOR \',\') AS photo_urls,
+            GROUP_CONCAT(DISTINCT wop.url ORDER BY wop.id SEPARATOR \',\') AS completion_photo_urls
         FROM work_orders wo
         JOIN reports r ON r.id = wo.report_id
         JOIN categories c ON c.id = r.category_id
         JOIN locations l ON l.id = r.location_id
         LEFT JOIN users u ON u.id = wo.assigned_to
         LEFT JOIN report_photos rp ON rp.report_id = r.id
+        LEFT JOIN work_order_photos wop ON wop.work_order_id = wo.id
         WHERE wo.id = :id
         GROUP BY wo.id, wo.reference, wo.priority, wo.status, wo.due_date, wo.assigned_to,
                  r.issue, r.description, c.name, l.name, u.name

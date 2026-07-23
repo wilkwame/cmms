@@ -414,6 +414,7 @@ function statusLabel(status) {
         approved: 'Approved',
         rejected: 'Rejected',
         in_progress: 'In Progress',
+        pending_review: 'Pending Review',
         completed: 'Completed',
         overdue: 'Overdue',
         cancelled: 'Cancelled'
@@ -454,6 +455,7 @@ function getStatusClass(status) {
         approved: 'status-badge approved',
         rejected: 'status-badge rejected',
         in_progress: 'status-badge in_progress',
+        pending_review: 'status-badge pending_review',
         completed: 'status-badge completed',
         overdue: 'status-badge overdue',
         cancelled: 'status-badge cancelled'
@@ -905,6 +907,26 @@ function openWorkOrderPopup(arg, context) {
     openPopup(context, html);
 }
 
+// ===== IMAGE LIGHTBOX (full-size photo viewer) =====
+function openImageLightbox(arg, context) {
+    var url = String(arg || '');
+    if (!url) return;
+
+    var overlay = document.getElementById('image-lightbox-overlay');
+    var img = document.getElementById('image-lightbox-img');
+    if (!overlay || !img) return;
+
+    img.src = url;
+    overlay.classList.add('active');
+}
+
+function closeImageLightbox(context) {
+    var overlay = document.getElementById('image-lightbox-overlay');
+    var img = document.getElementById('image-lightbox-img');
+    if (overlay) overlay.classList.remove('active');
+    if (img) img.src = '';
+}
+
 function buildPhotosHtml(item, field, label, icon) {
     field = field || 'photo_urls';
     label = label || 'Photos';
@@ -914,10 +936,12 @@ function buildPhotosHtml(item, field, label, icon) {
     var urls = item[field].split(',').filter(Boolean);
     if (urls.length === 0) return '';
 
+    // Opens in the in-app lightbox (openImageLightbox) rather than a new
+    // browser tab, so viewing a photo doesn't lose the report/work order
+    // popup underneath it.
     var thumbs = urls.map(function(url) {
-        return '<a href="' + encodeURI(url) + '" target="_blank" rel="noopener" style="display:inline-block;margin:0 8px 8px 0;">' +
-            '<img src="' + encodeURI(url) + '" alt="' + escapeHtml(label) + '" style="width:90px;height:90px;object-fit:cover;border-radius:8px;border:1px solid #dfe3e8;" />' +
-            '</a>';
+        return '<img src="' + encodeURI(url) + '" alt="' + escapeHtml(label) + '" action="openImageLightbox: ' + encodeURI(url) + '" ' +
+            'style="width:90px;height:90px;object-fit:cover;border-radius:8px;border:1px solid #dfe3e8;margin:0 8px 8px 0;cursor:pointer;display:inline-block;" />';
     }).join('');
 
     return '<div class="popup-field">' +
@@ -953,7 +977,13 @@ function buildWorkOrderDetailPopup(order, reassignPanelHtml) {
             statusButtonsHtml += '<button class="popup-btn reassign" action="startWorkOrder: ' + order.id + '"><i class="fas fa-play"></i> Start Work</button>';
         }
         if (order.status === 'in_progress') {
-            statusButtonsHtml += '<button class="popup-btn approve" action="openCompleteWorkOrderPopup: ' + order.id + '"><i class="fas fa-check"></i> Mark Complete</button>';
+            statusButtonsHtml += '<button class="popup-btn approve" action="openCompleteWorkOrderPopup: ' + order.id + '"><i class="fas fa-check"></i> Complete Task</button>';
+        }
+        // Once submitted, only an admin/supervisor can approve it — the
+        // technician just waits (they can still Cancel below if they
+        // submitted by mistake).
+        if (order.status === 'pending_review' && isPrivileged) {
+            statusButtonsHtml += '<button class="popup-btn approve" action="approveWorkOrderCompletion: ' + order.id + '"><i class="fas fa-check-double"></i> Approve</button>';
         }
         statusButtonsHtml += '<button class="popup-btn reject" action="cancelWorkOrderStatus: ' + order.id + '"><i class="fas fa-ban"></i> Cancel Work</button>';
     }
@@ -1037,8 +1067,8 @@ function buildCompleteWorkOrderPopup(order) {
     return '<div class="popup-content confirm-popup">' +
         '  <button class="popup-close confirm-popup-close" action="closePopup"><i class="fas fa-times"></i></button>' +
         '  <div class="confirm-icon-badge approve"><i class="fas fa-check"></i></div>' +
-        '  <h3 class="confirm-title">Mark Work Complete</h3>' +
-        '  <p class="confirm-message">Attach at least one photo showing the completed repair for ' + escapeHtml(order.reference) + '.</p>' +
+        '  <h3 class="confirm-title">Complete Task</h3>' +
+        '  <p class="confirm-message">Attach at least one photo showing the completed repair for ' + escapeHtml(order.reference) + '. An admin will review and approve it.</p>' +
         '  <div class="photo-source-buttons">' +
         '    <button type="button" id="wo-camera-btn" class="btn-photo-source"><i class="fas fa-camera"></i> Take Photo</button>' +
         '    <button type="button" id="wo-gallery-btn" class="btn-photo-source"><i class="fas fa-images"></i> Choose from Gallery</button>' +
@@ -1048,7 +1078,7 @@ function buildCompleteWorkOrderPopup(order) {
         '  <div id="wo-photo-previews" class="photo-previews"></div>' +
         '  <div class="confirm-actions">' +
         '    <button class="popup-btn secondary" action="closePopup">Cancel</button>' +
-        '    <button class="popup-btn approve" id="wo-complete-submit-btn" action="submitWorkOrderCompletion: ' + order.id + '"><i class="fas fa-check"></i> Mark Complete</button>' +
+        '    <button class="popup-btn approve" id="wo-complete-submit-btn" action="submitWorkOrderCompletion: ' + order.id + '"><i class="fas fa-check"></i> Complete Task</button>' +
         '  </div>' +
         '</div>';
 }
@@ -1136,7 +1166,7 @@ function submitWorkOrderCompletion(arg, context) {
     if (!orderId) return;
 
     if (app.memory.completionPhotos.length === 0) {
-        showNotificationToast(context, 'Attach at least one photo before marking this work order complete.', 'error');
+        showNotificationToast(context, 'Attach at least one photo before completing this work order.', 'error');
         return;
     }
 
@@ -1159,7 +1189,7 @@ function submitWorkOrderCompletion(arg, context) {
                 showNotificationToast(context, (result && result.data) || 'Failed to upload photo', 'error');
                 if (submitBtn) {
                     submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<i class="fas fa-check"></i> Mark Complete';
+                    submitBtn.innerHTML = '<i class="fas fa-check"></i> Complete Task';
                 }
                 return;
             }
@@ -1167,16 +1197,31 @@ function submitWorkOrderCompletion(arg, context) {
             app.memory.completionPhotos = [];
             // doUpdateWorkOrderStatus() closes the popup, updates
             // app.memory.workOrders, toasts, and re-renders the list.
-            doUpdateWorkOrderStatus(context, orderId, 'completed');
+            // "pending_review", not "completed" — an admin/supervisor
+            // approves it from here (see approveWorkOrderCompletion below).
+            doUpdateWorkOrderStatus(context, orderId, 'pending_review');
         })
         .catch(function(error) {
             console.error('Failed to upload completion photo:', error);
             showNotificationToast(context, 'Something went wrong uploading the photo. Check the console for details.', 'error');
             if (submitBtn) {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fas fa-check"></i> Mark Complete';
+                submitBtn.innerHTML = '<i class="fas fa-check"></i> Complete Task';
             }
         });
+}
+
+// Admin/supervisor approval step for a technician's "pending_review"
+// submission — see openCompleteWorkOrderPopup/submitWorkOrderCompletion
+// above. Reassigning instead (if the work isn't actually done) already
+// works via the existing Reassign button/toggleReassignPanel.
+function approveWorkOrderCompletion(arg, context) {
+    var orderId = parseInt(arg);
+    if (!orderId) return;
+
+    requestConfirm(context, 'Approve this completed work order?', 'Approve Completion', function() {
+        doUpdateWorkOrderStatus(context, orderId, 'completed');
+    }, 'approve', 'fa-check-double');
 }
 
 // ===== WORK ORDER STATUS ACTIONS (technician-owned, or admin/supervisor) =====
@@ -1831,6 +1876,8 @@ window.markNotificationRead = markNotificationRead;
 window.markAllNotificationsRead = markAllNotificationsRead;
 window.openPopup = openPopup;
 window.closePopup = closePopup;
+window.openImageLightbox = openImageLightbox;
+window.closeImageLightbox = closeImageLightbox;
 window.requestConfirm = requestConfirm;
 window.runPendingConfirm = runPendingConfirm;
 window.openReportPopup = openReportPopup;
@@ -1841,6 +1888,7 @@ window.confirmDeleteWorkOrder = confirmDeleteWorkOrder;
 window.startWorkOrder = startWorkOrder;
 window.openCompleteWorkOrderPopup = openCompleteWorkOrderPopup;
 window.submitWorkOrderCompletion = submitWorkOrderCompletion;
+window.approveWorkOrderCompletion = approveWorkOrderCompletion;
 window.removeCompletionPhoto = removeCompletionPhoto;
 window.cancelWorkOrderStatus = cancelWorkOrderStatus;
 window.approveReportFromPopup = approveReportFromPopup;

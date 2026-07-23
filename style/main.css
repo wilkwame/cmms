@@ -1494,6 +1494,7 @@ page {
 .status-badge.approved     { background: #d4edda; color: #155724; }
 .status-badge.rejected     { background: #f8d7da; color: #721c24; }
 .status-badge.in_progress  { background: #cce5ff; color: #004085; }
+.status-badge.pending_review { background: #ece5ff; color: #5b3fd6; }
 .status-badge.completed    { background: #d4edda; color: #155724; }
 .status-badge.overdue      { background: #f8d7da; color: #721c24; }
 .status-badge.cancelled    { background: #e9ecef; color: #495057; }

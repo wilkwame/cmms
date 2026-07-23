@@ -77,7 +77,7 @@ CREATE TABLE work_orders (
     assigned_to     INT UNSIGNED,
     assigned_by     INT UNSIGNED NOT NULL,
     priority        ENUM('low', 'medium', 'high', 'urgent') NOT NULL DEFAULT 'medium',
-    status          ENUM('pending', 'in_progress', 'completed', 'overdue', 'cancelled') NOT NULL DEFAULT 'pending',
+    status          ENUM('pending', 'in_progress', 'pending_review', 'completed', 'overdue', 'cancelled') NOT NULL DEFAULT 'pending',
     due_date        DATE NOT NULL,
     started_at      TIMESTAMP NULL,
     completed_at    TIMESTAMP NULL,

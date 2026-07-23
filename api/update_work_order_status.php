@@ -4,12 +4,16 @@ require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/_notify.php';
 
-// Lets a technician start/complete/cancel a work order assigned to them,
-// without needing admin/supervisor rights (those roles can already do this
-// via reassign/delete). Admins and supervisors may use this on any work
-// order too, for convenience.
+// Lets a technician start/submit-for-review/cancel a work order assigned to
+// them, without needing admin/supervisor rights (those roles can already do
+// this via reassign/delete). Admins and supervisors may use this on any
+// work order too, for convenience — including marking one "completed"
+// directly, exactly as before. A technician submitting their own work now
+// goes to "pending_review" rather than straight to "completed": an admin
+// or supervisor then approves it (completed) or reassigns it (see
+// reassign_work_order.php) if the work isn't actually done.
 //
-// Expected POST body: { "work_order_id": int, "status": "in_progress" | "completed" | "cancelled" }
+// Expected POST body: { "work_order_id": int, "status": "in_progress" | "pending_review" | "completed" | "cancelled" }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     sendJson(false, 405, 'Method not allowed');
@@ -21,7 +25,7 @@ $body = json_decode(file_get_contents('php://input'), true);
 $workOrderId = (int) ($body['work_order_id'] ?? 0);
 $newStatus   = (string) ($body['status'] ?? '');
 
-$allowedTargets = ['in_progress', 'completed', 'cancelled'];
+$allowedTargets = ['in_progress', 'pending_review', 'completed', 'cancelled'];
 
 if ($workOrderId <= 0) {
     sendJson(false, 400, 'work_order_id is required');
@@ -52,6 +56,11 @@ try {
     if (!$isPrivileged && !$isOwner) {
         sendJson(false, 403, 'You can only update work orders assigned to you');
     }
+    // A technician's own "done" action submits for review; only an admin
+    // or supervisor can approve it to fully "completed".
+    if ($newStatus === 'completed' && !$isPrivileged) {
+        sendJson(false, 403, 'Submit this work order for review instead — an admin or supervisor approves it as completed.');
+    }
 
     if (in_array($workOrder['status'], ['completed', 'cancelled'], true)) {
         sendJson(false, 409, 'This work order is already ' . $workOrder['status'] . ' and cannot be changed');
@@ -62,8 +71,12 @@ try {
 
     // Completion requires photo evidence — the client uploads via
     // upload_work_order_photos.php before calling this, but this is
-    // enforced server-side too rather than trusted from the client.
-    if ($newStatus === 'completed') {
+    // enforced server-side too rather than trusted from the client. Applies
+    // to both a technician submitting for review and an admin/supervisor
+    // completing directly (unchanged from before pending_review existed);
+    // approving an already-reviewed work order trivially passes since its
+    // photo was attached at the pending_review step.
+    if (in_array($newStatus, ['pending_review', 'completed'], true)) {
         $photoCountStmt = $db->prepare('SELECT COUNT(*) FROM work_order_photos WHERE work_order_id = :id');
         $photoCountStmt->execute([':id' => $workOrderId]);
         if ((int) $photoCountStmt->fetchColumn() === 0) {

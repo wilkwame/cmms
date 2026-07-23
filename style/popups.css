@@ -25,6 +25,60 @@
   opacity: 1;
 }
 
+/* ========================================
+   IMAGE LIGHTBOX
+   Separate overlay from popup-overlay so it stacks above an already-open
+   report/work order popup (higher z-index) instead of replacing it.
+   ======================================== */
+
+#image-lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 10000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  opacity: 0;
+  transition: opacity 0.15s ease-out;
+}
+
+#image-lightbox-overlay.active {
+  display: flex;
+  opacity: 1;
+}
+
+#image-lightbox-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+#image-lightbox-close {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+#image-lightbox-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
 #popup-dialog {
   width: 100%;
   max-width: 520px;

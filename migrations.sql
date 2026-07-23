@@ -52,3 +52,10 @@ CREATE TABLE IF NOT EXISTS work_order_photos (
 
     CONSTRAINT fk_wo_photo_order FOREIGN KEY (work_order_id) REFERENCES work_orders(id)
 );
+
+-- Technician-submitted work now goes to "pending_review" instead of
+-- straight to "completed" — an admin/supervisor approves it from there
+-- (2026-07-23). Purely additive: existing rows/statuses are untouched.
+ALTER TABLE work_orders MODIFY COLUMN status
+    ENUM('pending','in_progress','pending_review','completed','overdue','cancelled')
+    NOT NULL DEFAULT 'pending';
