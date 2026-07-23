@@ -19,6 +19,35 @@
   box-sizing: border-box;
 }
 
+/* Wider than the shared 110px .col-action (main.css) — this table's action
+   is a labeled "Complete Task" button, not an icon-only button like the
+   Reports/Staff tables use. */
+#workorders .col-action {
+  flex: 0 0 150px;
+  max-width: 150px;
+}
+
+.btn-complete-task {
+  border: none;
+  background: #cdffcf;
+  color: #2d7a2d;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+
+.btn-complete-task:hover {
+  background: #9bef9d;
+}
+
+.btn-complete-task i {
+  margin-right: 4px;
+}
+
 /* ========================================
    FILTER BAR
    ======================================== */
@@ -187,7 +216,7 @@
   color: #999;
   text-transform: uppercase;
   letter-spacing: 0.3px;
-  min-width: 580px;
+  min-width: 620px;
   width: 100%;
 }
 
@@ -205,7 +234,7 @@
    ======================================== */
 
 #workorders-body {
-  min-width: 580px;
+  min-width: 620px;
   width: 100%;
 }
 

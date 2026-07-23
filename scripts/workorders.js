@@ -95,7 +95,11 @@ function renderWorkOrdersSlice(context) {
             var statusClass = 'status-badge ' + wo.status;
             var dueDate = formatDate(wo.due_date);
             var assignedTo = wo.assigned_to || 'Unassigned';
-            
+
+            var role = app.memory.user ? app.memory.user.role : null;
+            var isPrivileged = role === 'admin' || role === 'supervisor';
+            var isOwner = !!(app.memory.user && wo.assigned_to_id === app.memory.user.id);
+
             html += '<div class="wo-row" action="openWorkOrderPopup: ' + wo.id + '">';
             html += '  <span class="col-id">' + wo.reference + '</span>';
             html += '  <span class="col-issue">' + wo.issue + '</span>';
@@ -106,7 +110,9 @@ function renderWorkOrdersSlice(context) {
             html += '  <span class="col-status"><span class="' + statusClass + '">' + statusLabel(wo.status) + '</span></span>';
             html += '  <span class="col-date">' + dueDate + '</span>';
             html += '  <span class="col-action">';
-            html += '    <button class="btn-delete" action="confirmDeleteWorkOrder: ' + wo.id + '" title="Delete work order"><i class="fas fa-trash"></i></button>';
+            if (wo.status === 'in_progress' && (isOwner || isPrivileged)) {
+                html += '    <button class="btn-complete-task" action="openCompleteWorkOrderPopup: ' + wo.id + '" title="Upload photo and complete"><i class="fas fa-camera"></i> Complete Task</button>';
+            }
             html += '  </span>';
             html += '</div>';
         }
