@@ -4,6 +4,16 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 
+  <!-- Belt-and-suspenders cache prevention for this HTML shell, in addition
+       to the .htaccess Cache-Control rule: free-tier hosts sometimes don't
+       honor custom response headers, and a stale cached index.html would
+       keep serving old <script>/<link> tags forever, silently bypassing
+       every ?v=N cache-busted asset update. Meta tags are read from the
+       document itself, so they apply even if the server-side header doesn't. -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
   <script>
     // Guard: if there's no session, bounce to the login page immediately.
     // Runs synchronously, before the app shell or any styles/scripts load.
