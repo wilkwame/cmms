@@ -905,19 +905,23 @@ function openWorkOrderPopup(arg, context) {
     openPopup(context, html);
 }
 
-function buildPhotosHtml(item) {
-    if (!item.photo_urls) return '';
-    var urls = item.photo_urls.split(',').filter(Boolean);
+function buildPhotosHtml(item, field, label, icon) {
+    field = field || 'photo_urls';
+    label = label || 'Photos';
+    icon = icon || 'fa-camera';
+
+    if (!item[field]) return '';
+    var urls = item[field].split(',').filter(Boolean);
     if (urls.length === 0) return '';
 
     var thumbs = urls.map(function(url) {
         return '<a href="' + encodeURI(url) + '" target="_blank" rel="noopener" style="display:inline-block;margin:0 8px 8px 0;">' +
-            '<img src="' + encodeURI(url) + '" alt="Report photo" style="width:90px;height:90px;object-fit:cover;border-radius:8px;border:1px solid #dfe3e8;" />' +
+            '<img src="' + encodeURI(url) + '" alt="' + escapeHtml(label) + '" style="width:90px;height:90px;object-fit:cover;border-radius:8px;border:1px solid #dfe3e8;" />' +
             '</a>';
     }).join('');
 
     return '<div class="popup-field">' +
-        '  <label><i class="fas fa-camera"></i> Photos</label>' +
+        '  <label><i class="fas ' + icon + '"></i> ' + escapeHtml(label) + '</label>' +
         '  <div>' + thumbs + '</div>' +
         '</div>';
 }
@@ -928,6 +932,7 @@ function buildWorkOrderDetailPopup(order, reassignPanelHtml) {
     var statusClass = getStatusClass(order.status);
     var assignedTo = order.assigned_to || 'Unassigned';
     var photosHtml = buildPhotosHtml(order);
+    var completionPhotosHtml = buildPhotosHtml(order, 'completion_photo_urls', 'Completion Evidence', 'fa-check-circle');
 
     var role = app.memory.user ? app.memory.user.role : null;
     var isAdmin = role === 'admin';
@@ -948,7 +953,7 @@ function buildWorkOrderDetailPopup(order, reassignPanelHtml) {
             statusButtonsHtml += '<button class="popup-btn reassign" action="startWorkOrder: ' + order.id + '"><i class="fas fa-play"></i> Start Work</button>';
         }
         if (order.status === 'in_progress') {
-            statusButtonsHtml += '<button class="popup-btn approve" action="completeWorkOrder: ' + order.id + '"><i class="fas fa-check"></i> Mark Complete</button>';
+            statusButtonsHtml += '<button class="popup-btn approve" action="openCompleteWorkOrderPopup: ' + order.id + '"><i class="fas fa-check"></i> Mark Complete</button>';
         }
         statusButtonsHtml += '<button class="popup-btn reject" action="cancelWorkOrderStatus: ' + order.id + '"><i class="fas fa-ban"></i> Cancel Work</button>';
     }
@@ -998,6 +1003,7 @@ function buildWorkOrderDetailPopup(order, reassignPanelHtml) {
         '    </div>' +
         '  </div>' +
         photosHtml +
+        completionPhotosHtml +
         (reassignPanelHtml || '') +
         '</div>' +
         '<div class="popup-footer">' +
@@ -1007,6 +1013,170 @@ function buildWorkOrderDetailPopup(order, reassignPanelHtml) {
         (canDelete ? '  <button class="popup-btn reject" action="confirmDeleteWorkOrder: ' + order.id + '"><i class="fas fa-trash"></i> Delete</button>' : '') +
         '</div>' +
         '</div>';
+}
+
+// ===== WORK ORDER COMPLETION (photo evidence required) =====
+var WO_MAX_PHOTOS = 5;
+var WO_MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+var WO_ALLOWED_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+app.memory.completionPhotos = app.memory.completionPhotos || [];
+
+function openCompleteWorkOrderPopup(arg, context) {
+    var orderId = parseInt(arg);
+    if (!orderId) return;
+
+    var order = (app.memory.workOrders || []).filter(function(o) { return o.id === orderId; })[0];
+    if (!order) return;
+
+    app.memory.completionPhotos = [];
+    openPopup(context, buildCompleteWorkOrderPopup(order));
+    wireCompletionPhotoInputs(context);
+}
+
+function buildCompleteWorkOrderPopup(order) {
+    return '<div class="popup-content confirm-popup">' +
+        '  <button class="popup-close confirm-popup-close" action="closePopup"><i class="fas fa-times"></i></button>' +
+        '  <div class="confirm-icon-badge approve"><i class="fas fa-check"></i></div>' +
+        '  <h3 class="confirm-title">Mark Work Complete</h3>' +
+        '  <p class="confirm-message">Attach at least one photo showing the completed repair for ' + escapeHtml(order.reference) + '.</p>' +
+        '  <div class="photo-source-buttons">' +
+        '    <button type="button" id="wo-camera-btn" class="btn-photo-source"><i class="fas fa-camera"></i> Take Photo</button>' +
+        '    <button type="button" id="wo-gallery-btn" class="btn-photo-source"><i class="fas fa-images"></i> Choose from Gallery</button>' +
+        '  </div>' +
+        '  <input type="file" id="wo-camera-input" accept="image/jpeg,image/png,image/webp" capture="environment" hidden />' +
+        '  <input type="file" id="wo-gallery-input" accept="image/jpeg,image/png,image/webp" multiple hidden />' +
+        '  <div id="wo-photo-previews" class="photo-previews"></div>' +
+        '  <div class="confirm-actions">' +
+        '    <button class="popup-btn secondary" action="closePopup">Cancel</button>' +
+        '    <button class="popup-btn approve" id="wo-complete-submit-btn" action="submitWorkOrderCompletion: ' + order.id + '"><i class="fas fa-check"></i> Mark Complete</button>' +
+        '  </div>' +
+        '</div>';
+}
+
+function wireCompletionPhotoInputs(context) {
+    var cameraBtn = document.getElementById('wo-camera-btn');
+    var cameraInput = document.getElementById('wo-camera-input');
+    var galleryBtn = document.getElementById('wo-gallery-btn');
+    var galleryInput = document.getElementById('wo-gallery-input');
+
+    if (cameraBtn && cameraInput) {
+        cameraBtn.addEventListener('click', function() { cameraInput.click(); });
+        cameraInput.addEventListener('change', function() {
+            handleCompletionPhotoFiles(context, cameraInput.files);
+            cameraInput.value = '';
+        });
+    }
+    if (galleryBtn && galleryInput) {
+        galleryBtn.addEventListener('click', function() { galleryInput.click(); });
+        galleryInput.addEventListener('change', function() {
+            handleCompletionPhotoFiles(context, galleryInput.files);
+            galleryInput.value = '';
+        });
+    }
+}
+
+async function handleCompletionPhotoFiles(context, fileList) {
+    var files = Array.prototype.slice.call(fileList || []);
+
+    for (var i = 0; i < files.length; i++) {
+        var file = files[i];
+
+        if (app.memory.completionPhotos.length >= WO_MAX_PHOTOS) {
+            showNotificationToast(context, 'You can attach up to ' + WO_MAX_PHOTOS + ' photos.', 'error');
+            break;
+        }
+        if (WO_ALLOWED_PHOTO_TYPES.indexOf(file.type) === -1) {
+            showNotificationToast(context, file.name + ' is not a supported image type.', 'error');
+            continue;
+        }
+        if (file.size > WO_MAX_PHOTO_BYTES) {
+            showNotificationToast(context, file.name + ' is larger than 5MB.', 'error');
+            continue;
+        }
+
+        var compressed = file;
+        if (typeof imageCompression === 'function') {
+            try {
+                compressed = await imageCompression(file, { maxSizeMB: 1.5, maxWidthOrHeight: 1920 });
+            } catch (e) {
+                compressed = file; // fall back to the original if compression fails
+            }
+        }
+
+        app.memory.completionPhotos.push(compressed);
+    }
+
+    renderCompletionPhotoPreviews();
+}
+
+function renderCompletionPhotoPreviews() {
+    var container = document.getElementById('wo-photo-previews');
+    if (!container) return;
+
+    var photos = app.memory.completionPhotos;
+    var html = '';
+    for (var i = 0; i < photos.length; i++) {
+        html += '<div class="photo-thumb">' +
+            '<img src="' + URL.createObjectURL(photos[i]) + '" alt="Completion photo preview" />' +
+            '<button type="button" class="photo-thumb-remove" action="removeCompletionPhoto: ' + i + '"><i class="fas fa-times"></i></button>' +
+            '</div>';
+    }
+    container.innerHTML = html;
+}
+
+function removeCompletionPhoto(arg, context) {
+    var index = parseInt(arg);
+    if (isNaN(index)) return;
+    app.memory.completionPhotos.splice(index, 1);
+    renderCompletionPhotoPreviews();
+}
+
+function submitWorkOrderCompletion(arg, context) {
+    var orderId = parseInt(arg);
+    if (!orderId) return;
+
+    if (app.memory.completionPhotos.length === 0) {
+        showNotificationToast(context, 'Attach at least one photo before marking this work order complete.', 'error');
+        return;
+    }
+
+    var submitBtn = document.getElementById('wo-complete-submit-btn');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+    }
+
+    var formData = new FormData();
+    formData.append('work_order_id', orderId);
+    app.memory.completionPhotos.forEach(function(photo, i) {
+        formData.append('photos[]', photo, photo.name || ('completion-' + i + '.jpg'));
+    });
+
+    fetch('api/upload_work_order_photos.php', { method: 'POST', body: formData })
+        .then(function(res) { return res.json(); })
+        .then(function(result) {
+            if (!result.ok) {
+                showNotificationToast(context, (result && result.data) || 'Failed to upload photo', 'error');
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-check"></i> Mark Complete';
+                }
+                return;
+            }
+
+            app.memory.completionPhotos = [];
+            // doUpdateWorkOrderStatus() closes the popup, updates
+            // app.memory.workOrders, toasts, and re-renders the list.
+            doUpdateWorkOrderStatus(context, orderId, 'completed');
+        })
+        .catch(function(error) {
+            console.error('Failed to upload completion photo:', error);
+            showNotificationToast(context, 'Something went wrong uploading the photo. Check the console for details.', 'error');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-check"></i> Mark Complete';
+            }
+        });
 }
 
 // ===== WORK ORDER STATUS ACTIONS (technician-owned, or admin/supervisor) =====
@@ -1039,12 +1209,8 @@ function startWorkOrder(arg, context) {
     doUpdateWorkOrderStatus(context, parseInt(arg, 10), 'in_progress');
 }
 
-function completeWorkOrder(arg, context) {
-    var orderId = parseInt(arg, 10);
-    requestConfirm(context, 'Mark this work order as complete?', 'Complete Work Order', function() {
-        doUpdateWorkOrderStatus(context, orderId, 'completed');
-    }, 'approve', 'fa-check');
-}
+// completeWorkOrder() was replaced by openCompleteWorkOrderPopup() below —
+// completing now requires photo evidence, not just a plain confirm.
 
 function cancelWorkOrderStatus(arg, context) {
     var orderId = parseInt(arg, 10);
@@ -1666,7 +1832,9 @@ window.toggleReassignPanel = toggleReassignPanel;
 window.confirmReassign = confirmReassign;
 window.confirmDeleteWorkOrder = confirmDeleteWorkOrder;
 window.startWorkOrder = startWorkOrder;
-window.completeWorkOrder = completeWorkOrder;
+window.openCompleteWorkOrderPopup = openCompleteWorkOrderPopup;
+window.submitWorkOrderCompletion = submitWorkOrderCompletion;
+window.removeCompletionPhoto = removeCompletionPhoto;
 window.cancelWorkOrderStatus = cancelWorkOrderStatus;
 window.approveReportFromPopup = approveReportFromPopup;
 window.rejectReportFromPopup = rejectReportFromPopup;

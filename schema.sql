@@ -91,6 +91,19 @@ CREATE TABLE work_orders (
 );
 
 
+-- Completion evidence photos: a technician attaches at least one when
+-- marking a work order complete.
+
+CREATE TABLE work_order_photos (
+    id             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    work_order_id  INT UNSIGNED NOT NULL,
+    url            VARCHAR(255) NOT NULL,
+    created_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_wo_photo_order FOREIGN KEY (work_order_id) REFERENCES work_orders(id)
+);
+
+
 -- Activity log on work orders (status changes, comments, updates)
 
 CREATE TABLE work_order_activity (

@@ -40,3 +40,15 @@ SELECT sp.user_id, c.id
 FROM staff_profiles sp
 JOIN categories c ON c.name = sp.department
 WHERE sp.is_active = 1;
+
+-- Completion evidence photos (2026-07-23): a technician attaches at least
+-- one photo when marking a work order complete, so admins can see proof of
+-- the finished repair from the work order detail popup.
+CREATE TABLE IF NOT EXISTS work_order_photos (
+    id             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    work_order_id  INT UNSIGNED NOT NULL,
+    url            VARCHAR(255) NOT NULL,
+    created_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_wo_photo_order FOREIGN KEY (work_order_id) REFERENCES work_orders(id)
+);

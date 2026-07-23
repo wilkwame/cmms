@@ -60,6 +60,17 @@ try {
         sendJson(false, 409, 'Work order is already ' . $newStatus);
     }
 
+    // Completion requires photo evidence — the client uploads via
+    // upload_work_order_photos.php before calling this, but this is
+    // enforced server-side too rather than trusted from the client.
+    if ($newStatus === 'completed') {
+        $photoCountStmt = $db->prepare('SELECT COUNT(*) FROM work_order_photos WHERE work_order_id = :id');
+        $photoCountStmt->execute([':id' => $workOrderId]);
+        if ((int) $photoCountStmt->fetchColumn() === 0) {
+            sendJson(false, 400, 'Attach at least one completion photo before marking this work order complete');
+        }
+    }
+
     $setClauses = ['status = :status'];
     $params = [':status' => $newStatus, ':id' => $workOrderId];
 
@@ -116,13 +127,15 @@ try {
             r.issue, r.description,
             c.name AS category, l.name AS location,
             u.name AS assigned_to,
-            GROUP_CONCAT(rp.url ORDER BY rp.id SEPARATOR \',\') AS photo_urls
+            GROUP_CONCAT(DISTINCT rp.url ORDER BY rp.id SEPARATOR \',\') AS photo_urls,
+            GROUP_CONCAT(DISTINCT wop.url ORDER BY wop.id SEPARATOR \',\') AS completion_photo_urls
         FROM work_orders wo
         JOIN reports r ON r.id = wo.report_id
         JOIN categories c ON c.id = r.category_id
         JOIN locations l ON l.id = r.location_id
         LEFT JOIN users u ON u.id = wo.assigned_to
         LEFT JOIN report_photos rp ON rp.report_id = r.id
+        LEFT JOIN work_order_photos wop ON wop.work_order_id = wo.id
         WHERE wo.id = :id
         GROUP BY wo.id, wo.reference, wo.priority, wo.status, wo.due_date, wo.started_at,
                  wo.completed_at, wo.assigned_to, r.issue, r.description, c.name, l.name, u.name
