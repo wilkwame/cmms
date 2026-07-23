@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="style/report-issue.css?v=8">
+  <link rel="stylesheet" href="style/report-issue.css?v=9">
 </head>
 <body>
 <page name="report-issue" id="report-issue" onshow="loadReportIssuePage">
@@ -62,10 +62,23 @@
 
       <div class="field">
         <label>Photos <span class="field-hint">(up to 5, JPEG/PNG/WEBP, 5MB each)</span></label>
+        <div class="photo-source-buttons">
+          <button type="button" id="ri-camera-btn" class="btn-photo-source">
+            <i class="fas fa-camera"></i> Take Photo
+          </button>
+          <button type="button" id="ri-gallery-btn" class="btn-photo-source">
+            <i class="fas fa-images"></i> Choose from Gallery
+          </button>
+        </div>
+        <!-- capture="environment" tells mobile browsers to open the device's
+             live rear camera directly instead of the file/gallery picker.
+             Desktop browsers ignore the attribute and just show a file
+             dialog, so this degrades gracefully there. -->
+        <input type="file" id="ri-camera-input" accept="image/jpeg,image/png,image/webp" capture="environment" hidden />
+        <input type="file" id="ri-photo-input" accept="image/jpeg,image/png,image/webp" multiple hidden />
         <div id="ri-dropzone" class="dropzone">
-          <i class="fas fa-camera"></i>
-          <p>Drag &amp; drop photos here, or click to choose</p>
-          <input type="file" id="ri-photo-input" accept="image/jpeg,image/png,image/webp" multiple hidden />
+          <i class="fas fa-cloud-arrow-up"></i>
+          <p>Or drag &amp; drop photos here</p>
         </div>
         <div id="ri-photo-previews" class="photo-previews"></div>
       </div>

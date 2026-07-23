@@ -32,11 +32,30 @@ function loadReportIssuePage(context) {
 function wireReportIssueDropzone(context) {
     var dropzone = context.query('#ri-dropzone');
     var input = context.query('#ri-photo-input');
+    var cameraBtn = context.query('#ri-camera-btn');
+    var cameraInput = context.query('#ri-camera-input');
+    var galleryBtn = context.query('#ri-gallery-btn');
     if (!dropzone.exists || !input.exists) return;
 
     // onshow fires on every visit to this page — avoid stacking listeners.
     if (dropzone.element.dataset.wired === '1') return;
     dropzone.element.dataset.wired = '1';
+
+    if (galleryBtn.exists) {
+        galleryBtn.element.addEventListener('click', function() {
+            input.element.click();
+        });
+    }
+
+    if (cameraBtn.exists && cameraInput.exists) {
+        cameraBtn.element.addEventListener('click', function() {
+            cameraInput.element.click();
+        });
+        cameraInput.element.addEventListener('change', function() {
+            handleReportIssuePhotoFiles(context, cameraInput.element.files);
+            cameraInput.element.value = '';
+        });
+    }
 
     dropzone.element.addEventListener('click', function() {
         input.element.click();

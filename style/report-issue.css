@@ -87,13 +87,42 @@
   color: #16a34a;
 }
 
+.photo-source-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.btn-photo-source {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  color: #237FEA;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.btn-photo-source:hover {
+  border-color: #237FEA;
+  background: rgba(35, 127, 234, 0.05);
+}
+
+.btn-photo-source i {
+  margin-right: 6px;
+}
+
 .dropzone {
   border: 2px dashed #d1d5db;
   border-radius: 10px;
-  padding: 24px;
+  padding: 16px;
   text-align: center;
   cursor: pointer;
   color: #6b7280;
+  font-size: 13px;
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 
