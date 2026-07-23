@@ -1381,15 +1381,22 @@ function updateDashboardStatsUI(context, data) {
     context.query('#kpi-overdue').text(kpi.overdue || 0);
 
     var chart = data.chart;
-    var total = (chart.completed || 0) + (chart.in_progress || 0) + (chart.overdue || 0) || 1;
+    var total = (chart.completed || 0) + (chart.in_progress || 0) + (chart.overdue || 0);
 
-    var completedPct = Math.round(((chart.completed || 0) / total) * 100);
-    var progressPct = Math.round(((chart.in_progress || 0) / total) * 100);
-    var overduePct = 100 - completedPct - progressPct;
+    // With no work orders in the window at all, dividing by a fallback of 1
+    // used to compute overduePct as 100 — a "no data" state rendered as a
+    // solid red bar implying everything was overdue, rather than nothing
+    // being there yet.
+    var completedPct = 0, progressPct = 0, overduePct = 0;
+    if (total > 0) {
+        completedPct = Math.round(((chart.completed || 0) / total) * 100);
+        progressPct = Math.round(((chart.in_progress || 0) / total) * 100);
+        overduePct = 100 - completedPct - progressPct;
+    }
 
-    context.query('#chart-bar-completed').element.style.width = Math.max(completedPct, 4) + '%';
-    context.query('#chart-bar-progress').element.style.width = Math.max(progressPct, 4) + '%';
-    context.query('#chart-bar-overdue').element.style.width = Math.max(overduePct, 4) + '%';
+    context.query('#chart-bar-completed').element.style.width = (total > 0 ? Math.max(completedPct, 4) : 0) + '%';
+    context.query('#chart-bar-progress').element.style.width = (total > 0 ? Math.max(progressPct, 4) : 0) + '%';
+    context.query('#chart-bar-overdue').element.style.width = (total > 0 ? Math.max(overduePct, 4) : 0) + '%';
 }
 
 async function loadDashboardReports(context) {

@@ -7,7 +7,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     sendJson(false, 405, 'Method not allowed');
 }
 
-requireRole(['admin', 'supervisor']);
+// Technicians land on this same shared dashboard (see app.js's loadHomePage)
+// and see the same global Work Orders table/Overview chart as admin and
+// supervisor — restricting this endpoint to admin/supervisor meant every
+// technician's request came back 403, silently falling back to all-zero
+// placeholder stats on the frontend regardless of real data.
+requireRole(['admin', 'supervisor', 'technician']);
 
 try {
     $db = connectToDatabase();
