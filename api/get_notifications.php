@@ -36,8 +36,17 @@ try {
     }
 
     sendJson(true, 200, [
-        'notifications' => $notifications,
-        'total' => count($notifications)
+        'notifications'   => $notifications,
+        'total'           => count($notifications),
+        // The PHP session cookie is shared across every tab of the same
+        // browser — logging into a different account in one tab silently
+        // switches which account every other open tab is authenticated as
+        // server-side, even though their UI still shows the old account's
+        // name. Sending back who this request is actually authenticated as
+        // lets the client (see app.js's loadNotifications) notice the
+        // mismatch and log the stale tab out, instead of quietly showing
+        // one account's notifications under another account's sidebar.
+        'session_user_id' => $user['id'],
     ]);
 
 } catch (PDOException $e) {

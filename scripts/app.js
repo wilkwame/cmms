@@ -587,6 +587,18 @@ function loadNotifications(context) {
 
     app.php('api/get_notifications.php', {}).then(function(data) {
         if (data.ok && data.data && data.data.notifications) {
+            // The PHP session is shared across every tab of this browser —
+            // if a different account logged in from another tab, the
+            // server is now authenticating THIS tab's requests as that
+            // other account too, even though this tab's sidebar still
+            // shows the original account. Without this check, this tab
+            // would silently start showing (and polling) someone else's
+            // notifications under its own stale UI, which is exactly the
+            // "notifications crossing over between accounts" bug.
+            if (app.memory.user && data.data.session_user_id && data.data.session_user_id !== app.memory.user.id) {
+                performLogout();
+                return;
+            }
             app.memory.notifications = data.data.notifications;
         } else {
             app.memory.notifications = [];
