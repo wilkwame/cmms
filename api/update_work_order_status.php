@@ -61,6 +61,13 @@ try {
     if ($newStatus === 'completed' && !$isPrivileged) {
         sendJson(false, 403, 'Submit this work order for review instead — an admin or supervisor approves it as completed.');
     }
+    // Submitting for review is specifically the assigned technician's own
+    // action (their photo evidence of their own work) — not something an
+    // admin/supervisor does on their behalf, even though they're otherwise
+    // privileged to manage this work order.
+    if ($newStatus === 'pending_review' && !$isOwner) {
+        sendJson(false, 403, 'Only the technician assigned to this work order can submit it for review.');
+    }
 
     if (in_array($workOrder['status'], ['completed', 'cancelled'], true)) {
         sendJson(false, 409, 'This work order is already ' . $workOrder['status'] . ' and cannot be changed');

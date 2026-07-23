@@ -96,8 +96,6 @@ function renderWorkOrdersSlice(context) {
             var dueDate = formatDate(wo.due_date);
             var assignedTo = wo.assigned_to || 'Unassigned';
 
-            var role = app.memory.user ? app.memory.user.role : null;
-            var isPrivileged = role === 'admin' || role === 'supervisor';
             var isOwner = !!(app.memory.user && wo.assigned_to_id === app.memory.user.id);
 
             html += '<div class="wo-row" action="openWorkOrderPopup: ' + wo.id + '">';
@@ -110,7 +108,7 @@ function renderWorkOrdersSlice(context) {
             html += '  <span class="col-status"><span class="' + statusClass + '">' + statusLabel(wo.status) + '</span></span>';
             html += '  <span class="col-date">' + dueDate + '</span>';
             html += '  <span class="col-action">';
-            if (wo.status === 'in_progress' && (isOwner || isPrivileged)) {
+            if (wo.status === 'in_progress' && isOwner) {
                 html += '    <button class="btn-complete-task" action="openCompleteWorkOrderPopup: ' + wo.id + '" title="Upload photo and complete"><i class="fas fa-camera"></i> Complete Task</button>';
             }
             html += '  </span>';

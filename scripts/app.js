@@ -976,7 +976,10 @@ function buildWorkOrderDetailPopup(order, reassignPanelHtml) {
         if (order.status === 'pending') {
             statusButtonsHtml += '<button class="popup-btn reassign" action="startWorkOrder: ' + order.id + '"><i class="fas fa-play"></i> Start Work</button>';
         }
-        if (order.status === 'in_progress') {
+        // Completing with photo evidence is the technician's own action —
+        // an admin/supervisor reviews and approves it, not perform it for
+        // them (that would defeat the point of it being proof of THEIR work).
+        if (order.status === 'in_progress' && isOwner) {
             statusButtonsHtml += '<button class="popup-btn approve" action="openCompleteWorkOrderPopup: ' + order.id + '"><i class="fas fa-check"></i> Complete Task</button>';
         }
         // Once submitted, only an admin/supervisor can approve it — the
