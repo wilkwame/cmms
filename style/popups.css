@@ -25,6 +25,19 @@
   opacity: 1;
 }
 
+.timeline-edit-btn {
+  border: none;
+  background: none;
+  color: #237FEA;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 2px 6px;
+}
+
+.timeline-edit-btn:hover {
+  text-decoration: underline;
+}
+
 /* ========================================
    IMAGE LIGHTBOX
    Separate overlay from popup-overlay so it stacks above an already-open

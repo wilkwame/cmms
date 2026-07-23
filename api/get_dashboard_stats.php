@@ -30,29 +30,39 @@ try {
     ");
     $reportKpi = $reportStmt->fetch();
 
+    // A work order that exists but hasn't been started yet ("pending") used
+    // to fall through uncounted here — not a report-level "pending" (its
+    // report already flipped to "approved" the moment the work order was
+    // created), and not in_progress/completed/overdue either. That left
+    // Pending+In Progress+Completed+Overdue not summing to Total. Folded in
+    // below, along with pending_review (submitted by a technician, awaiting
+    // admin approval) counted as still "in progress" rather than a state
+    // with no KPI card of its own.
     $woStmt = $db->query("
         SELECT
-            SUM(status = 'in_progress') AS in_progress,
-            SUM(status = 'completed')   AS completed,
-            SUM(status = 'overdue')     AS overdue
+            SUM(status = 'pending')                          AS pending,
+            SUM(status IN ('in_progress', 'pending_review'))  AS in_progress,
+            SUM(status = 'completed')                        AS completed,
+            SUM(status = 'overdue')                          AS overdue
         FROM work_orders
     ");
     $woKpi = $woStmt->fetch();
 
     $kpi = [
         'total'       => $reportKpi['total'],
-        'pending'     => $reportKpi['pending'],
+        'pending'     => (int) $reportKpi['pending'] + (int) $woKpi['pending'],
         'in_progress' => $woKpi['in_progress'],
         'completed'   => $woKpi['completed'],
         'overdue'     => $woKpi['overdue'],
     ];
 
-    // Last 30 days breakdown for the overview chart
+    // Last 90 days breakdown for the overview chart — same pending_review
+    // folding as above, for the same reason.
     $chartStmt = $db->query("
         SELECT
-            SUM(status = 'completed')   AS completed,
-            SUM(status = 'in_progress') AS in_progress,
-            SUM(status = 'overdue')     AS overdue
+            SUM(status = 'completed')                        AS completed,
+            SUM(status IN ('in_progress', 'pending_review'))  AS in_progress,
+            SUM(status = 'overdue')                           AS overdue
         FROM work_orders
         WHERE created_at >= DATE_SUB(NOW(), INTERVAL 90 DAY)
     ");

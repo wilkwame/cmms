@@ -1019,7 +1019,9 @@ function buildWorkOrderDetailPopup(order, reassignPanelHtml) {
         '    </div>' +
         '    <div class="popup-field">' +
         '      <label><i class="fas fa-calendar-alt"></i> Due Date</label>' +
-        '      <p>' + dueDate + '</p>' +
+        '      <p>' + dueDate +
+        (isPrivileged && !isTerminal ? ' <button type="button" class="timeline-edit-btn" action="openEditTimelinePopup: ' + order.id + '" title="Change timeline"><i class="fas fa-pen"></i></button>' : '') +
+        '</p>' +
         '    </div>' +
         '  </div>' +
         '  <div class="popup-row">' +
@@ -1043,6 +1045,59 @@ function buildWorkOrderDetailPopup(order, reassignPanelHtml) {
         (canDelete ? '  <button class="popup-btn reject" action="confirmDeleteWorkOrder: ' + order.id + '"><i class="fas fa-trash"></i> Delete</button>' : '') +
         '</div>' +
         '</div>';
+}
+
+// ===== EDIT WORK ORDER TIMELINE (admin/supervisor) =====
+function openEditTimelinePopup(arg, context) {
+    var orderId = parseInt(arg);
+    if (!orderId) return;
+
+    var order = (app.memory.workOrders || []).filter(function(o) { return o.id === orderId; })[0];
+    if (!order) return;
+
+    openPopup(context,
+        '<div class="popup-content confirm-popup">' +
+        '  <button class="popup-close confirm-popup-close" action="closePopup"><i class="fas fa-times"></i></button>' +
+        '  <div class="confirm-icon-badge reassign"><i class="fas fa-calendar-alt"></i></div>' +
+        '  <h3 class="confirm-title">Set Timeline</h3>' +
+        '  <p class="confirm-message">Due date for ' + escapeHtml(order.reference) + '.</p>' +
+        '  <input type="date" id="timeline-due-date-input" value="' + escapeHtml(order.due_date || '') + '" style="width:100%;padding:10px 12px;border:1px solid #dfe3e8;border-radius:8px;font-size:14px;font-family:inherit;margin-top:8px;" />' +
+        '  <div class="confirm-actions">' +
+        '    <button class="popup-btn secondary" action="closePopup">Cancel</button>' +
+        '    <button class="popup-btn approve" action="saveWorkOrderTimeline: ' + order.id + '"><i class="fas fa-check"></i> Save</button>' +
+        '  </div>' +
+        '</div>'
+    );
+}
+
+function saveWorkOrderTimeline(arg, context) {
+    var orderId = parseInt(arg);
+    if (!orderId) return;
+
+    var input = document.getElementById('timeline-due-date-input');
+    var dueDate = input ? input.value : '';
+    if (!dueDate) {
+        showNotificationToast(context, 'Pick a due date.', 'error');
+        return;
+    }
+
+    context.fetch('api/update_work_order_due_date.php', { method: 'POST', body: { work_order_id: orderId, due_date: dueDate } }, function(result) {
+        if (!result.ok) {
+            showNotificationToast(context, (result && result.data) || 'Failed to update timeline', 'error');
+            return;
+        }
+
+        for (var i = 0; i < (app.memory.workOrders || []).length; i++) {
+            if (app.memory.workOrders[i].id === orderId) {
+                app.memory.workOrders[i] = result.data;
+                break;
+            }
+        }
+
+        closePopup(context);
+        showNotificationToast(context, 'Timeline updated', 'success');
+        if (typeof renderWorkOrdersSlice === 'function') renderWorkOrdersSlice(context);
+    });
 }
 
 // ===== WORK ORDER COMPLETION (photo evidence required) =====
@@ -1883,6 +1938,8 @@ window.runPendingConfirm = runPendingConfirm;
 window.openReportPopup = openReportPopup;
 window.openWorkOrderPopup = openWorkOrderPopup;
 window.toggleReassignPanel = toggleReassignPanel;
+window.openEditTimelinePopup = openEditTimelinePopup;
+window.saveWorkOrderTimeline = saveWorkOrderTimeline;
 window.confirmReassign = confirmReassign;
 window.confirmDeleteWorkOrder = confirmDeleteWorkOrder;
 window.startWorkOrder = startWorkOrder;
