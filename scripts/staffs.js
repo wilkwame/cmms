@@ -98,10 +98,15 @@ function renderStaffSlice(context) {
             html += '  <span class="col-status"><span class="' + statusClass + '">' + statusLabel + '</span></span>';
             html += '  <span class="col-jobs">' + (s.active_jobs || 0) + '</span>';
             html += '  <span class="col-joined">' + joinDate + '</span>';
+            var isSelf = app.memory.user && app.memory.user.id === s.id;
+
             html += '  <span class="col-action">';
             html += '    <button class="btn-delete" action="openEditSkillsPopup: ' + s.id + '" title="' + (configured ? 'Edit skills' : 'Assign skills') + '" style="color:#237FEA;"><i class="fas fa-screwdriver-wrench"></i></button>';
             if (s.is_active == 1) {
                 html += '    <button class="btn-delete" action="confirmDeactivateStaff: ' + s.id + '" title="Deactivate staff"><i class="fas fa-trash"></i></button>';
+            }
+            if (!isSelf) {
+                html += '    <button class="btn-delete-permanent" action="confirmDeleteStaffPermanently: ' + s.id + '" title="Delete permanently"><i class="fas fa-user-xmark"></i></button>';
             }
             html += '  </span>';
             html += '</div>';
@@ -170,6 +175,29 @@ function deactivateStaffConfirmed(context, staffId) {
         showNotificationToast(context, 'Staff member deactivated', 'success');
         applyStaffFilters(context);
     });
+}
+
+// ===== PERMANENTLY DELETE STAFF =====
+// Actually removes the account from the database — unlike deactivate above,
+// this cannot be undone. api/delete_staff.php refuses accounts that have
+// any report/work-order history, so this only succeeds for accounts that
+// never did anything (test/spam signups, mistaken creations).
+function confirmDeleteStaffPermanently(arg, context) {
+    var staffId = parseInt(arg);
+    if (!staffId) return;
+
+    requestConfirm(context, 'Permanently delete this account? This cannot be undone and removes it from the database entirely. Accounts with report or work order history cannot be deleted this way — deactivate those instead.', 'Delete Account Permanently', function() {
+        context.fetch('api/delete_staff.php', { method: 'POST', body: { id: staffId } }, function(result) {
+            if (!result.ok) {
+                showNotificationToast(context, (result && result.data) || 'Failed to delete account', 'error');
+                return;
+            }
+
+            app.memory.staff = (app.memory.staff || []).filter(function(s) { return s.id !== staffId; });
+            showNotificationToast(context, 'Account permanently deleted', 'success');
+            applyStaffFilters(context);
+        });
+    }, 'reject', 'fa-user-xmark');
 }
 
 // ===== ASSIGN / EDIT SKILLS =====
@@ -301,5 +329,6 @@ window.staffsPrev = staffsPrev;
 window.staffsNext = staffsNext;
 window.goToAddStaff = goToAddStaff;
 window.confirmDeactivateStaff = confirmDeactivateStaff;
+window.confirmDeleteStaffPermanently = confirmDeleteStaffPermanently;
 window.openEditSkillsPopup = openEditSkillsPopup;
 window.saveStaffSkills = saveStaffSkills;

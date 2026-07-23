@@ -1555,3 +1555,23 @@ page {
   background: #ffdbdb;
   color: #cc0000;
 }
+
+.btn-delete-permanent {
+  border: none;
+  padding: 7px 12px;
+  min-width: 32px;
+  min-height: 32px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  background: #ffdbdb;
+  color: #cc0000;
+}
+
+.btn-delete-permanent:hover {
+  background: #cc0000;
+  color: #fff;
+}
