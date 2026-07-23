@@ -137,7 +137,14 @@ function reportsNext(context) {
 // ===== REPORT ACTIONS =====
 function quickApproveReport(context) {
     var reportId = parseInt(context.arg);
-    if (!reportId) return;
+    if (!reportId) {
+        // A button press that produces zero visible feedback is worse than
+        // an explicit error — this used to fail silently if context.arg
+        // ever came through malformed, with no way to tell "click didn't
+        // register" apart from "registered but this guard bailed out".
+        console.error('[quickApproveReport] Invalid report id from context.arg:', context.arg);
+        return;
+    }
 
     // requestConfirm/runPendingConfirm live in app.js — a popup-based
     // confirm is used instead of window.confirm() because Chrome silently
@@ -172,7 +179,10 @@ function quickApproveReport(context) {
 
 function openRejectPopup(context) {
     var reportId = parseInt(context.arg);
-    if (!reportId) return;
+    if (!reportId) {
+        console.error('[openRejectPopup] Invalid report id from context.arg:', context.arg);
+        return;
+    }
 
     requestConfirm(context, 'Reject this report? This cannot be undone.', 'Reject Report', function() {
         app.php('api/update_report_status.php', { id: reportId, status: 'rejected' })
@@ -204,7 +214,10 @@ function openRejectPopup(context) {
 
 function confirmDeleteReportRow(context) {
     var reportId = parseInt(context.arg);
-    if (!reportId) return;
+    if (!reportId) {
+        console.error('[confirmDeleteReportRow] Invalid report id from context.arg:', context.arg);
+        return;
+    }
 
     requestConfirm(context, 'Delete this report? This cannot be undone.', 'Delete Report', function() {
         app.php('api/delete_report.php', { id: reportId }).then(function(result) {

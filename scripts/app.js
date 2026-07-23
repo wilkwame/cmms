@@ -324,6 +324,28 @@ window.handleAuthFailure = handleAuthFailure;
 window.triggerAvatarUpload = triggerAvatarUpload;
 window.logoutUser = logoutUser;
 
+// ===== GLOBAL ERROR VISIBILITY =====
+// A button that "does nothing" is almost always a silent JS exception
+// somewhere upstream of the code that would otherwise show a popup/toast —
+// with no handler, that exception is invisible unless DevTools was already
+// open at the exact moment it fired. This surfaces every uncaught error and
+// promise rejection as a toast the instant it happens, on every page, so a
+// failure is never silent again.
+window.addEventListener('error', function(event) {
+    console.error('[Uncaught error]', event.error || event.message, event);
+    try {
+        showNotificationToast(domContext(), 'Something went wrong: ' + (event.message || 'unknown error') + '. Check the console (F12) for details.', 'error');
+    } catch (e) { /* toast system itself may not be ready yet */ }
+});
+
+window.addEventListener('unhandledrejection', function(event) {
+    console.error('[Unhandled promise rejection]', event.reason);
+    try {
+        var reason = (event.reason && event.reason.message) ? event.reason.message : String(event.reason);
+        showNotificationToast(domContext(), 'A background request failed: ' + reason + '. Check the console (F12) for details.', 'error');
+    } catch (e) { /* toast system itself may not be ready yet */ }
+});
+
 // ========================================
 // UTILITY FUNCTIONS
 // ========================================
