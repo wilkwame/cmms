@@ -118,8 +118,8 @@ function goToReportIssue(context) {
     context.navigate('report-issue');
 }
 
-function openMyReportPopup(context) {
-    var reportId = parseInt(context.arg);
+function openMyReportPopup(arg, context) {
+    var reportId = parseInt(arg);
     if (!reportId) return;
 
     openPopup(context, '<div class="popup-content"><p class="loading-text">Loading report...</p></div>');

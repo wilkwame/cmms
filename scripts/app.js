@@ -666,8 +666,8 @@ function notificationTargetPage() {
     return 'reports';
 }
 
-function markNotificationRead(context) {
-    var notifId = parseInt(context.arg);
+function markNotificationRead(arg, context) {
+    var notifId = parseInt(arg);
     if (!notifId) return;
 
     for (var i = 0; i < app.memory.notifications.length; i++) {
@@ -793,8 +793,8 @@ function closePopup(context) {
 // REPORT POPUP FUNCTIONS
 // ========================================
 
-function openReportPopup(context) {
-    var reportId = parseInt(context.arg);
+function openReportPopup(arg, context) {
+    var reportId = parseInt(arg);
     if (!reportId) return;
 
     var report = null;
@@ -870,26 +870,26 @@ function buildReportDetailPopup(report) {
         '</div>';
 }
 
-function approveReportFromPopup(context) {
-    var reportId = parseInt(context.arg);
+function approveReportFromPopup(arg, context) {
+    var reportId = parseInt(arg);
     if (!reportId) return;
     closePopup(context);
-    quickApproveReport(context);
+    quickApproveReport(reportId, context);
 }
 
-function rejectReportFromPopup(context) {
-    var reportId = parseInt(context.arg);
+function rejectReportFromPopup(arg, context) {
+    var reportId = parseInt(arg);
     if (!reportId) return;
     closePopup(context);
-    openRejectPopup(context);
+    openRejectPopup(reportId, context);
 }
 
 // ========================================
 // WORK ORDER POPUP FUNCTIONS
 // ========================================
 
-function openWorkOrderPopup(context) {
-    var orderId = parseInt(context.arg);
+function openWorkOrderPopup(arg, context) {
+    var orderId = parseInt(arg);
     if (!orderId) return;
 
     var order = null;
@@ -1040,27 +1040,27 @@ function doUpdateWorkOrderStatus(context, orderId, newStatus) {
     });
 }
 
-function startWorkOrder(context) {
-    doUpdateWorkOrderStatus(context, parseInt(context.arg, 10), 'in_progress');
+function startWorkOrder(arg, context) {
+    doUpdateWorkOrderStatus(context, parseInt(arg, 10), 'in_progress');
 }
 
-function completeWorkOrder(context) {
-    var orderId = parseInt(context.arg, 10);
+function completeWorkOrder(arg, context) {
+    var orderId = parseInt(arg, 10);
     requestConfirm(context, 'Mark this work order as complete?', 'Complete Work Order', function() {
         doUpdateWorkOrderStatus(context, orderId, 'completed');
     }, 'approve', 'fa-check');
 }
 
-function cancelWorkOrderStatus(context) {
-    var orderId = parseInt(context.arg, 10);
+function cancelWorkOrderStatus(arg, context) {
+    var orderId = parseInt(arg, 10);
     requestConfirm(context, 'Cancel this work order? This cannot be undone.', 'Cancel Work Order', function() {
         doUpdateWorkOrderStatus(context, orderId, 'cancelled');
     }, 'reject', 'fa-ban');
 }
 
 // ===== REASSIGN WORK ORDER =====
-function toggleReassignPanel(context) {
-    var orderId = parseInt(context.arg);
+function toggleReassignPanel(arg, context) {
+    var orderId = parseInt(arg);
     if (!orderId) return;
 
     var order = (app.memory.workOrders || []).filter(function(o) { return o.id === orderId; })[0];
@@ -1108,8 +1108,8 @@ function toggleReassignPanel(context) {
     });
 }
 
-function confirmReassign(context) {
-    var orderId = parseInt(context.arg);
+function confirmReassign(arg, context) {
+    var orderId = parseInt(arg);
     var select = document.getElementById('reassign-select');
     if (!orderId || !select || !select.value) return;
 
@@ -1137,8 +1137,8 @@ function confirmReassign(context) {
     });
 }
 
-function confirmDeleteWorkOrder(context) {
-    var orderId = parseInt(context.arg);
+function confirmDeleteWorkOrder(arg, context) {
+    var orderId = parseInt(arg);
     if (!orderId) return;
 
     requestConfirm(context, 'Delete this work order? This cannot be undone.', 'Delete Work Order', function() {

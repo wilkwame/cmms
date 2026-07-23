@@ -143,8 +143,8 @@ function goToAddStaff(context) {
 // ===== DEACTIVATE STAFF =====
 // Soft-delete: staff are deactivated rather than hard-deleted, since their
 // id is referenced by report/work-order history (see deactivate_staff.php).
-function confirmDeactivateStaff(context) {
-    var staffId = parseInt(context.arg);
+function confirmDeactivateStaff(arg, context) {
+    var staffId = parseInt(arg);
     if (!staffId) return;
 
     requestConfirm(context, 'Deactivate this staff member? They will stop receiving new auto-assigned work, but their history is kept. Any work orders already assigned to them are not automatically reassigned.', 'Deactivate Staff', function() {
@@ -185,8 +185,8 @@ var STAFF_CATEGORIES = [
     { id: 7, name: 'General' }
 ];
 
-function openEditSkillsPopup(context) {
-    var staffId = parseInt(context.arg);
+function openEditSkillsPopup(arg, context) {
+    var staffId = parseInt(arg);
     if (!staffId) return;
 
     var staff = (app.memory.staff || []).filter(function(s) { return s.id === staffId; })[0];
@@ -250,8 +250,8 @@ function openEditSkillsPopup(context) {
     );
 }
 
-function saveStaffSkills(context) {
-    var staffId = parseInt(context.arg);
+function saveStaffSkills(arg, context) {
+    var staffId = parseInt(arg);
     var roleSelect = document.getElementById('edit-skills-role');
     var deptSelect = document.getElementById('edit-skills-department');
     var skillsSelect = document.getElementById('edit-skills-select');

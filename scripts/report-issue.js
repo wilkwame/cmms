@@ -185,8 +185,8 @@ function renderReportIssuePhotoPreviews(context) {
     container.html(html);
 }
 
-function removeReportIssuePhoto(context) {
-    var index = parseInt(context.arg);
+function removeReportIssuePhoto(arg, context) {
+    var index = parseInt(arg);
     if (isNaN(index)) return;
     app.memory.reportIssuePhotos.splice(index, 1);
     renderReportIssuePhotoPreviews(context);

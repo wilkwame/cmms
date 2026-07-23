@@ -135,14 +135,14 @@ function reportsNext(context) {
 }
 
 // ===== REPORT ACTIONS =====
-function quickApproveReport(context) {
-    var reportId = parseInt(context.arg);
+function quickApproveReport(arg, context) {
+    var reportId = parseInt(arg);
     if (!reportId) {
         // A button press that produces zero visible feedback is worse than
-        // an explicit error — this used to fail silently if context.arg
-        // ever came through malformed, with no way to tell "click didn't
+        // an explicit error — this used to fail silently if the arg ever
+        // came through malformed, with no way to tell "click didn't
         // register" apart from "registered but this guard bailed out".
-        console.error('[quickApproveReport] Invalid report id from context.arg:', context.arg);
+        console.error('[quickApproveReport] Invalid report id:', arg);
         return;
     }
 
@@ -177,10 +177,10 @@ function quickApproveReport(context) {
     }, 'approve', 'fa-check');
 }
 
-function openRejectPopup(context) {
-    var reportId = parseInt(context.arg);
+function openRejectPopup(arg, context) {
+    var reportId = parseInt(arg);
     if (!reportId) {
-        console.error('[openRejectPopup] Invalid report id from context.arg:', context.arg);
+        console.error('[openRejectPopup] Invalid report id:', arg);
         return;
     }
 
@@ -212,10 +212,10 @@ function openRejectPopup(context) {
 // app.js — this file used to shadow both with dead placeholders (a toast
 // and a link to a page that doesn't exist) since it loads after app.js.
 
-function confirmDeleteReportRow(context) {
-    var reportId = parseInt(context.arg);
+function confirmDeleteReportRow(arg, context) {
+    var reportId = parseInt(arg);
     if (!reportId) {
-        console.error('[confirmDeleteReportRow] Invalid report id from context.arg:', context.arg);
+        console.error('[confirmDeleteReportRow] Invalid report id:', arg);
         return;
     }
 
