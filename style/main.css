@@ -87,6 +87,14 @@ app {
   font-size: 12.5px;
   font-weight: 500;
   border-bottom: 1px solid #ffe8a1;
+  /* #top-nav is sticky at top:0 with z-index:60. Without this, this banner
+     just scrolls normally and ends up sliding underneath the pinned top
+     nav, leaving only a sliver of its text peeking out below the bar.
+     Sticking it too, right below the nav's 56px height, keeps it fully
+     visible instead of half-hidden behind the nav. */
+  position: sticky;
+  top: 56px;
+  z-index: 50;
 }
 
 .offline-indicator.hidden {
@@ -103,6 +111,7 @@ app {
   .offline-indicator {
     padding: 7px 12px;
     font-size: 11.5px;
+    top: 52px; /* matches #top-nav's shorter mobile height */
   }
 }
 
