@@ -92,6 +92,7 @@ function renderStaffSlice(context) {
             html += '<div class="staff-row">';
             html += '  <span class="col-id">' + ref + '</span>';
             html += '  <span class="col-name">' + escapeHtml(s.name) + '</span>';
+            html += '  <span class="col-email">' + escapeHtml(s.email || '—') + '</span>';
             html += '  <span class="col-role">' + role + '</span>';
             html += '  <span class="col-department">' + escapeHtml(dept) + '</span>';
             html += '  <span class="col-status"><span class="' + statusClass + '">' + statusLabel + '</span></span>';

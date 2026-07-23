@@ -174,7 +174,7 @@
   color: #999;
   text-transform: uppercase;
   letter-spacing: 0.3px;
-  min-width: 620px;
+  min-width: 780px;
 }
 
 .table-head span {
@@ -191,7 +191,7 @@
    ======================================== */
 
 #staffs-body {
-  min-width: 620px;
+  min-width: 780px;
 }
 
 .staff-row {
@@ -234,6 +234,11 @@
 .col-name {
   flex: 1.5;
   font-weight: 500;
+}
+
+.col-email {
+  flex: 1.6;
+  color: #6b7280;
 }
 
 .col-role {
@@ -408,11 +413,11 @@
 
   .table-head {
     font-size: 9px;
-    min-width: 450px;
+    min-width: 560px;
   }
 
   #staffs-body {
-    min-width: 450px;
+    min-width: 560px;
   }
 
   .staff-row {
@@ -501,11 +506,11 @@
 
   .table-head {
     font-size: 8px;
-    min-width: 350px;
+    min-width: 430px;
   }
 
   #staffs-body {
-    min-width: 350px;
+    min-width: 430px;
   }
 
   .staff-row {
