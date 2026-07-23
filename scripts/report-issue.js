@@ -8,21 +8,74 @@ var ALLOWED_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 app.memory.reportIssuePhotos = app.memory.reportIssuePhotos || [];
 
+var LOCATIONS_CACHE_KEY = 'cmms_locations_cache';
+
+function renderLocationOptions(locationSelect, locations, selectedId) {
+    var html = '<option value="">Select location</option>';
+    locations.forEach(function(loc) {
+        var selected = (selectedId != null && String(loc.id) === String(selectedId)) ? ' selected' : '';
+        html += '<option value="' + loc.id + '"' + selected + '>' + loc.name + '</option>';
+    });
+    locationSelect.html(html);
+}
+
+function getCachedLocations() {
+    try {
+        var raw = localStorage.getItem(LOCATIONS_CACHE_KEY);
+        var parsed = raw ? JSON.parse(raw) : null;
+        return Array.isArray(parsed) ? parsed : null;
+    } catch (e) {
+        return null;
+    }
+}
+
+function cacheLocations(locations) {
+    try {
+        localStorage.setItem(LOCATIONS_CACHE_KEY, JSON.stringify(locations));
+    } catch (e) {
+        // Storage full/unavailable — the cache is a nice-to-have, not
+        // required for the live (online) path to keep working.
+    }
+}
+
 function loadReportIssuePage(context) {
     var locationSelect = context.query('#ri-location');
     if (locationSelect.exists) {
-        app.php('api/get_locations.php', {}).then(function(result) {
-            if (handleAuthFailure(result)) return;
-            if (!result.ok || !Array.isArray(result.data)) {
-                locationSelect.html('<option value="">Failed to load locations</option>');
-                return;
+        // Offline: skip the network call entirely (it would just hang until
+        // it times out) and go straight to whatever was cached from the last
+        // successful load — locations rarely change, so a slightly stale
+        // list still lets the reporter pick one and submit instead of being
+        // blocked on a required field they can't fill in.
+        if (!navigator.onLine) {
+            var cached = getCachedLocations();
+            if (cached && cached.length > 0) {
+                renderLocationOptions(locationSelect, cached);
+            } else {
+                locationSelect.html('<option value="">Locations unavailable offline</option>');
             }
-            var html = '<option value="">Select location</option>';
-            result.data.forEach(function(loc) {
-                html += '<option value="' + loc.id + '">' + loc.name + '</option>';
+        } else {
+            app.php('api/get_locations.php', {}).then(function(result) {
+                if (handleAuthFailure(result)) return;
+                if (!result.ok || !Array.isArray(result.data)) {
+                    var fallback = getCachedLocations();
+                    if (fallback && fallback.length > 0) {
+                        renderLocationOptions(locationSelect, fallback);
+                    } else {
+                        locationSelect.html('<option value="">Failed to load locations</option>');
+                    }
+                    return;
+                }
+                cacheLocations(result.data);
+                renderLocationOptions(locationSelect, result.data);
+            }).catch(function() {
+                var fallback = getCachedLocations();
+                if (fallback && fallback.length > 0) {
+                    renderLocationOptions(locationSelect, fallback);
+                } else {
+                    locationSelect.html('<option value="">Failed to load locations</option>');
+                }
             });
-            locationSelect.html(html);
-        });
+        }
     }
 
     wireReportIssueDropzone(context);
