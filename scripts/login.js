@@ -15,6 +15,23 @@
         return document.getElementById(id);
     }
 
+    // Always writes both keys to ONE storage and clears the other. Without
+    // this, a login that lands in localStorage while an older/different
+    // session already left keys behind in sessionStorage (or vice versa)
+    // produces a split state: app.js's login guard only needs a user
+    // ANYWHERE and a token ANYWHERE to let a tab reach the dashboard, but
+    // checkAuth() needs them together — the result is a session that gets
+    // past the guard and then never actually loads (stuck "Loading...",
+    // placeholder name), indistinguishable from lost data.
+    function storeCredentials(user, token, useLocalStorage) {
+        var store = useLocalStorage ? localStorage : sessionStorage;
+        var other = useLocalStorage ? sessionStorage : localStorage;
+        other.removeItem('cmms_user');
+        other.removeItem('cmms_token');
+        store.setItem('cmms_user', JSON.stringify(user));
+        store.setItem('cmms_token', token);
+    }
+
     // ===== INFO MODAL =====
     function showInfoModal(message, title) {
         var modalTitle = $('info-modal-title');
@@ -112,9 +129,7 @@
             }
 
             if (result && result.ok && result.data && result.data.user) {
-                var store = remember ? localStorage : sessionStorage;
-                store.setItem('cmms_user', JSON.stringify(result.data.user));
-                store.setItem('cmms_token', result.data.token);
+                storeCredentials(result.data.user, result.data.token, remember);
                 window.location.href = 'index.html';
             } else {
                 var msg = (result && result.data) || 'Invalid email or password. Please try again.';
@@ -186,8 +201,7 @@
 
                 if (result && result.ok && result.data && result.data.user) {
                     // Store user data
-                    localStorage.setItem('cmms_user', JSON.stringify(result.data.user));
-                    localStorage.setItem('cmms_token', result.data.token);
+                    storeCredentials(result.data.user, result.data.token, true);
 
                     // Redirect to dashboard
                     window.location.href = 'index.html';

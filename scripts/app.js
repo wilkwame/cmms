@@ -43,29 +43,24 @@ const CATEGORY_NAME_TO_ID = {
 };
 
 // ===== CHECK LOGIN STATUS =====
+// Reads user/token independently from either storage, matching the login
+// guard script at the top of index.html's <head> exactly. That guard only
+// requires SOME storage to have a user and SOME storage to have a token
+// (checked as two independent ORs) before it lets this page load at all —
+// if this function instead required both from the SAME storage (as it used
+// to), a session with e.g. the token in localStorage but the user object in
+// sessionStorage would pass the guard, land on the dashboard, and then get
+// stuck here: app.memory.user would never get set, silently leaving every
+// screen that depends on it (sidebar name/role, dashboard stats, "Loading
+// reports..." etc.) frozen with no error, indistinguishable from data loss.
 function checkAuth() {
-    // Check localStorage first
-    var storedUser = localStorage.getItem('cmms_user');
-    var storedToken = localStorage.getItem('cmms_token');
+    var storedUser = localStorage.getItem('cmms_user') || sessionStorage.getItem('cmms_user');
+    var storedToken = localStorage.getItem('cmms_token') || sessionStorage.getItem('cmms_token');
 
     if (storedUser && storedToken) {
         try {
             app.memory.user = JSON.parse(storedUser);
             app.memory.token = storedToken;
-            return true;
-        } catch (e) {
-            return false;
-        }
-    }
-
-    // Check session storage
-    var sessionUser = sessionStorage.getItem('cmms_user');
-    var sessionToken = sessionStorage.getItem('cmms_token');
-
-    if (sessionUser && sessionToken) {
-        try {
-            app.memory.user = JSON.parse(sessionUser);
-            app.memory.token = sessionToken;
             return true;
         } catch (e) {
             return false;
