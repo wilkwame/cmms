@@ -158,6 +158,14 @@ function quickApproveReport(context) {
                 } else {
                     showNotificationToast(context, (woData && woData.data) || 'No matching staff available — report stays pending', 'error');
                 }
+            })
+            .catch(function(error) {
+                // Without this, a rejected promise (a non-JSON response from
+                // a server-side fatal error, or a network failure) fails
+                // completely silently — the button looks like it does
+                // nothing at all, with no feedback of any kind.
+                console.error('Failed to approve report:', error);
+                showNotificationToast(context, 'Something went wrong approving this report. Check the browser console for details.', 'error');
             });
     }, 'approve', 'fa-check');
 }
@@ -174,10 +182,18 @@ function openRejectPopup(context) {
                     app.php('api/delete_report.php', { id: reportId })
                         .then(function() {
                             refreshAllData(context);
+                        })
+                        .catch(function(error) {
+                            console.error('Report rejected but cleanup failed:', error);
+                            refreshAllData(context);
                         });
                 } else {
                     showNotificationToast(context, 'Failed to reject report', 'error');
                 }
+            })
+            .catch(function(error) {
+                console.error('Failed to reject report:', error);
+                showNotificationToast(context, 'Something went wrong rejecting this report. Check the browser console for details.', 'error');
             });
     }, 'reject', 'fa-xmark');
 }
@@ -198,6 +214,9 @@ function confirmDeleteReportRow(context) {
             }
             showNotificationToast(context, 'Report deleted', 'success');
             refreshAllData(context);
+        }).catch(function(error) {
+            console.error('Failed to delete report:', error);
+            showNotificationToast(context, 'Something went wrong deleting this report. Check the browser console for details.', 'error');
         });
     }, 'reject', 'fa-trash');
 }

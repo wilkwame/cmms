@@ -520,8 +520,30 @@ function closeMobileMenu(context) {
 // NOTIFICATION FUNCTIONS
 // ========================================
 
+function globalQuery(selector) {
+    var element = document.querySelector(selector);
+    return {
+        exists: !!element,
+        element: element,
+        text: function(value) {
+            if (element) {
+                if (value !== undefined) element.textContent = value;
+                return element.textContent;
+            }
+            return '';
+        },
+        html: function(value) {
+            if (element) {
+                if (value !== undefined) element.innerHTML = value;
+                return element.innerHTML;
+            }
+            return '';
+        }
+    };
+}
+
 function toggleNotifications(context) {
-    var popup = context.query('#notification-popup');
+    var popup = globalQuery('#notification-popup');
     if (!popup.exists) return;
 
     if (popup.element.classList.contains('active')) {
@@ -539,7 +561,7 @@ function toggleNotifications(context) {
 }
 
 function loadNotifications(context) {
-    var list = context.query('#notification-list');
+    var list = globalQuery('#notification-list');
     if (list.exists && (!app.memory.notifications || app.memory.notifications.length === 0)) {
         list.html('<div class="notification-item">Loading notifications...</div>');
     }
@@ -561,13 +583,7 @@ function loadNotifications(context) {
 function domContext() {
     return {
         query: function(selector) {
-            var element = document.querySelector(selector);
-            return {
-                exists: !!element,
-                element: element,
-                text: function(value) { if (element) element.textContent = value; },
-                html: function(value) { if (element) element.innerHTML = value; }
-            };
+            return globalQuery(selector);
         },
         timeout: function(fn, ms) {
             return setTimeout(fn, ms);
@@ -588,7 +604,7 @@ function startNotificationPolling() {
 }
 
 function renderNotifications(context) {
-    var list = context.query('#notification-list');
+    var list = globalQuery('#notification-list');
     if (!list.exists) return;
 
     var notifs = app.memory.notifications || [];
@@ -643,7 +659,7 @@ function markNotificationRead(context) {
     updateNotificationBadge(context);
     context.fetch('api/mark_notification_read.php', { method: 'POST', body: { id: notifId } }, function() {});
 
-    var popup = context.query('#notification-popup');
+    var popup = globalQuery('#notification-popup');
     if (popup.exists) popup.element.classList.remove('active');
     closeMobileMenu(context);
     context.navigate(notificationTargetPage());
@@ -661,7 +677,7 @@ function markAllNotificationsRead(context) {
 }
 
 function updateNotificationBadge(context) {
-    var badge = context.query('#notification-badge');
+    var badge = globalQuery('#notification-badge');
     if (!badge.exists) return;
 
     var unreadCount = 0;
@@ -679,7 +695,7 @@ function updateNotificationBadge(context) {
 }
 
 function showNotificationToast(context, message, type) {
-    var toast = context.query('#notification-popup');
+    var toast = globalQuery('#notification-popup');
     if (toast.exists) {
         toast.text(message);
         toast.element.className = 'notification-toast ' + (type || 'success');
@@ -698,8 +714,8 @@ function showNotificationToast(context, message, type) {
 // ========================================
 
 function openPopup(context, html) {
-    var overlay = context.query('#popup-overlay');
-    var dialog = context.query('#popup-dialog');
+    var overlay = globalQuery('#popup-overlay');
+    var dialog = globalQuery('#popup-dialog');
 
     if (!overlay.exists || !dialog.exists) return;
 
@@ -742,8 +758,8 @@ function runPendingConfirm(context) {
 }
 
 function closePopup(context) {
-    var overlay = context.query('#popup-overlay');
-    var dialog = context.query('#popup-dialog');
+    var overlay = globalQuery('#popup-overlay');
+    var dialog = globalQuery('#popup-dialog');
 
     if (!overlay.exists || !dialog.exists) return;
 

@@ -6,12 +6,12 @@ require_once __DIR__ . '/_autoassign.php';
 require_once __DIR__ . '/_notify.php';
 
 // Called by the client right after insert_report.php (and, if the reporter
-// attached any, after upload_report_photos.php) to trigger auto-assignment
-// and notifications now that any photos actually exist on the report. Kept
-// as a separate step rather than folding into insert_report.php because
-// report_photos.report_id is a FK — photos can only be uploaded once the
-// report row already exists, so assigning first would always notify the
-// technician before any photos were attached.
+// attached any, after upload_report_photos.php). Auto-assignment on
+// submission was removed deliberately: every report now stays "pending"
+// until an admin/supervisor approves it via create_work_order.php (the
+// Approve button on the Reports page) — this endpoint's job is now just to
+// make sure admins are told a new report needs their attention, not to
+// assign it itself.
 //
 // Expected POST body: { "report_id": int }
 
@@ -55,18 +55,11 @@ try {
         sendJson(true, 200, ['already_finalized' => true]);
     }
 
-    // Try to auto-assign. If no eligible staff is found, the report simply
-    // stays "pending" for an admin to handle manually — but admins need to
-    // actually be told that, rather than it silently sitting unnoticed.
-    $workOrder = createWorkOrderForReport($db, $reportId, $user['id']);
+    // Do not auto-assign or create a work order here. Report stays "pending"
+    // so an admin must approve (or reject) it before it becomes a work order.
+    notifyAdminsUnassigned($db, $report['reference'], $report['issue']);
 
-    if ($workOrder) {
-        notifyWorkOrderAssignment($db, $workOrder);
-    } else {
-        notifyAdminsUnassigned($db, $report['reference'], $report['issue']);
-    }
-
-    sendJson(true, 200, ['work_order' => $workOrder]);
+    sendJson(true, 200, ['status' => 'pending']);
 
 } catch (PDOException $e) {
     sendJson(false, 500, 'Database error: ' . $e->getMessage());
