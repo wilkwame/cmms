@@ -179,25 +179,42 @@ function deactivateStaffConfirmed(context, staffId) {
 
 // ===== PERMANENTLY DELETE STAFF =====
 // Actually removes the account from the database — unlike deactivate above,
-// this cannot be undone. api/delete_staff.php refuses accounts that have
-// any report/work-order history, so this only succeeds for accounts that
-// never did anything (test/spam signups, mistaken creations).
+// this cannot be undone. The first attempt (force: false) is refused by
+// api/delete_staff.php if the account has report/work-order history; if
+// so, a second, more explicit confirmation offers to force it — which
+// reassigns that history to the admin doing the deletion (and unassigns
+// any work orders currently on this person) instead of destroying it.
 function confirmDeleteStaffPermanently(arg, context) {
     var staffId = parseInt(arg);
     if (!staffId) return;
 
-    requestConfirm(context, 'Permanently delete this account? This cannot be undone and removes it from the database entirely. Accounts with report or work order history cannot be deleted this way — deactivate those instead.', 'Delete Account Permanently', function() {
-        context.fetch('api/delete_staff.php', { method: 'POST', body: { id: staffId } }, function(result) {
-            if (!result.ok) {
-                showNotificationToast(context, (result && result.data) || 'Failed to delete account', 'error');
+    requestConfirm(context, 'Permanently delete this account? This cannot be undone and removes it from the database entirely.', 'Delete Account Permanently', function() {
+        deleteStaffPermanently(context, staffId, false);
+    }, 'reject', 'fa-user-xmark');
+}
+
+function deleteStaffPermanently(context, staffId, force) {
+    context.fetch('api/delete_staff.php', { method: 'POST', body: { id: staffId, force: !!force } }, function(result) {
+        if (!result.ok) {
+            if (result.status === 409 && !force) {
+                requestConfirm(
+                    context,
+                    'This account has reports or work order history. Force-deleting it will reassign its reports/created work orders to you and unassign any work orders currently on it — that history is kept, just no longer tied to this account. Continue?',
+                    'Force Delete Account',
+                    function() { deleteStaffPermanently(context, staffId, true); },
+                    'reject',
+                    'fa-triangle-exclamation'
+                );
                 return;
             }
+            showNotificationToast(context, (result && result.data) || 'Failed to delete account', 'error');
+            return;
+        }
 
-            app.memory.staff = (app.memory.staff || []).filter(function(s) { return s.id !== staffId; });
-            showNotificationToast(context, 'Account permanently deleted', 'success');
-            applyStaffFilters(context);
-        });
-    }, 'reject', 'fa-user-xmark');
+        app.memory.staff = (app.memory.staff || []).filter(function(s) { return s.id !== staffId; });
+        showNotificationToast(context, 'Account permanently deleted', 'success');
+        applyStaffFilters(context);
+    });
 }
 
 // ===== ASSIGN / EDIT SKILLS =====
