@@ -96,6 +96,8 @@ function renderWorkOrdersSlice(context) {
             var dueDate = formatDate(wo.due_date);
             var assignedTo = wo.assigned_to || 'Unassigned';
 
+            var role = app.memory.user ? app.memory.user.role : null;
+            var isPrivileged = role === 'admin' || role === 'supervisor';
             var isOwner = !!(app.memory.user && wo.assigned_to_id === app.memory.user.id);
 
             html += '<div class="wo-row" action="openWorkOrderPopup: ' + wo.id + '">';
@@ -109,7 +111,21 @@ function renderWorkOrdersSlice(context) {
             html += '  <span class="col-date">' + dueDate + '</span>';
             html += '  <span class="col-action">';
             if (wo.status === 'in_progress' && isOwner) {
+                // The technician's own action: upload photo evidence.
                 html += '    <button class="btn-complete-task" action="openCompleteWorkOrderPopup: ' + wo.id + '" title="Upload photo and complete"><i class="fas fa-camera"></i> Complete Task</button>';
+            } else if (isPrivileged) {
+                // Admin/supervisor's at-a-glance read on whether the
+                // technician has actually finished yet, and a quick way to
+                // approve without opening the detail popup first.
+                if (wo.status === 'pending_review') {
+                    html += '    <button class="btn-complete-task" action="approveWorkOrderCompletion: ' + wo.id + '" title="Review photo and approve"><i class="fas fa-check-double"></i> Approve</button>';
+                } else if (wo.status === 'completed') {
+                    html += '    <span class="wo-action-label wo-action-completed"><i class="fas fa-check-circle"></i> Completed</span>';
+                } else if (wo.status === 'cancelled') {
+                    html += '    <span class="wo-action-label wo-action-cancelled"><i class="fas fa-ban"></i> Cancelled</span>';
+                } else {
+                    html += '    <span class="wo-action-label wo-action-waiting"><i class="fas fa-hourglass-half"></i> Waiting for worker\'s response</span>';
+                }
             }
             html += '  </span>';
             html += '</div>';
