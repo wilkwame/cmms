@@ -7,7 +7,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     sendJson(false, 405, 'Method not allowed');
 }
 
-requireRole(['admin']);
+requireRole(['admin', 'supervisor']);
 
 try {
     $db = connectToDatabase();
