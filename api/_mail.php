@@ -78,3 +78,23 @@ function sendAssignmentEmail(string $toEmail, string $toName, array $workOrder):
     ';
     return sendMail($toEmail, $toName, $subject, $body);
 }
+
+// Sent once, when insert_staff.php creates a new staff account — the only
+// time this app ever generates a password on someone else's behalf, so it's
+// the only place a plaintext password legitimately needs to leave the server.
+function sendStaffWelcomeEmail(string $toEmail, string $toName, string $password, string $role): bool {
+    $subject = 'Your CMMS account has been created';
+    $loginUrl = appBaseUrl() . '/login.html';
+
+    $body = '
+        <p>Hi ' . htmlspecialchars($toName) . ',</p>
+        <p>An administrator has created a CMMS account for you as a <strong>' . htmlspecialchars(ucfirst($role)) . '</strong>.</p>
+        <table cellpadding="4">
+            <tr><td><strong>Email</strong></td><td>' . htmlspecialchars($toEmail) . '</td></tr>
+            <tr><td><strong>Password</strong></td><td>' . htmlspecialchars($password) . '</td></tr>
+        </table>
+        <p>You can log in at <a href="' . htmlspecialchars($loginUrl) . '">' . htmlspecialchars($loginUrl) . '</a> with the email and password above, or with the "Continue with Google" button using this same email address.</p>
+        <p>Thank you,<br>CMMS System</p>
+    ';
+    return sendMail($toEmail, $toName, $subject, $body);
+}

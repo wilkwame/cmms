@@ -3,6 +3,7 @@
 
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/_auth.php';
+require_once __DIR__ . '/_mail.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     sendJson(false, 405, 'Method not allowed');
@@ -98,6 +99,11 @@ try {
     logActivity($db, $currentUser, 'staff.created', 'user', $userId, $name, $currentUser['name'] . ' created staff account for ' . $name . ' (' . $role . ')');
 
     $db->commit();
+
+    // Best-effort: sendMail() already swallows its own failures and no-ops
+    // without SMTP configured, so a delivery failure here shouldn't turn a
+    // successful account creation into an error response.
+    sendStaffWelcomeEmail($email, $name, $password, $role);
 
     sendJson(true, 201, [
         'id' => $userId,
