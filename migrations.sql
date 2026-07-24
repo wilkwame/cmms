@@ -59,3 +59,7 @@ CREATE TABLE IF NOT EXISTS work_order_photos (
 ALTER TABLE work_orders MODIFY COLUMN status
     ENUM('pending','in_progress','pending_review','completed','overdue','cancelled')
     NOT NULL DEFAULT 'pending';
+
+-- "Other" category (2026-07-24): a catch-all for reporters whose issue
+-- doesn't fit any of the seeded categories.
+INSERT IGNORE INTO categories (name) VALUES ('Other');

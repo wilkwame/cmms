@@ -172,4 +172,5 @@ INSERT INTO categories (name) VALUES
     ('Roofing'),
     ('HVAC'),
     ('Civil'),
-    ('General');
+    ('General'),
+    ('Other');
