@@ -31,6 +31,7 @@ try {
     $reportId = $reportIdStmt->fetchColumn();
 
     $db->prepare('DELETE FROM work_order_activity WHERE work_order_id = :id')->execute([':id' => $id]);
+    $db->prepare('DELETE FROM work_order_photos WHERE work_order_id = :id')->execute([':id' => $id]);
 
     $stmt = $db->prepare('DELETE FROM work_orders WHERE id = :id');
     $stmt->execute([':id' => $id]);
@@ -46,6 +47,17 @@ try {
     }
 
     $db->commit();
+
+    // Best-effort cleanup of uploaded photo files; DB rows are already gone
+    // and are the source of truth, so a leftover file here is harmless.
+    $uploadDir = __DIR__ . '/../uploads/work_orders/' . $id . '/';
+    if (is_dir($uploadDir)) {
+        foreach (glob($uploadDir . '*') as $file) {
+            @unlink($file);
+        }
+        @rmdir($uploadDir);
+    }
+
     sendJson(true, 200, ['id' => $id]);
 
 } catch (PDOException $e) {
