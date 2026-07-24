@@ -87,6 +87,10 @@ try {
         $savedUrls[] = $url;
     }
 
+    if ($savedUrls) {
+        logActivity($db, $user, 'report.photos_added', 'report', $reportId, null, $user['name'] . ' attached ' . count($savedUrls) . ' photo(s) to report #' . $reportId);
+    }
+
     sendJson(true, 201, ['urls' => $savedUrls]);
 
 } catch (PDOException $e) {

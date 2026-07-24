@@ -63,6 +63,8 @@ try {
     // Remove password from response
     unset($user['password']);
 
+    logActivity($db, $user, 'login', 'user', (int) $user['id'], $user['name'], $user['name'] . ' logged in');
+
     sendJson(true, 200, [
         'user' => $user,
         'token' => $token,

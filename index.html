@@ -41,12 +41,14 @@
   <app>
     <!-- Page Imports (dashboard pages only — login lives at /login.html now) -->
     <import src="pages/reports.html"></import>
-    <import src="pages/workorders.html?v=2"></import>
+    <import src="pages/workorders.html?v=3"></import>
     <import src="pages/settings.html"></import>
     <import src="pages/staffs.html?v=2"></import>
     <import src="pages/add-staff.html"></import>
     <import src="pages/user-dashboard.html"></import>
-    <import src="pages/report-issue.html?v=2"></import>
+    <import src="pages/report-issue.html?v=3"></import>
+    <import src="pages/logs.html"></import>
+    <import src="pages/category-stats.html"></import>
 
     <!-- Mobile Tabbar -->
     <tabbar id="main-tabbar">
@@ -146,6 +148,14 @@
       <tab page="settings" data-roles="admin">
         <i class="fas fa-cog"></i>
         <span>Settings</span>
+      </tab>
+      <tab page="logs" data-roles="admin">
+        <i class="fas fa-history"></i>
+        <span>Logs</span>
+      </tab>
+      <tab page="category-stats" data-roles="admin">
+        <i class="fas fa-chart-pie"></i>
+        <span>Category Stats</span>
       </tab>
       <tab page="user-home" data-roles="reporter">
         <i class="fas fa-clipboard-list"></i>
@@ -374,7 +384,9 @@
 
   <script src="runtime/clera.js?v=11"></script>
   <script src="scripts/offline-queue.js?v=1"></script>
-  <script src="scripts/app.js?v=31"></script>
+  <script src="scripts/app.js?v=32"></script>
+  <script src="scripts/logs.js?v=1"></script>
+  <script src="scripts/category-stats.js?v=1"></script>
   <script src="scripts/reports.js?v=18"></script>
   <script src="scripts/workorders.js?v=13"></script>
   <script src="scripts/staffs.js?v=16"></script>

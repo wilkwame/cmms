@@ -63,3 +63,21 @@ ALTER TABLE work_orders MODIFY COLUMN status
 -- "Other" category (2026-07-24): a catch-all for reporters whose issue
 -- doesn't fit any of the seeded categories.
 INSERT IGNORE INTO categories (name) VALUES ('Other');
+
+-- Global audit trail (2026-07-24): who did what, when, across the whole
+-- system (logins, report/work order lifecycle, staff management). No FKs —
+-- an entity/user being deleted is itself an event this table must record,
+-- so actor/entity identity is snapshotted as text rather than joined live.
+CREATE TABLE IF NOT EXISTS audit_log (
+    id               INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    actor_id         INT UNSIGNED NULL,
+    actor_name       VARCHAR(100) NOT NULL,
+    actor_role       VARCHAR(20) NULL,
+    action           VARCHAR(50) NOT NULL,
+    entity_type      VARCHAR(30) NULL,
+    entity_id        INT UNSIGNED NULL,
+    entity_reference VARCHAR(50) NULL,
+    description      TEXT NOT NULL,
+    ip_address       VARCHAR(45) NULL,
+    created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

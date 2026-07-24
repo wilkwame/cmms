@@ -74,6 +74,8 @@ try {
 
     notifyReportSubmitted($db, $submittedBy, $reference, $issue);
 
+    logActivity($db, $user, 'report.created', 'report', $newId, $reference, $user['name'] . ' submitted report ' . $reference . ': ' . $issue);
+
     // Auto-assignment is deliberately not done here: the client uploads
     // photos in a second call (report_photos.report_id is a FK, so photos
     // can't be attached before the report row exists), then calls

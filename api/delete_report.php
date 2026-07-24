@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     sendJson(false, 405, 'Method not allowed');
 }
 
-requireRole(['admin', 'supervisor']);
+$user = requireRole(['admin', 'supervisor']);
 
 $body = json_decode(file_get_contents('php://input'), true);
 $id   = (int) ($body['id'] ?? 0);
@@ -27,6 +27,10 @@ try {
         sendJson(false, 409, 'Cannot delete a report that already has a work order');
     }
 
+    $refStmt = $db->prepare('SELECT reference FROM reports WHERE id = :id');
+    $refStmt->execute([':id' => $id]);
+    $reference = $refStmt->fetchColumn();
+
     $db->prepare('DELETE FROM report_photos WHERE report_id = :id')->execute([':id' => $id]);
 
     $stmt = $db->prepare('DELETE FROM reports WHERE id = :id');
@@ -34,6 +38,10 @@ try {
 
     if ($stmt->rowCount() === 0) {
         sendJson(false, 404, 'Report not found');
+    }
+
+    if ($reference) {
+        logActivity($db, $user, 'report.deleted', 'report', $id, $reference, $user['name'] . ' deleted report ' . $reference);
     }
 
     sendJson(true, 200, ['id' => $id]);

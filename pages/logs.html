@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style/logs.css?v=1">
+</head>
+<body>
+  <page name="logs" id="logs" onshow="loadLogsPage">
+  <section>
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <div class="filter-group">
+        <label>Action</label>
+        <select id="log-filter-action" onchange="applyLogFilters">
+          <option value="all">All</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>From</label>
+        <input type="date" id="log-filter-from" onchange="applyLogFilters" />
+      </div>
+      <div class="filter-group">
+        <label>To</label>
+        <input type="date" id="log-filter-to" onchange="applyLogFilters" />
+      </div>
+      <div class="filter-group search-group">
+        <input type="text" id="log-search" placeholder="Search by actor, entity, description..." oninput="applyLogFilters" />
+      </div>
+    </div>
+
+    <div class="table-container">
+      <div class="table-header">
+        <h4>System Logs</h4>
+        <span class="record-count" id="log-count">0 records</span>
+      </div>
+      <div class="table-wrapper">
+        <div class="table-head">
+          <span class="col-time">Time</span>
+          <span class="col-actor">Actor</span>
+          <span class="col-role">Role</span>
+          <span class="col-action">Action</span>
+          <span class="col-entity">Entity</span>
+          <span class="col-description">Description</span>
+        </div>
+        <div id="logs-body">
+          <p class="loading-text">Loading logs...</p>
+        </div>
+      </div>
+      <div class="pagination-bar">
+        <button id="logs-prev" class="pagination-btn" action="logsPrev" disabled>← Prev</button>
+        <span id="logs-page-label" class="pagination-label">Page 1 of 1</span>
+        <button id="logs-next" class="pagination-btn" action="logsNext">Next →</button>
+      </div>
+    </div>
+  </section>
+</page>
+</body>
+</html>

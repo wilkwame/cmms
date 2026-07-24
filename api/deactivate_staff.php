@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     sendJson(false, 405, 'Method not allowed');
 }
 
-requireRole(['admin']);
+$currentUser = requireRole(['admin']);
 
 $body = json_decode(file_get_contents('php://input'), true);
 $id   = (int) ($body['id'] ?? 0);
@@ -27,11 +27,19 @@ if ($id <= 0) {
 try {
     $db = connectToDatabase();
 
+    $nameStmt = $db->prepare('SELECT name FROM users WHERE id = :id');
+    $nameStmt->execute([':id' => $id]);
+    $targetName = $nameStmt->fetchColumn();
+
     $stmt = $db->prepare('UPDATE staff_profiles SET is_active = 0 WHERE user_id = :id');
     $stmt->execute([':id' => $id]);
 
     if ($stmt->rowCount() === 0) {
         sendJson(false, 404, 'Staff profile not found');
+    }
+
+    if ($targetName) {
+        logActivity($db, $currentUser, 'staff.deactivated', 'user', $id, $targetName, $currentUser['name'] . ' deactivated staff member ' . $targetName);
     }
 
     sendJson(true, 200, ['id' => $id]);

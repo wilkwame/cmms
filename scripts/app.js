@@ -286,7 +286,12 @@ function logoutUser(context) {
 }
 
 // Real navigation to the standalone login page, not an in-app page switch.
+// The server call is fired without awaiting it — it destroys the session
+// and logs the logout event, but a slow/failed request shouldn't delay the
+// user actually getting logged out locally.
 function performLogout() {
+    app.php('api/logout.php', {});
+
     localStorage.removeItem('cmms_user');
     localStorage.removeItem('cmms_token');
     sessionStorage.removeItem('cmms_user');

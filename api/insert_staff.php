@@ -8,7 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     sendJson(false, 405, 'Method not allowed');
 }
 
-requireRole(['admin']);
+$currentUser = requireRole(['admin']);
 
 $body = json_decode(file_get_contents('php://input'), true);
 
@@ -94,6 +94,8 @@ try {
     foreach ($skills as $categoryId) {
         $skillStmt->execute([':user_id' => $userId, ':category_id' => $categoryId]);
     }
+
+    logActivity($db, $currentUser, 'staff.created', 'user', $userId, $name, $currentUser['name'] . ' created staff account for ' . $name . ' (' . $role . ')');
 
     $db->commit();
 

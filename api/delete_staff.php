@@ -36,7 +36,7 @@ if ($targetId === $currentUser['id']) {
 try {
     $db = connectToDatabase();
 
-    $userStmt = $db->prepare('SELECT id, role FROM users WHERE id = :id');
+    $userStmt = $db->prepare('SELECT id, name, role FROM users WHERE id = :id');
     $userStmt->execute([':id' => $targetId]);
     $target = $userStmt->fetch();
 
@@ -92,6 +92,8 @@ try {
     $db->prepare('DELETE FROM staff_skills WHERE staff_user_id = :id')->execute([':id' => $targetId]);
     $db->prepare('DELETE FROM staff_profiles WHERE user_id = :id')->execute([':id' => $targetId]);
     $db->prepare('DELETE FROM users WHERE id = :id')->execute([':id' => $targetId]);
+
+    logActivity($db, $currentUser, 'staff.deleted', 'user', $targetId, $target['name'], $currentUser['name'] . ' permanently deleted account for ' . $target['name'] . ($hasHistory ? ' (history reassigned)' : ''));
 
     $db->commit();
 

@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     sendJson(false, 405, 'Method not allowed');
 }
 
-requireRole(['admin', 'supervisor']);
+$user = requireRole(['admin', 'supervisor']);
 
 $body   = json_decode(file_get_contents('php://input'), true);
 $id     = (int) ($body['id']     ?? 0);
@@ -37,8 +37,16 @@ if (!in_array($status, $allowedStatuses, true)) {
 try {
     $db = connectToDatabase();
 
+    $refStmt = $db->prepare('SELECT reference FROM reports WHERE id = :id');
+    $refStmt->execute([':id' => $id]);
+    $reference = $refStmt->fetchColumn();
+
     $stmt = $db->prepare('UPDATE reports SET status = :status WHERE id = :id');
     $stmt->execute([':status' => $status, ':id' => $id]);
+
+    if ($reference) {
+        logActivity($db, $user, 'report.rejected', 'report', $id, $reference, $user['name'] . ' rejected report ' . $reference);
+    }
 
     sendJson(true, 200, ['id' => $id, 'status' => $status]);
 

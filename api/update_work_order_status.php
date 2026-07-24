@@ -122,6 +122,8 @@ try {
         ':note'          => 'Marked ' . $newStatus . ' by ' . $user['name'],
     ]);
 
+    logActivity($db, $user, 'work_order.status_changed', 'work_order', $workOrderId, $workOrder['reference'], $user['name'] . ' changed ' . $workOrder['reference'] . ' from ' . $workOrder['status'] . ' to ' . $newStatus);
+
     // "closed" is the report-side terminal state once its work order is done.
     if ($newStatus === 'completed') {
         $db->prepare('UPDATE reports SET status = "closed" WHERE id = :report_id')

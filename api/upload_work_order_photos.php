@@ -94,6 +94,10 @@ try {
         $savedUrls[] = $url;
     }
 
+    if ($savedUrls) {
+        logActivity($db, $user, 'work_order.photos_added', 'work_order', $workOrderId, null, $user['name'] . ' attached ' . count($savedUrls) . ' completion photo(s) to work order #' . $workOrderId);
+    }
+
     sendJson(true, 201, ['urls' => $savedUrls]);
 
 } catch (PDOException $e) {

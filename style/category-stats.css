@@ -1,0 +1,114 @@
+/* ========================================
+   Category Stats Page Styles
+   ======================================== */
+
+#category-stats {
+  background: #f5f7fa;
+  width: 100%;
+  overflow: hidden;
+}
+
+#category-stats section {
+  padding: 16px 20px 20px;
+  flex: 1;
+  overflow-y: auto;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.category-bars-panel {
+  margin-top: 16px;
+}
+
+/* ========================================
+   BAR ROWS — single-series magnitude
+   (reports per category), sorted descending.
+   ======================================== */
+
+.category-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.category-bar-row:last-child {
+  border-bottom: none;
+}
+
+.category-bar-label {
+  flex: 0 0 110px;
+  max-width: 110px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.category-bar-track {
+  flex: 1;
+  height: 10px;
+  background: #eef1f5;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.category-bar-fill {
+  height: 100%;
+  min-width: 4px;
+  background: #237FEA;
+  border-radius: 5px;
+  transition: width 0.4s ease;
+}
+
+.category-bar-meta {
+  flex: 0 0 160px;
+  max-width: 160px;
+  text-align: right;
+  font-size: 11px;
+  color: #888;
+  white-space: nowrap;
+}
+
+.category-bar-meta strong {
+  color: #237FEA;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.loading-text {
+  padding: 30px 0;
+  text-align: center;
+  color: #999;
+  font-size: 13px;
+}
+
+.empty-state {
+  padding: 30px 0;
+  text-align: center;
+  color: #bbb;
+  font-size: 13px;
+}
+
+@media (max-width: 768px) {
+  #category-stats section {
+    padding: 12px 14px 80px;
+  }
+
+  .category-bar-label {
+    flex: 0 0 80px;
+    max-width: 80px;
+    font-size: 11px;
+  }
+
+  .category-bar-meta {
+    flex: 0 0 100px;
+    max-width: 100px;
+    font-size: 10px;
+  }
+}

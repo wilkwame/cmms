@@ -52,6 +52,9 @@ try {
 
     notifyWorkOrderAssignment($db, $workOrder);
 
+    logActivity($db, $currentUser, 'report.approved', 'report', $reportId, null, $currentUser['name'] . ' approved a report, creating work order ' . $workOrder['reference'] . ' assigned to ' . ($workOrder['assigned_to'] ?? 'nobody'));
+    logActivity($db, $currentUser, 'work_order.created', 'work_order', (int) $workOrder['id'], $workOrder['reference'], $workOrder['reference'] . ' created by ' . $currentUser['name']);
+
     sendJson(true, 201, $workOrder);
 
 } catch (PDOException $e) {

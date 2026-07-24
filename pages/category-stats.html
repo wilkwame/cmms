@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style/category-stats.css?v=1">
+</head>
+<body>
+  <page name="category-stats" id="category-stats" onshow="loadCategoryStatsPage">
+  <section>
+    <div class="card-container">
+      <div class="card">
+        <div class="image-container icon-report">
+          <i class="fas fa-file-alt"></i>
+        </div>
+        <div class="card-data">
+          <p class="card-count" id="cs-kpi-total-reports">0</p>
+          <p class="card-label">Total Reports</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="image-container icon-tools">
+          <i class="fas fa-tools"></i>
+        </div>
+        <div class="card-data">
+          <p class="card-count" id="cs-kpi-total-work-orders">0</p>
+          <p class="card-label">Total Work Orders</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="image-container icon-alert">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div class="card-data">
+          <p class="card-count" id="cs-kpi-top-category">—</p>
+          <p class="card-label">Most Reported</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="category-bars-panel card-panel">
+      <div class="panel-header">
+        <h4><i class="fas fa-chart-pie"></i> Reports by Category</h4>
+      </div>
+      <div id="category-bars-body">
+        <p class="loading-text">Loading category stats...</p>
+      </div>
+    </div>
+  </section>
+</page>
+</body>
+</html>

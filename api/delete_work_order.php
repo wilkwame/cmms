@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     sendJson(false, 405, 'Method not allowed');
 }
 
-requireRole(['admin', 'supervisor']);
+$user = requireRole(['admin', 'supervisor']);
 
 $body = json_decode(file_get_contents('php://input'), true);
 $id   = (int) ($body['id'] ?? 0);
@@ -26,9 +26,11 @@ try {
     // leave the report stuck "approved" forever with no work order and no
     // way back into the pending queue (get_reports.php's admin view only
     // shows status = "pending") — an invisible orphan nobody could recover.
-    $reportIdStmt = $db->prepare('SELECT report_id FROM work_orders WHERE id = :id');
-    $reportIdStmt->execute([':id' => $id]);
-    $reportId = $reportIdStmt->fetchColumn();
+    $woStmt = $db->prepare('SELECT report_id, reference FROM work_orders WHERE id = :id');
+    $woStmt->execute([':id' => $id]);
+    $woRow = $woStmt->fetch();
+    $reportId = $woRow ? $woRow['report_id'] : null;
+    $reference = $woRow ? $woRow['reference'] : null;
 
     $db->prepare('DELETE FROM work_order_activity WHERE work_order_id = :id')->execute([':id' => $id]);
     $db->prepare('DELETE FROM work_order_photos WHERE work_order_id = :id')->execute([':id' => $id]);
@@ -44,6 +46,10 @@ try {
     if ($reportId) {
         $db->prepare('UPDATE reports SET status = "pending" WHERE id = :id AND status IN ("approved", "closed")')
             ->execute([':id' => $reportId]);
+    }
+
+    if ($reference) {
+        logActivity($db, $user, 'work_order.deleted', 'work_order', $id, $reference, $user['name'] . ' deleted work order ' . $reference);
     }
 
     $db->commit();

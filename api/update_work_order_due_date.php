@@ -59,6 +59,8 @@ try {
         ':note'     => 'Due date changed to ' . $dueDate . ' by ' . $user['name'],
     ]);
 
+    logActivity($db, $user, 'work_order.due_date_changed', 'work_order', $workOrderId, $workOrder['reference'], $user['name'] . ' changed ' . $workOrder['reference'] . ' due date from ' . $workOrder['due_date'] . ' to ' . $dueDate);
+
     $db->commit();
 
     if (!empty($workOrder['assigned_to'])) {

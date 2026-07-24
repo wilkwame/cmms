@@ -80,6 +80,8 @@ try {
         ':note'     => 'Reassigned by ' . $user['name'],
     ]);
 
+    logActivity($db, $user, 'work_order.reassigned', 'work_order', $workOrderId, $workOrder['reference'], $user['name'] . ' reassigned ' . $workOrder['reference'] . ' from ' . ($workOrder['current_assignee'] ?: 'Unassigned') . ' to ' . $newStaff['name']);
+
     notifyUser(
         $db,
         $newStaff['id'],

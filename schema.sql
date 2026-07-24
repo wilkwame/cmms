@@ -106,6 +106,24 @@ CREATE TABLE work_order_photos (
 
 -- Activity log on work orders (status changes, comments, updates)
 
+-- Global audit trail: who did what, when, across the whole system. No FKs
+-- on purpose — an entity/user being deleted is itself an event this table
+-- must keep a record of, so actor/entity identity is snapshotted as text
+-- rather than joined live.
+CREATE TABLE audit_log (
+    id               INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    actor_id         INT UNSIGNED NULL,
+    actor_name       VARCHAR(100) NOT NULL,
+    actor_role       VARCHAR(20) NULL,
+    action           VARCHAR(50) NOT NULL,
+    entity_type      VARCHAR(30) NULL,
+    entity_id        INT UNSIGNED NULL,
+    entity_reference VARCHAR(50) NULL,
+    description      TEXT NOT NULL,
+    ip_address       VARCHAR(45) NULL,
+    created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE work_order_activity (
     id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     work_order_id   INT UNSIGNED NOT NULL,

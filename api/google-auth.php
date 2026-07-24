@@ -57,6 +57,7 @@ try {
     $user = $stmt->fetch();
     
     // If user doesn't exist, create one
+    $isNewUser = !$user;
     if (!$user) {
         $hashedPassword = password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT);
         
@@ -98,7 +99,12 @@ try {
     $_SESSION['user_email'] = $user['email'];
     $_SESSION['user_role'] = $user['role'];
     $_SESSION['token'] = $token;
-    
+
+    if ($isNewUser) {
+        logActivity($db, $user, 'user.created', 'user', (int) $user['id'], $user['name'], $user['name'] . ' account auto-created via Google sign-in');
+    }
+    logActivity($db, $user, 'login', 'user', (int) $user['id'], $user['name'], $user['name'] . ' logged in via Google');
+
     sendJson(true, 200, [
         'user' => [
             'id' => $user['id'],

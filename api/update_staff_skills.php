@@ -46,9 +46,10 @@ if ($role !== null && $role !== 'admin' && $userId === $currentAdmin['id']) {
 try {
     $db = connectToDatabase();
 
-    $userStmt = $db->prepare('SELECT id FROM users WHERE id = :id');
+    $userStmt = $db->prepare('SELECT id, name FROM users WHERE id = :id');
     $userStmt->execute([':id' => $userId]);
-    if (!$userStmt->fetch()) {
+    $targetUser = $userStmt->fetch();
+    if (!$targetUser) {
         sendJson(false, 404, 'User not found');
     }
 
@@ -83,6 +84,8 @@ try {
     foreach ($skills as $categoryId) {
         $skillStmt->execute([':user_id' => $userId, ':category_id' => $categoryId]);
     }
+
+    logActivity($db, $currentAdmin, 'staff.updated', 'user', $userId, $targetUser['name'], $currentAdmin['name'] . ' updated staff profile for ' . $targetUser['name'] . ' (department: ' . $department . ($role !== null ? ', role: ' . $role : '') . ')');
 
     $db->commit();
 
