@@ -54,8 +54,14 @@ const CATEGORY_NAME_TO_ID = {
 // screen that depends on it (sidebar name/role, dashboard stats, "Loading
 // reports..." etc.) frozen with no error, indistinguishable from data loss.
 function checkAuth() {
-    var storedUser = localStorage.getItem('cmms_user') || sessionStorage.getItem('cmms_user');
-    var storedToken = localStorage.getItem('cmms_token') || sessionStorage.getItem('cmms_token');
+    // Same matched-pair discipline as the guard script in index.html's
+    // <head> — read user+token from ONE storage, never mix across the two.
+    var storedUser = localStorage.getItem('cmms_user');
+    var storedToken = localStorage.getItem('cmms_token');
+    if (!storedUser || !storedToken) {
+        storedUser = sessionStorage.getItem('cmms_user');
+        storedToken = sessionStorage.getItem('cmms_token');
+    }
 
     if (storedUser && storedToken) {
         try {
@@ -242,6 +248,7 @@ function wireAvatarUpload() {
 
 applyRoleVisibility();
 startNotificationPolling();
+startDataPolling();
 renderSidebarAvatar();
 wireAvatarUpload();
 renderSidebarUserName();
@@ -621,10 +628,86 @@ function domContext() {
         query: function(selector) {
             return globalQuery(selector);
         },
+        render: function(selector, html) {
+            globalQuery(selector).html(html);
+        },
         timeout: function(fn, ms) {
             return setTimeout(fn, ms);
         }
     };
+}
+
+// Re-applies a page's filters (which also refreshes the underlying
+// app.memory.filteredX array) without the page-reset side effect that
+// applyXFilters normally has — a silent background poll shouldn't yank the
+// admin back to page 1 of a list they're browsing on page 3.
+function reapplyFiltersKeepingPage(applyFiltersFn, pageKey, pageSize, filteredKey, context) {
+    var savedPage = app.memory[pageKey] || 0;
+    applyFiltersFn(context);
+    var totalPages = Math.max(1, Math.ceil((app.memory[filteredKey] || []).length / pageSize));
+    app.memory[pageKey] = Math.min(savedPage, totalPages - 1);
+}
+
+// Silently re-fetches whatever page is currently on screen so actions taken
+// elsewhere (another device, another user, or just time passing — a report
+// someone else approved, a work order someone else reassigned) show up
+// without the admin/technician having to manually reload. Skips the
+// "Loading..." placeholders the real page-load functions show, and never
+// resets pagination or clobbers an in-progress filter/search input.
+function pollActivePageData() {
+    if (document.hidden) return;
+    var overlay = document.getElementById('popup-overlay');
+    if (overlay && overlay.classList.contains('active')) return;
+
+    var page = typeof app.currentPage === 'function' ? app.currentPage() : null;
+    var context = domContext();
+
+    if (page === 'home') {
+        Promise.all([
+            loadDashboardStats(context),
+            loadDashboardReports(context),
+            loadDashboardStaff(context),
+            loadDashboardWorkOrders(context)
+        ]).catch(function() {});
+    } else if (page === 'reports' && typeof applyReportFilters === 'function' && typeof renderReportsSlice === 'function') {
+        app.php('api/get_reports.php', {}).then(function(result) {
+            if (!result.ok) return;
+            app.memory.reports = result.data.reports || [];
+            reapplyFiltersKeepingPage(applyReportFilters, 'reportsPage', REPORT_PAGE_SIZE, 'filteredReports', context);
+            renderReportsSlice(context);
+        }).catch(function() {});
+    } else if (page === 'workorders' && typeof applyWorkOrderFilters === 'function' && typeof renderWorkOrdersSlice === 'function') {
+        app.php('api/get_work_orders.php', {}).then(function(result) {
+            if (!result.ok) return;
+            app.memory.workOrders = result.data.work_orders || [];
+            reapplyFiltersKeepingPage(applyWorkOrderFilters, 'workOrdersPage', WORK_ORDER_PAGE_SIZE, 'filteredWorkOrders', context);
+            renderWorkOrdersSlice(context);
+        }).catch(function() {});
+    } else if (page === 'staffs' && typeof applyStaffFilters === 'function' && typeof renderStaffSlice === 'function') {
+        app.php('api/get_staff.php', {}).then(function(result) {
+            if (!result.ok) return;
+            app.memory.staff = result.data.staff || [];
+            reapplyFiltersKeepingPage(applyStaffFilters, 'staffPage', STAFF_PAGE_SIZE, 'filteredStaff', context);
+            renderStaffSlice(context);
+        }).catch(function() {});
+    } else if (page === 'logs' && typeof applyLogFilters === 'function' && typeof renderLogsSlice === 'function') {
+        app.php('api/get_audit_log.php', {}).then(function(result) {
+            if (!result.ok) return;
+            app.memory.logs = result.data.logs || [];
+            reapplyFiltersKeepingPage(applyLogFilters, 'logsPage', LOG_PAGE_SIZE, 'filteredLogs', context);
+            renderLogsSlice(context);
+        }).catch(function() {});
+    } else if (page === 'category-stats' && typeof renderCategoryStats === 'function') {
+        app.php('api/get_category_stats.php', {}).then(function(result) {
+            if (result.ok) renderCategoryStats(context, result.data.categories || []);
+        }).catch(function() {});
+    }
+}
+
+function startDataPolling() {
+    if (app.memory.dataPollStarted) return;
+    app.memory.dataPollStarted = true;
+    setInterval(pollActivePageData, 20000);
 }
 
 // Polls for new notifications every 30s so the bell badge stays current

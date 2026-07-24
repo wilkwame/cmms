@@ -18,8 +18,19 @@
     // Guard: if there's no session, bounce to the login page immediately.
     // Runs synchronously, before the app shell or any styles/scripts load.
     (function () {
-      var user = localStorage.getItem('cmms_user') || sessionStorage.getItem('cmms_user');
-      var token = localStorage.getItem('cmms_token') || sessionStorage.getItem('cmms_token');
+      // Read user+token as a matched pair from ONE storage — never mix a
+      // user from localStorage with a token from sessionStorage (or vice
+      // versa). login.js's storeCredentials() always clears the other
+      // storage on write, but this guard predates that discipline and a
+      // stale leftover key from before that fix (or any future code path
+      // that doesn't go through storeCredentials) would otherwise let a
+      // mismatched pair slip past this check.
+      var user = localStorage.getItem('cmms_user');
+      var token = localStorage.getItem('cmms_token');
+      if (!user || !token) {
+        user = sessionStorage.getItem('cmms_user');
+        token = sessionStorage.getItem('cmms_token');
+      }
       if (!user || !token) {
         window.location.replace('login.html');
       }
@@ -384,7 +395,7 @@
 
   <script src="runtime/clera.js?v=11"></script>
   <script src="scripts/offline-queue.js?v=1"></script>
-  <script src="scripts/app.js?v=32"></script>
+  <script src="scripts/app.js?v=33"></script>
   <script src="scripts/logs.js?v=1"></script>
   <script src="scripts/category-stats.js?v=1"></script>
   <script src="scripts/reports.js?v=18"></script>
