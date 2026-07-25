@@ -43,11 +43,15 @@ function renderCategoryStats(context, categories) {
     var html = '';
     for (var i = 0; i < categories.length; i++) {
         var c = categories[i];
+        var hasReports = c.report_count > 0;
         var pct = maxReports > 0 ? Math.round((c.report_count / maxReports) * 100) : 0;
+        var fillWidth = hasReports ? Math.max(pct, 4) : 0;
+
         html += '<div class="category-bar-row">';
         html += '  <span class="category-bar-label">' + escapeHtml(c.name) + '</span>';
-        html += '  <span class="category-bar-track"><span class="category-bar-fill" style="width:' + (c.report_count > 0 ? Math.max(pct, 3) : 0) + '%"></span></span>';
-        html += '  <span class="category-bar-meta"><strong>' + c.report_count + '</strong> reports &middot; ' + c.work_order_count + ' work orders</span>';
+        html += '  <span class="category-bar-track"><span class="category-bar-fill' + (hasReports ? '' : ' is-zero') + '" style="width:' + fillWidth + '%"></span></span>';
+        html += '  <span class="category-bar-meta"><strong>' + c.report_count + '</strong> report' + (c.report_count === 1 ? '' : 's') +
+            '<span class="meta-divider">&middot;</span>' + c.work_order_count + ' work order' + (c.work_order_count === 1 ? '' : 's') + '</span>';
         html += '</div>';
     }
     context.render('#category-bars-body', html);

@@ -18,31 +18,57 @@
   box-sizing: border-box;
 }
 
+/* "Most Reported" is a headline stat, not a warning — give it the same
+   brand-blue treatment as the chart below instead of the alert-red icon
+   tile it was borrowing, so the KPI row and the chart read as one story. */
+.icon-top-category {
+  background: #e8f1fd;
+  color: #237FEA;
+}
+
 .category-bars-panel {
   margin-top: 16px;
 }
 
+.category-bars-panel .panel-header {
+  margin-bottom: 4px;
+}
+
+.category-bars-panel .panel-sub {
+  margin: -6px 0 14px;
+  font-size: 12px;
+  color: #9aa1ac;
+}
+
 /* ========================================
-   BAR ROWS — single-series magnitude
-   (reports per category), sorted descending.
+   BAR ROWS — single-series magnitude (reports per
+   category), sorted high to low. One hue throughout:
+   the fill carries the value, the track is the same
+   hue at low tint (blue-on-blue), never neutral gray,
+   so state reads across the whole bar at a glance.
    ======================================== */
 
 .category-bar-row {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 10px 0;
-  border-bottom: 1px solid #f5f5f5;
+  padding: 12px 4px;
+  border-radius: 8px;
+  transition: background 0.15s;
 }
 
-.category-bar-row:last-child {
-  border-bottom: none;
+.category-bar-row:hover {
+  background: #f7fafe;
+}
+
+.category-bar-row + .category-bar-row {
+  border-top: 1px solid #f2f4f7;
 }
 
 .category-bar-label {
-  flex: 0 0 110px;
-  max-width: 110px;
-  font-size: 12px;
+  flex: 0 0 100px;
+  max-width: 100px;
+  font-size: 12.5px;
   font-weight: 600;
   color: #333;
   overflow: hidden;
@@ -52,33 +78,45 @@
 
 .category-bar-track {
   flex: 1;
-  height: 10px;
-  background: #eef1f5;
-  border-radius: 5px;
+  height: 14px;
+  background: #e8f1fd;
+  border-radius: 7px;
   overflow: hidden;
 }
 
 .category-bar-fill {
   height: 100%;
-  min-width: 4px;
+  min-width: 14px;
   background: #237FEA;
-  border-radius: 5px;
-  transition: width 0.4s ease;
+  /* Square at the baseline (left, where every bar starts), rounded at the
+     data-end (right, where the value actually stops). */
+  border-radius: 0 7px 7px 0;
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.category-bar-fill.is-zero {
+  background: transparent;
 }
 
 .category-bar-meta {
-  flex: 0 0 160px;
-  max-width: 160px;
+  flex: 0 0 168px;
+  max-width: 168px;
   text-align: right;
-  font-size: 11px;
-  color: #888;
+  font-size: 11.5px;
+  color: #9aa1ac;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .category-bar-meta strong {
   color: #237FEA;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
+}
+
+.category-bar-meta .meta-divider {
+  margin: 0 5px;
+  color: #dfe3e8;
 }
 
 .loading-text {
@@ -101,14 +139,18 @@
   }
 
   .category-bar-label {
-    flex: 0 0 80px;
-    max-width: 80px;
+    flex: 0 0 76px;
+    max-width: 76px;
     font-size: 11px;
   }
 
   .category-bar-meta {
-    flex: 0 0 100px;
-    max-width: 100px;
+    flex: 0 0 108px;
+    max-width: 108px;
     font-size: 10px;
+  }
+
+  .category-bar-meta strong {
+    font-size: 12.5px;
   }
 }

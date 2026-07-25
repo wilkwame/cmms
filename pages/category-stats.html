@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="style/category-stats.css?v=1">
+  <link rel="stylesheet" href="style/category-stats.css?v=2">
 </head>
 <body>
   <page name="category-stats" id="category-stats" onshow="loadCategoryStatsPage">
@@ -28,8 +28,8 @@
         </div>
       </div>
       <div class="card">
-        <div class="image-container icon-alert">
-          <i class="fas fa-exclamation-triangle"></i>
+        <div class="image-container icon-top-category">
+          <i class="fas fa-chart-simple"></i>
         </div>
         <div class="card-data">
           <p class="card-count" id="cs-kpi-top-category">—</p>
@@ -42,6 +42,7 @@
       <div class="panel-header">
         <h4><i class="fas fa-chart-pie"></i> Reports by Category</h4>
       </div>
+      <p class="panel-sub">Sorted by report volume, highest first</p>
       <div id="category-bars-body">
         <p class="loading-text">Loading category stats...</p>
       </div>
