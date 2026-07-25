@@ -3,6 +3,7 @@
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/_notify.php';
+require_once __DIR__ . '/_audit.php';
 
 // Lets an admin/supervisor set or adjust a work order's timeline (due
 // date) — it's auto-calculated as +7 days on creation (see

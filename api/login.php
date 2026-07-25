@@ -2,6 +2,7 @@
 // api/login.php
 
 require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/_audit.php';
 
 // Only allow POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {

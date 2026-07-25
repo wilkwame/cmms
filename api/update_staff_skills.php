@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/_auth.php';
+require_once __DIR__ . '/_audit.php';
 
 // Turns any registered user into (or updates) assignable staff — creates
 // their staff_profiles row if they don't have one yet (e.g. someone who

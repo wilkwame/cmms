@@ -3,6 +3,7 @@
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/_notify.php';
+require_once __DIR__ . '/_audit.php';
 
 // Expected POST body:
 // {

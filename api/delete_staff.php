@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/_auth.php';
+require_once __DIR__ . '/_audit.php';
 
 // Permanently removes a user account — distinct from deactivate_staff.php,
 // which is a reversible soft-delete that preserves history.

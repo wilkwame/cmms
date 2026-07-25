@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/_auth.php';
+require_once __DIR__ . '/_audit.php';
 
 // Soft-delete: staff are deactivated (is_active = 0) rather than hard-deleted,
 // since users.id is referenced by reports.submitted_by, work_orders.assigned_to,
