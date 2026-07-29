@@ -107,10 +107,14 @@ function buildMyReportCard(r) {
         ? '<span class="mrc-tag"><i class="fas fa-user-cog"></i> ' + escapeHtml(r.assigned_to) + '</span>'
         : '<span class="mrc-tag mrc-tag-muted"><i class="fas fa-hourglass-half"></i> Awaiting assignment</span>';
 
-    // Shown directly on the card (not just after clicking in) for a closed
-    // ticket, so leaving/seeing feedback doesn't need an extra step.
-    var feedback = r.feedback_rating ? { rating: r.feedback_rating, comment: r.feedback_comment } : null;
-    var feedbackHtml = buildFeedbackHtml(r.id, r.status, feedback);
+    // A compact button on a closed ticket, rather than the full star/comment
+    // form embedded on the card — opens a dedicated feedback popup instead.
+    var feedbackButtonHtml = '';
+    if (r.status === 'closed') {
+        feedbackButtonHtml = r.feedback_rating
+            ? '<button type="button" class="mrc-feedback-btn mrc-feedback-btn-given" action="openFeedbackPopup: ' + r.id + '"><i class="fas fa-star"></i> View Your Feedback</button>'
+            : '<button type="button" class="mrc-feedback-btn" action="openFeedbackPopup: ' + r.id + '"><i class="fas fa-comment-dots"></i> Give Feedback</button>';
+    }
 
     return '<div class="mrc-card" action="openMyReportPopup: ' + r.id + '">' +
         '  <div class="mrc-top">' +
@@ -123,9 +127,39 @@ function buildMyReportCard(r) {
         '    <span class="mrc-tag"><i class="fas fa-calendar"></i> ' + formatDate(r.submitted_at) + '</span>' +
         '    <span class="' + getPriorityClass(r.priority) + '">' + priorityLabel(r.priority) + '</span>' +
         '  </div>' +
-        feedbackHtml +
+        feedbackButtonHtml +
         '  <i class="fas fa-chevron-right mrc-chevron"></i>' +
         '</div>';
+}
+
+// Opens a focused popup for just the feedback form/read-only view, so
+// giving feedback doesn't require opening the full ticket detail popup
+// first — triggered by the "Give Feedback"/"View Your Feedback" button on
+// the card. Reads from app.memory.reports (already fetched for the list),
+// no extra network round trip needed just to open this.
+function openFeedbackPopup(arg, context) {
+    var reportId = parseInt(arg, 10);
+    if (!reportId) return;
+
+    var report = (app.memory.reports || []).filter(function(r) { return r.id === reportId; })[0];
+    if (!report) return;
+
+    var feedback = report.feedback_rating ? { rating: report.feedback_rating, comment: report.feedback_comment } : null;
+
+    openPopup(context,
+        '<div class="popup-content">' +
+        '  <div class="popup-header">' +
+        '    <h3><i class="fas fa-comment-dots"></i> ' + escapeHtml(report.reference) + '</h3>' +
+        '    <button class="popup-close" action="closePopup"><i class="fas fa-times"></i></button>' +
+        '  </div>' +
+        '  <div class="popup-body">' +
+        buildFeedbackHtml(reportId, report.status, feedback) +
+        '  </div>' +
+        '  <div class="popup-footer">' +
+        '    <button class="popup-btn secondary" action="closePopup"><i class="fas fa-times"></i> Close</button>' +
+        '  </div>' +
+        '</div>'
+    );
 }
 
 function goToReportIssue(context) {
@@ -218,17 +252,9 @@ function submitFeedback(arg, context) {
                 return;
             }
             if (app.memory.pendingFeedbackRating) delete app.memory.pendingFeedbackRating[reportId];
+            closePopup(context);
             showNotificationToast(context, 'Thanks for your feedback!', 'success');
-
-            // Refresh whichever surface is actually showing this ticket —
-            // the detail popup (if open) or the card list (if submitted
-            // straight from the card).
-            var popupOverlay = document.getElementById('popup-overlay');
-            if (popupOverlay && popupOverlay.classList.contains('active')) {
-                openMyReportPopup(reportId, context);
-            } else {
-                refreshUserHomeData(context);
-            }
+            refreshUserHomeData(context);
         })
         .catch(function(error) {
             console.error('Failed to submit feedback:', error);
@@ -295,6 +321,7 @@ window.loadUserHomePage = loadUserHomePage;
 window.refreshUserHomeData = refreshUserHomeData;
 window.goToReportIssue = goToReportIssue;
 window.openMyReportPopup = openMyReportPopup;
+window.openFeedbackPopup = openFeedbackPopup;
 window.setFeedbackRating = setFeedbackRating;
 window.submitFeedback = submitFeedback;
 window.noop = noop;
