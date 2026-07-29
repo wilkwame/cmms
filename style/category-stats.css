@@ -112,6 +112,11 @@
 }
 
 .category-bar-fill {
+  /* This is a <span> — display:inline by default — and inline elements
+     ignore the width/height CSS properties entirely. Without this, every
+     bar's fill silently rendered at zero width forever, regardless of its
+     value or color; only the pale track underneath was ever visible. */
+  display: inline-block;
   height: 100%;
   min-width: 14px;
   background: #237FEA;
