@@ -9,6 +9,14 @@
 <body>
  <page name="staffs" id="staffs" onshow="loadStaffPage">
   <section>
+    <div class="list-page-header">
+      <span class="list-page-icon"><i class="fas fa-users"></i></span>
+      <div>
+        <h2>Staff</h2>
+        <p class="list-page-sub">Manage workers, trades, and departments</p>
+      </div>
+    </div>
+
     <div class="filter-bar">
       <div class="filter-group">
         <label>Role</label>
@@ -21,7 +29,7 @@
         </select>
       </div>
       <div class="filter-group">
-        <label>Department</label>
+        <label>Trade</label>
         <select id="staff-filter-department" onchange="applyStaffFilters">
           <option value="all">All</option>
           <option value="Electrical">Electrical</option>
@@ -58,7 +66,7 @@
           <span class="col-name">Name</span>
           <span class="col-email">Email</span>
           <span class="col-role">Role</span>
-          <span class="col-department">Department</span>
+          <span class="col-department">Trade</span>
           <span class="col-status">Status</span>
           <span class="col-jobs">Active Jobs</span>
           <span class="col-joined">Joined</span>

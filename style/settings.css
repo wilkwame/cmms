@@ -23,34 +23,55 @@
    PAGE HEADER
    ======================================== */
 
-.page-header {
+/* Scoped to #settings and every property that main.css's global .page-header
+   (the Home dashboard's blue gradient hero banner) sets is explicitly reset
+   here — that shared, unscoped class name was otherwise winning by document
+   order alone, leaving dark (#1a1a1a) title text sitting on a dark blue
+   gradient background with almost no contrast. */
+#settings .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
   flex-wrap: wrap;
   gap: 12px;
+  background: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  overflow: visible;
 }
 
-.header-content h2 {
+#settings .page-header::before,
+#settings .page-header::after {
+  content: none;
+}
+
+#settings .avatar-widget {
+  background: #f0f7ff;
+  border: none;
+  color: #237FEA;
+}
+
+#settings .header-content h2 {
   font-size: 26px;
   font-weight: 700;
   color: #1a1a1a;
   margin: 0;
 }
 
-.header-content h2 i {
+#settings .header-content h2 i {
   color: #237FEA;
   margin-right: 10px;
 }
 
-.header-subtitle {
+#settings .header-subtitle {
   font-size: 14px;
   color: #999;
   margin-top: 2px;
 }
 
-.header-actions {
+#settings .header-actions {
   display: flex;
   gap: 8px;
 }
@@ -609,21 +630,21 @@
     gap: 14px;
   }
 
-  .page-header {
+  #settings .page-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
   }
 
-  .header-content h2 {
+  #settings .header-content h2 {
     font-size: 20px;
   }
 
-  .header-subtitle {
+  #settings .header-subtitle {
     font-size: 13px;
   }
 
-  .header-actions {
+  #settings .header-actions {
     align-self: flex-end;
   }
 
