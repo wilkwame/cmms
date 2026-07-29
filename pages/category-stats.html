@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="style/category-stats.css?v=2">
+  <link rel="stylesheet" href="style/category-stats.css?v=3">
 </head>
 <body>
   <page name="category-stats" id="category-stats" onshow="loadCategoryStatsPage">
@@ -49,6 +49,9 @@
     <div class="category-bars-panel card-panel">
       <div class="panel-header">
         <h4><i class="fas fa-chart-pie"></i> Tickets by Category</h4>
+        <button class="btn-download-chart" action="downloadCategoryChart" title="Download chart as an image">
+          <i class="fas fa-download"></i> Download
+        </button>
       </div>
       <p class="panel-sub">Sorted by ticket volume, highest first</p>
       <div id="category-bars-body">
