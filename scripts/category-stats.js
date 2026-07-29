@@ -50,7 +50,7 @@ function renderCategoryStats(context, categories) {
         html += '<div class="category-bar-row">';
         html += '  <span class="category-bar-label">' + escapeHtml(c.name) + '</span>';
         html += '  <span class="category-bar-track"><span class="category-bar-fill' + (hasReports ? '' : ' is-zero') + '" style="width:' + fillWidth + '%"></span></span>';
-        html += '  <span class="category-bar-meta"><strong>' + c.report_count + '</strong> report' + (c.report_count === 1 ? '' : 's') +
+        html += '  <span class="category-bar-meta"><strong>' + c.report_count + '</strong> ticket' + (c.report_count === 1 ? '' : 's') +
             '<span class="meta-divider">&middot;</span>' + c.work_order_count + ' work order' + (c.work_order_count === 1 ? '' : 's') + '</span>';
         html += '</div>';
     }

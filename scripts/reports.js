@@ -18,14 +18,14 @@ app.memory.reportsPage = 0;
 
 // ===== LOAD REPORTS PAGE =====
 function loadReportsPage(context) {
-    context.render('#reports-body', '<p class="loading-text">Loading reports...</p>');
+    context.render('#reports-body', '<p class="loading-text">Loading tickets...</p>');
 
     if (app.memory.reports.length === 0) {
         app.php('api/get_reports.php', {})
             .then(function(result) {
                 if (handleAuthFailure(result)) return;
                 if (!result.ok) {
-                    context.render('#reports-body', '<p class="empty-state">Failed to load reports.</p>');
+                    context.render('#reports-body', '<p class="empty-state">Failed to load tickets.</p>');
                     return;
                 }
                 app.memory.reports = result.data.reports || [];
@@ -34,9 +34,9 @@ function loadReportsPage(context) {
             .catch(function(error) {
                 // Without this, a request that rejects (network error, or a
                 // response body that isn't valid JSON) leaves the page stuck
-                // on "Loading reports..." forever with no visible feedback.
+                // on "Loading tickets..." forever with no visible feedback.
                 console.error('Failed to load reports:', error);
-                context.render('#reports-body', '<p class="empty-state">Failed to load reports. Please try again.</p>');
+                context.render('#reports-body', '<p class="empty-state">Failed to load tickets. Please try again.</p>');
             });
     } else {
         applyReportFilters(context);
@@ -81,7 +81,7 @@ function renderReportsSlice(context) {
     context.query('#report-count').text(filtered.length + ' records');
     
     if (slice.length === 0) {
-        context.render('#reports-body', '<p class="empty-state">No reports found.</p>');
+        context.render('#reports-body', '<p class="empty-state">No tickets found.</p>');
     } else {
         var html = '';
         for (var i = 0; i < slice.length; i++) {
@@ -150,7 +150,7 @@ function quickApproveReport(arg, context) {
     // confirm is used instead of window.confirm() because Chrome silently
     // auto-suppresses confirm() after a page has shown a few in a session,
     // which made Approve/Reject look like dead buttons with no feedback.
-    requestConfirm(context, 'Approve this report and create a work order?', 'Approve Report', function() {
+    requestConfirm(context, 'Approve this ticket and create a work order?', 'Approve Ticket', function() {
         // create_work_order.php only marks the report "approved" once it
         // finds a staff member with a matching skill and actually creates
         // the work order — calling it directly (instead of flipping status
@@ -160,10 +160,10 @@ function quickApproveReport(arg, context) {
         app.php('api/create_work_order.php', { report_id: reportId })
             .then(function(woData) {
                 if (woData.ok) {
-                    showNotificationToast(context, 'Report approved and work order created!', 'success');
+                    showNotificationToast(context, 'Ticket approved and work order created!', 'success');
                     refreshAllData(context);
                 } else {
-                    showNotificationToast(context, (woData && woData.data) || 'No matching staff available — report stays pending', 'error');
+                    showNotificationToast(context, (woData && woData.data) || 'No matching staff available — ticket stays pending', 'error');
                 }
             })
             .catch(function(error) {
@@ -172,7 +172,7 @@ function quickApproveReport(arg, context) {
                 // completely silently — the button looks like it does
                 // nothing at all, with no feedback of any kind.
                 console.error('Failed to approve report:', error);
-                showNotificationToast(context, 'Something went wrong approving this report. Check the browser console for details.', 'error');
+                showNotificationToast(context, 'Something went wrong approving this ticket. Check the browser console for details.', 'error');
             });
     }, 'approve', 'fa-check');
 }
@@ -184,11 +184,11 @@ function openRejectPopup(arg, context) {
         return;
     }
 
-    requestConfirm(context, 'Reject this report? This cannot be undone.', 'Reject Report', function() {
+    requestConfirm(context, 'Reject this ticket? This cannot be undone.', 'Reject Ticket', function() {
         app.php('api/update_report_status.php', { id: reportId, status: 'rejected' })
             .then(function(data) {
                 if (data.ok) {
-                    showNotificationToast(context, 'Report rejected', 'success');
+                    showNotificationToast(context, 'Ticket rejected', 'success');
                     app.php('api/delete_report.php', { id: reportId })
                         .then(function() {
                             refreshAllData(context);
@@ -198,12 +198,12 @@ function openRejectPopup(arg, context) {
                             refreshAllData(context);
                         });
                 } else {
-                    showNotificationToast(context, 'Failed to reject report', 'error');
+                    showNotificationToast(context, 'Failed to reject ticket', 'error');
                 }
             })
             .catch(function(error) {
                 console.error('Failed to reject report:', error);
-                showNotificationToast(context, 'Something went wrong rejecting this report. Check the browser console for details.', 'error');
+                showNotificationToast(context, 'Something went wrong rejecting this ticket. Check the browser console for details.', 'error');
             });
     }, 'reject', 'fa-xmark');
 }
@@ -219,17 +219,17 @@ function confirmDeleteReportRow(arg, context) {
         return;
     }
 
-    requestConfirm(context, 'Delete this report? This cannot be undone.', 'Delete Report', function() {
+    requestConfirm(context, 'Delete this ticket? This cannot be undone.', 'Delete Ticket', function() {
         app.php('api/delete_report.php', { id: reportId }).then(function(result) {
             if (!result.ok) {
-                showNotificationToast(context, (result && result.data) || 'Failed to delete report', 'error');
+                showNotificationToast(context, (result && result.data) || 'Failed to delete ticket', 'error');
                 return;
             }
-            showNotificationToast(context, 'Report deleted', 'success');
+            showNotificationToast(context, 'Ticket deleted', 'success');
             refreshAllData(context);
         }).catch(function(error) {
             console.error('Failed to delete report:', error);
-            showNotificationToast(context, 'Something went wrong deleting this report. Check the browser console for details.', 'error');
+            showNotificationToast(context, 'Something went wrong deleting this ticket. Check the browser console for details.', 'error');
         });
     }, 'reject', 'fa-trash');
 }

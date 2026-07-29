@@ -59,8 +59,8 @@ function notifyWorkOrderAssignment(PDO $db, array $workOrder): void {
         notifyUser(
             $db,
             (int) $workOrder['submitted_by'],
-            'Report Assigned',
-            'Your report ' . $refLine . ' has been assigned to ' . ($workOrder['assigned_to'] ?: 'a technician') . '.'
+            'Ticket Assigned',
+            'Your ticket ' . $refLine . ' has been assigned to ' . ($workOrder['assigned_to'] ?: 'a technician') . '.'
         );
     }
 
@@ -71,12 +71,12 @@ function notifyWorkOrderAssignment(PDO $db, array $workOrder): void {
 // assignment, since auto-assignment can fail to find a match and the
 // reporter should still know their report went through.
 function notifyReportSubmitted(PDO $db, int $reporterId, string $reference, string $issue): void {
-    notifyUser($db, $reporterId, 'Report Submitted', $reference . ' (' . $issue . ') has been submitted.');
+    notifyUser($db, $reporterId, 'Ticket Submitted', $reference . ' (' . $issue . ') has been submitted.');
 }
 
 // Auto-assignment found nobody with a matching skill — the report is stuck
 // "pending" until an admin steps in, so they need to know it needs manual
 // attention rather than silently sitting unnoticed in the queue.
 function notifyAdminsUnassigned(PDO $db, string $reference, string $issue): void {
-    notifyAdmins($db, 'Report Needs Manual Assignment', $reference . ' (' . $issue . ') has no matching staff — assign manually.');
+    notifyAdmins($db, 'Ticket Needs Manual Assignment', $reference . ' (' . $issue . ') has no matching staff — assign manually.');
 }

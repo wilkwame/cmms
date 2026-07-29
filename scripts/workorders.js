@@ -167,7 +167,7 @@ function workOrdersNext(context) {
 // a pending report auto-creates its work order.
 function goToNewWorkOrder(context) {
     closeMobileMenu(context);
-    showNotificationToast(context, 'Work orders are created by approving a pending report', 'warning');
+    showNotificationToast(context, 'Work orders are created by approving a pending ticket', 'warning');
     context.navigate('reports');
 }
 

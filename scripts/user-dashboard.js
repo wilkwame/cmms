@@ -8,7 +8,7 @@ function loadUserHomePage(context) {
     var dateEl = context.query('#uh-current-date');
     if (dateEl.exists) dateEl.text(getCurrentDate());
 
-    context.render('#uh-reports-body', '<p class="loading-text">Loading your reports...</p>');
+    context.render('#uh-reports-body', '<p class="loading-text">Loading your tickets...</p>');
 
     var pendingOffline = typeof offlineQueueGetAll === 'function'
         ? offlineQueueGetAll().catch(function() { return []; })
@@ -20,7 +20,7 @@ function loadUserHomePage(context) {
 
         if (handleAuthFailure(result)) return;
         if (!result.ok) {
-            context.render('#uh-reports-body', '<p class="empty-state"><i class="fas fa-triangle-exclamation"></i>Failed to load your reports.</p>');
+            context.render('#uh-reports-body', '<p class="empty-state"><i class="fas fa-triangle-exclamation"></i>Failed to load your tickets.</p>');
             return;
         }
 
@@ -89,8 +89,8 @@ function renderUserStats(context, reports, offlineCount) {
 function buildEmptyReportsState() {
     return '<div class="empty-state uh-empty">' +
         '<i class="fas fa-clipboard-check"></i>' +
-        '<p>You haven\'t submitted any reports yet.</p>' +
-        '<button class="uh-empty-btn" action="goToReportIssue"><i class="fas fa-plus"></i> Report an issue</button>' +
+        '<p>You haven\'t submitted any tickets yet.</p>' +
+        '<button class="uh-empty-btn" action="goToReportIssue"><i class="fas fa-plus"></i> Submit a ticket</button>' +
         '</div>';
 }
 
@@ -122,11 +122,11 @@ function openMyReportPopup(arg, context) {
     var reportId = parseInt(arg);
     if (!reportId) return;
 
-    openPopup(context, '<div class="popup-content"><p class="loading-text">Loading report...</p></div>');
+    openPopup(context, '<div class="popup-content"><p class="loading-text">Loading ticket...</p></div>');
 
     app.php('api/get_report_timeline.php', { report_id: reportId }).then(function(result) {
         if (!result.ok) {
-            openPopup(context, '<div class="popup-content"><p class="empty-state">Failed to load report.</p></div>');
+            openPopup(context, '<div class="popup-content"><p class="empty-state">Failed to load ticket.</p></div>');
             return;
         }
         openPopup(context, buildMyReportTimelinePopup(result.data));
@@ -142,7 +142,7 @@ function buildMyReportTimelinePopup(data) {
     if (photos.length > 0) {
         photosHtml = '<div class="popup-field"><label><i class="fas fa-images"></i> Photos</label><div class="photo-previews">';
         photos.forEach(function(url) {
-            photosHtml += '<div class="photo-thumb"><img src="' + url + '" alt="Report photo" /></div>';
+            photosHtml += '<div class="photo-thumb"><img src="' + url + '" alt="Ticket photo" /></div>';
         });
         photosHtml += '</div></div>';
     }

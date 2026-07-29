@@ -243,7 +243,7 @@ async function submitReportIssue(context) {
     if (!navigator.onLine) {
         await queueReportOffline(context, reportPayload, photos);
         submitBtn.element.disabled = false;
-        submitBtn.html('<i class="fas fa-paper-plane"></i> Submit Report');
+        submitBtn.html('<i class="fas fa-paper-plane"></i> Submit Ticket');
         return;
     }
 
@@ -257,7 +257,7 @@ async function submitReportIssue(context) {
 
         if (handleAuthFailure(result)) return;
         if (!result.ok) {
-            showReportIssueBanner(banner, 'Failed to submit report: ' + (result.data || 'Unknown error'), 'error');
+            showReportIssueBanner(banner, 'Failed to submit ticket: ' + (result.data || 'Unknown error'), 'error');
             return;
         }
 
@@ -294,8 +294,8 @@ async function submitReportIssue(context) {
 
         clearReportIssueForm(context);
         showSuccessPopup(
-            'Report ' + result.data.reference + ' submitted. We\'ll match it to the right staff member automatically.',
-            'Report Submitted!',
+            'Ticket ' + result.data.reference + ' submitted. We\'ll match it to the right staff member automatically.',
+            'Ticket Submitted!',
             function() { context.navigate('user-home'); }
         );
     } catch (e) {
@@ -305,7 +305,7 @@ async function submitReportIssue(context) {
         await queueReportOffline(context, reportPayload, photos);
     } finally {
         submitBtn.element.disabled = false;
-        submitBtn.html('<i class="fas fa-paper-plane"></i> Submit Report');
+        submitBtn.html('<i class="fas fa-paper-plane"></i> Submit Ticket');
     }
 }
 
@@ -314,14 +314,14 @@ async function queueReportOffline(context, reportPayload, photos) {
         await offlineQueueAdd(reportPayload, photos);
         clearReportIssueForm(context);
         showSuccessPopup(
-            'You\'re offline, so this report is saved on your device. It\'ll be sent and matched to staff automatically the moment you\'re back online.',
+            'You\'re offline, so this ticket is saved on your device. It\'ll be sent and matched to staff automatically the moment you\'re back online.',
             'Saved — Will Send When Online',
             function() { context.navigate('user-home'); }
         );
     } catch (e) {
         console.error('Failed to queue report offline:', e);
         var banner = context.query('#report-issue-banner');
-        showReportIssueBanner(banner, 'Could not save this report, even offline. Please try again.', 'error');
+        showReportIssueBanner(banner, 'Could not save this ticket, even offline. Please try again.', 'error');
     }
 }
 

@@ -54,7 +54,7 @@ function sendAssignmentEmail(string $toEmail, string $toName, array $workOrder):
         foreach ($urls as $url) {
             $absoluteUrl = $baseUrl . '/' . ltrim($url, '/');
             $photosHtml .= '<a href="' . htmlspecialchars($absoluteUrl) . '" style="display:inline-block;margin:0 8px 8px 0;">'
-                . '<img src="' . htmlspecialchars($absoluteUrl) . '" alt="Report photo" width="150" style="border-radius:6px;border:1px solid #dfe3e8;" />'
+                . '<img src="' . htmlspecialchars($absoluteUrl) . '" alt="Ticket photo" width="150" style="border-radius:6px;border:1px solid #dfe3e8;" />'
                 . '</a>';
         }
         $photosHtml .= '</div>';

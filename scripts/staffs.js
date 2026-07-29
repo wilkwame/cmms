@@ -199,7 +199,7 @@ function deleteStaffPermanently(context, staffId, force) {
             if (result.status === 409 && !force) {
                 requestConfirm(
                     context,
-                    'This account has reports or work order history. Force-deleting it will reassign its reports/created work orders to you and unassign any work orders currently on it — that history is kept, just no longer tied to this account. Continue?',
+                    'This account has tickets or work order history. Force-deleting it will reassign its tickets/created work orders to you and unassign any work orders currently on it — that history is kept, just no longer tied to this account. Continue?',
                     'Force Delete Account',
                     function() { deleteStaffPermanently(context, staffId, true); },
                     'reject',
@@ -274,7 +274,7 @@ function openEditSkillsPopup(arg, context) {
         '      </select>' +
         (isSelf ? '      <p style="font-size:11px;color:#9aa1ac;margin-top:4px;">You can\'t change your own role here — ask another admin.</p>' : '') +
         '    </div>' +
-        '    <p style="font-size:13px;color:#6b7280;margin-bottom:14px;">Giving this account skills makes it eligible for auto-assignment on matching reports — regardless of role.</p>' +
+        '    <p style="font-size:13px;color:#6b7280;margin-bottom:14px;">Giving this account skills makes it eligible for auto-assignment on matching tickets — regardless of role.</p>' +
         '    <div class="popup-field">' +
         '      <label><i class="fas fa-building"></i> Department</label>' +
         '      <select id="edit-skills-department" style="' + selectStyle + '">' +

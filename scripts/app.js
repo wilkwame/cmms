@@ -133,7 +133,7 @@ function updateOfflineIndicator() {
 
     if (!navigator.onLine) {
         el.classList.remove('hidden', 'syncing');
-        text.textContent = "You're offline — reports you submit will be saved and sent automatically once you're back online.";
+        text.textContent = "You're offline — tickets you submit will be saved and sent automatically once you're back online.";
         return;
     }
 
@@ -146,7 +146,7 @@ function updateOfflineIndicator() {
         if (count > 0) {
             el.classList.remove('hidden');
             el.classList.add('syncing');
-            text.textContent = 'Back online — syncing ' + count + ' saved report' + (count === 1 ? '' : 's') + '...';
+            text.textContent = 'Back online — syncing ' + count + ' saved ticket' + (count === 1 ? '' : 's') + '...';
         } else {
             el.classList.add('hidden');
             el.classList.remove('syncing');
@@ -155,11 +155,11 @@ function updateOfflineIndicator() {
 }
 
 // Called by offline-queue.js once a queued report has actually been sent
-// for real. Refreshes "My Reports" if a reporter is looking at it, and
-// gives a clear confirmation the offline report made it through.
+// for real. Refreshes "My Tickets" if a reporter is looking at it, and
+// gives a clear confirmation the offline ticket made it through.
 function onOfflineReportSynced(savedReport) {
     updateOfflineIndicator();
-    showNotificationToast(domContext(), 'Offline report ' + savedReport.reference + ' sent successfully.', 'success');
+    showNotificationToast(domContext(), 'Offline ticket ' + savedReport.reference + ' sent successfully.', 'success');
 
     if (app.memory.user && app.memory.user.role === 'reporter' && typeof loadUserHomePage === 'function') {
         var activePage = document.querySelector('page[active]');
@@ -904,7 +904,7 @@ function openReportPopup(arg, context) {
     }
 
     if (!report) {
-        showNotificationToast(context, 'Report not found', 'error');
+        showNotificationToast(context, 'Ticket not found', 'error');
         return;
     }
 
@@ -1539,7 +1539,7 @@ async function loadHomePage(context) {
     // renderSidebarUserName(), which handles it correctly at boot).
     context.query('.greeting').text(greeting + ', ' + userName);
 
-    context.render('#dashboard-reports-body', '<p class="loading-text">Loading reports...</p>');
+    context.render('#dashboard-reports-body', '<p class="loading-text">Loading tickets...</p>');
     context.render('#dashboard-workload-body', '<p class="loading-text">Loading staff...</p>');
     context.render('#dashboard-workorders-body', '<p class="loading-text">Loading work orders...</p>');
 
@@ -1615,12 +1615,12 @@ async function loadDashboardReports(context) {
         var result = await app.php('api/get_reports.php', {});
     } catch (error) {
         console.error('Failed to load dashboard reports:', error);
-        context.render('#dashboard-reports-body', '<p class="loading-text">Failed to load reports</p>');
+        context.render('#dashboard-reports-body', '<p class="loading-text">Failed to load tickets</p>');
         return;
     }
     if (handleAuthFailure(result)) return;
     if (!result.ok) {
-        context.render('#dashboard-reports-body', '<p class="loading-text">Failed to load reports</p>');
+        context.render('#dashboard-reports-body', '<p class="loading-text">Failed to load tickets</p>');
         return;
     }
 
@@ -1628,7 +1628,7 @@ async function loadDashboardReports(context) {
     var reports = app.memory.reports.slice(0, 5);
 
     if (reports.length === 0) {
-        context.render('#dashboard-reports-body', '<p class="loading-text">No pending reports</p>');
+        context.render('#dashboard-reports-body', '<p class="loading-text">No pending tickets</p>');
         return;
     }
 
