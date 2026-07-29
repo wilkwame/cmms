@@ -9,12 +9,20 @@ function loadUserHomePage(context) {
     if (dateEl.exists) dateEl.text(getCurrentDate());
 
     context.render('#uh-reports-body', '<p class="loading-text">Loading your tickets...</p>');
+    refreshUserHomeData(context);
+}
 
+// Split out from loadUserHomePage so pollActivePageData (app.js) can
+// silently re-pull this reporter's own ticket list without flashing the
+// "Loading your tickets..." placeholder every few seconds — a status
+// change made by staff (approved, completed, etc.) now shows up here on
+// its own instead of only after the reporter manually reloads.
+function refreshUserHomeData(context) {
     var pendingOffline = typeof offlineQueueGetAll === 'function'
         ? offlineQueueGetAll().catch(function() { return []; })
         : Promise.resolve([]);
 
-    Promise.all([app.php('api/get_reports.php', {}), pendingOffline]).then(function(results) {
+    return Promise.all([app.php('api/get_reports.php', {}), pendingOffline]).then(function(results) {
         var result = results[0];
         var offlineItems = results[1] || [];
 
@@ -251,6 +259,7 @@ function buildMyReportTimelinePopup(data) {
 }
 
 window.loadUserHomePage = loadUserHomePage;
+window.refreshUserHomeData = refreshUserHomeData;
 window.goToReportIssue = goToReportIssue;
 window.openMyReportPopup = openMyReportPopup;
 window.setFeedbackRating = setFeedbackRating;

@@ -701,6 +701,8 @@ function pollActivePageData() {
         app.php('api/get_category_stats.php', {}).then(function(result) {
             if (result.ok) renderCategoryStats(context, result.data.categories || []);
         }).catch(function() {});
+    } else if (page === 'user-home' && typeof refreshUserHomeData === 'function') {
+        refreshUserHomeData(context).catch(function() {});
     }
 }
 
