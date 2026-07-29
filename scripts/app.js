@@ -791,6 +791,11 @@ function markNotificationRead(arg, context) {
     context.navigate(notificationTargetPage());
 }
 
+// No success popup on purpose — matches clearAllNotifications below.
+// Notification-bell actions update the panel immediately (unread dots
+// clearing, the list emptying) as their own feedback; a dismissible
+// modal on top of that for every click is exactly the friction the bell
+// shouldn't have.
 function markAllNotificationsRead(context) {
     for (var i = 0; i < app.memory.notifications.length; i++) {
         app.memory.notifications[i].read = true;
@@ -798,8 +803,11 @@ function markAllNotificationsRead(context) {
 
     renderNotifications(context);
     updateNotificationBadge(context);
-    context.fetch('api/mark_notification_read.php', { method: 'POST', body: {} }, function() {});
-    showNotificationToast(context, 'All notifications marked as read', 'success');
+    context.fetch('api/mark_notification_read.php', { method: 'POST', body: {} }, function(result) {
+        if (!result || !result.ok) {
+            showNotificationToast(context, (result && result.data) || 'Failed to mark notifications as read — reopen the bell to try again', 'error');
+        }
+    });
 }
 
 // Permanently deletes every notification for the current user. No confirm
