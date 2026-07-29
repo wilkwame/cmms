@@ -218,10 +218,15 @@ function buildFeedbackHtml(reportId, status, feedback) {
         '</div>';
 }
 
-function setFeedbackRating(arg) {
-    var parts = String(arg).split(',');
-    var rating = parseInt(parts[0], 10);
-    var reportId = parseInt(parts[1], 10);
+// Clera's colon-syntax action parser splits a comma-separated arg string
+// ("5,12") into two separate resolved arguments, not one "5,12" string —
+// so this must declare both as real parameters. It used to take a single
+// arg and manually .split(',') it, which meant the report id always came
+// through as undefined/NaN and the whole function silently no-opped on
+// every star click.
+function setFeedbackRating(rating, reportId) {
+    rating = parseInt(rating, 10);
+    reportId = parseInt(reportId, 10);
     if (!rating || !reportId) return;
 
     app.memory.pendingFeedbackRating = app.memory.pendingFeedbackRating || {};
