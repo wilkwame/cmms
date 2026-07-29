@@ -1118,6 +1118,23 @@ function buildPhotosHtml(item, field, label, icon) {
         '</div>';
 }
 
+// Read-only — admin/supervisor can see what the reporter left once their
+// ticket is closed, but only the reporter themselves submits it (see
+// buildFeedbackHtml in user-dashboard.js).
+function buildWorkOrderFeedbackHtml(order) {
+    if (!order.feedback_rating) return '';
+
+    var stars = '';
+    for (var i = 1; i <= 5; i++) {
+        stars += '<i class="fas fa-star feedback-star' + (i <= order.feedback_rating ? ' active' : '') + '"></i>';
+    }
+    return '<div class="feedback-field">' +
+        '  <label><i class="fas fa-comment-dots"></i> Reporter Feedback</label>' +
+        '  <div class="feedback-stars feedback-stars-readonly">' + stars + '</div>' +
+        (order.feedback_comment ? '  <p class="feedback-comment-readonly">' + escapeHtml(order.feedback_comment) + '</p>' : '') +
+        '</div>';
+}
+
 function buildWorkOrderDetailPopup(order, reassignPanelHtml) {
     var dueDate = formatDate(order.due_date);
     var priorityClass = getPriorityClass(order.priority);
@@ -1212,6 +1229,7 @@ function buildWorkOrderDetailPopup(order, reassignPanelHtml) {
         '  </div>' : '') +
         photosHtml +
         completionPhotosHtml +
+        buildWorkOrderFeedbackHtml(order) +
         (reassignPanelHtml || '') +
         '</div>' +
         '<div class="popup-footer">' +

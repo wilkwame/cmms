@@ -107,6 +107,11 @@ function buildMyReportCard(r) {
         ? '<span class="mrc-tag"><i class="fas fa-user-cog"></i> ' + escapeHtml(r.assigned_to) + '</span>'
         : '<span class="mrc-tag mrc-tag-muted"><i class="fas fa-hourglass-half"></i> Awaiting assignment</span>';
 
+    // Shown directly on the card (not just after clicking in) for a closed
+    // ticket, so leaving/seeing feedback doesn't need an extra step.
+    var feedback = r.feedback_rating ? { rating: r.feedback_rating, comment: r.feedback_comment } : null;
+    var feedbackHtml = buildFeedbackHtml(r.id, r.status, feedback);
+
     return '<div class="mrc-card" action="openMyReportPopup: ' + r.id + '">' +
         '  <div class="mrc-top">' +
         '    <span class="mrc-ref">' + escapeHtml(r.reference) + '</span>' +
@@ -118,6 +123,7 @@ function buildMyReportCard(r) {
         '    <span class="mrc-tag"><i class="fas fa-calendar"></i> ' + formatDate(r.submitted_at) + '</span>' +
         '    <span class="' + getPriorityClass(r.priority) + '">' + priorityLabel(r.priority) + '</span>' +
         '  </div>' +
+        feedbackHtml +
         '  <i class="fas fa-chevron-right mrc-chevron"></i>' +
         '</div>';
 }
@@ -142,6 +148,15 @@ function openMyReportPopup(arg, context) {
 }
 
 // ===== FEEDBACK (optional, once a ticket is closed) =====
+// Rendered both inline on the ticket card in the list (so it's visible
+// without clicking in first) and inside the detail popup. Every element is
+// scoped by report id (feedback-stars-<id>, feedback-comment-<id>) since
+// several cards can have this open on screen at once, unlike the popup
+// which only ever shows one ticket at a time. action="noop" on the wrapper
+// stops a click on the (action-less) textarea/comment text from bubbling
+// up to the card's own action="openMyReportPopup" — Clera's click
+// delegation fires the closest ancestor with an action and stops there, so
+// this wrapper being closer than the card intercepts it.
 function buildFeedbackHtml(reportId, status, feedback) {
     if (status !== 'closed') return '';
 
@@ -150,7 +165,7 @@ function buildFeedbackHtml(reportId, status, feedback) {
         for (var i = 1; i <= 5; i++) {
             stars += '<i class="fas fa-star feedback-star' + (i <= feedback.rating ? ' active' : '') + '"></i>';
         }
-        return '<div class="popup-field feedback-field">' +
+        return '<div class="feedback-field" action="noop">' +
             '<label><i class="fas fa-comment-dots"></i> Your Feedback</label>' +
             '<div class="feedback-stars feedback-stars-readonly">' + stars + '</div>' +
             (feedback.comment ? '<p class="feedback-comment-readonly">' + escapeHtml(feedback.comment) + '</p>' : '') +
@@ -159,20 +174,26 @@ function buildFeedbackHtml(reportId, status, feedback) {
 
     var starsInput = '';
     for (var s = 1; s <= 5; s++) {
-        starsInput += '<i class="fas fa-star feedback-star" data-value="' + s + '" action="setFeedbackRating: ' + s + '"></i>';
+        starsInput += '<i class="fas fa-star feedback-star" data-value="' + s + '" action="setFeedbackRating: ' + s + ',' + reportId + '"></i>';
     }
-    return '<div class="popup-field feedback-field">' +
+    return '<div class="feedback-field" action="noop">' +
         '<label><i class="fas fa-comment-dots"></i> How did we do? <span class="field-hint">(optional, but recommended)</span></label>' +
-        '<div class="feedback-stars" id="feedback-stars">' + starsInput + '</div>' +
-        '<textarea id="feedback-comment" class="feedback-comment-input" rows="2" placeholder="Any comments about how this was handled? (optional)"></textarea>' +
+        '<div class="feedback-stars" id="feedback-stars-' + reportId + '">' + starsInput + '</div>' +
+        '<textarea id="feedback-comment-' + reportId + '" class="feedback-comment-input" rows="2" placeholder="Any comments about how this was handled? (optional)"></textarea>' +
         '<button type="button" class="popup-btn approve feedback-submit-btn" action="submitFeedback: ' + reportId + '"><i class="fas fa-paper-plane"></i> Send Feedback</button>' +
         '</div>';
 }
 
 function setFeedbackRating(arg) {
-    var rating = parseInt(arg, 10);
-    app.memory.pendingFeedbackRating = rating;
-    var stars = document.querySelectorAll('#feedback-stars .feedback-star');
+    var parts = String(arg).split(',');
+    var rating = parseInt(parts[0], 10);
+    var reportId = parseInt(parts[1], 10);
+    if (!rating || !reportId) return;
+
+    app.memory.pendingFeedbackRating = app.memory.pendingFeedbackRating || {};
+    app.memory.pendingFeedbackRating[reportId] = rating;
+
+    var stars = document.querySelectorAll('#feedback-stars-' + reportId + ' .feedback-star');
     stars.forEach(function(star) {
         var value = parseInt(star.getAttribute('data-value'), 10);
         star.classList.toggle('active', value <= rating);
@@ -181,13 +202,13 @@ function setFeedbackRating(arg) {
 
 function submitFeedback(arg, context) {
     var reportId = parseInt(arg, 10);
-    var rating = app.memory.pendingFeedbackRating || 0;
+    var rating = (app.memory.pendingFeedbackRating && app.memory.pendingFeedbackRating[reportId]) || 0;
     if (!rating) {
         showNotificationToast(context, 'Tap a star to rate before sending — or just skip it, feedback is optional.', 'warning');
         return;
     }
 
-    var commentEl = document.getElementById('feedback-comment');
+    var commentEl = document.getElementById('feedback-comment-' + reportId);
     var comment = commentEl ? commentEl.value.trim() : '';
 
     app.php('api/submit_report_feedback.php', { report_id: reportId, rating: rating, comment: comment })
@@ -196,15 +217,27 @@ function submitFeedback(arg, context) {
                 showNotificationToast(context, (result && result.data) || 'Failed to send feedback', 'error');
                 return;
             }
-            app.memory.pendingFeedbackRating = null;
+            if (app.memory.pendingFeedbackRating) delete app.memory.pendingFeedbackRating[reportId];
             showNotificationToast(context, 'Thanks for your feedback!', 'success');
-            openMyReportPopup(reportId, context);
+
+            // Refresh whichever surface is actually showing this ticket —
+            // the detail popup (if open) or the card list (if submitted
+            // straight from the card).
+            var popupOverlay = document.getElementById('popup-overlay');
+            if (popupOverlay && popupOverlay.classList.contains('active')) {
+                openMyReportPopup(reportId, context);
+            } else {
+                refreshUserHomeData(context);
+            }
         })
         .catch(function(error) {
             console.error('Failed to submit feedback:', error);
             showNotificationToast(context, 'Something went wrong sending feedback. Check the browser console for details.', 'error');
         });
 }
+
+// No-op action target — see buildFeedbackHtml's comment on why this exists.
+function noop() {}
 
 function buildMyReportTimelinePopup(data) {
     var report = data.report;
@@ -264,3 +297,4 @@ window.goToReportIssue = goToReportIssue;
 window.openMyReportPopup = openMyReportPopup;
 window.setFeedbackRating = setFeedbackRating;
 window.submitFeedback = submitFeedback;
+window.noop = noop;

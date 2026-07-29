@@ -49,6 +49,8 @@ try {
             wo.completed_at,
             wo.notes,
             wo.created_at,
+            rf.rating  AS feedback_rating,
+            rf.comment AS feedback_comment,
             GROUP_CONCAT(DISTINCT rp.url ORDER BY rp.id SEPARATOR \',\') AS photo_urls,
             GROUP_CONCAT(DISTINCT wop.url ORDER BY wop.id SEPARATOR \',\') AS completion_photo_urls
         FROM work_orders wo
@@ -59,10 +61,12 @@ try {
         LEFT JOIN users u_to ON u_to.id = wo.assigned_to
         LEFT JOIN report_photos rp ON rp.report_id = r.id
         LEFT JOIN work_order_photos wop ON wop.work_order_id = wo.id
+        LEFT JOIN report_feedback rf ON rf.report_id = r.id
         ' . $whereClause . '
         GROUP BY wo.id, wo.reference, r.issue, r.description, c.name, l.name, d.name,
                  wo.assigned_to, u_to.name, wo.priority, wo.status, wo.due_date,
-                 wo.started_at, wo.completed_at, wo.notes, wo.created_at
+                 wo.started_at, wo.completed_at, wo.notes, wo.created_at,
+                 rf.rating, rf.comment
         ORDER BY wo.created_at DESC
     ');
     $stmt->execute($params);
