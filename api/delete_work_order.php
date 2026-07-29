@@ -23,15 +23,21 @@ try {
     $db = connectToDatabase();
     $db->beginTransaction();
 
-    // Deleting the work order without resetting the report status would
-    // leave the report stuck "approved" forever with no work order and no
-    // way back into the pending queue (get_reports.php's admin view only
-    // shows status = "pending") — an invisible orphan nobody could recover.
-    $woStmt = $db->prepare('SELECT report_id, reference FROM work_orders WHERE id = :id');
+    // Deleting a work order permanently deletes its underlying report too
+    // (not just reverts it to "pending") so it doesn't reappear in the
+    // Tickets queue — deleting a work order is treated as undoing the
+    // ticket entirely, not un-approving it.
+    $woStmt = $db->prepare('
+        SELECT wo.report_id, wo.reference, r.reference AS report_reference
+        FROM work_orders wo
+        JOIN reports r ON r.id = wo.report_id
+        WHERE wo.id = :id
+    ');
     $woStmt->execute([':id' => $id]);
     $woRow = $woStmt->fetch();
     $reportId = $woRow ? $woRow['report_id'] : null;
     $reference = $woRow ? $woRow['reference'] : null;
+    $reportReference = $woRow ? $woRow['report_reference'] : null;
 
     $db->prepare('DELETE FROM work_order_activity WHERE work_order_id = :id')->execute([':id' => $id]);
     $db->prepare('DELETE FROM work_order_photos WHERE work_order_id = :id')->execute([':id' => $id]);
@@ -45,12 +51,13 @@ try {
     }
 
     if ($reportId) {
-        $db->prepare('UPDATE reports SET status = "pending" WHERE id = :id AND status IN ("approved", "closed")')
-            ->execute([':id' => $reportId]);
+        $db->prepare('DELETE FROM report_feedback WHERE report_id = :id')->execute([':id' => $reportId]);
+        $db->prepare('DELETE FROM report_photos WHERE report_id = :id')->execute([':id' => $reportId]);
+        $db->prepare('DELETE FROM reports WHERE id = :id')->execute([':id' => $reportId]);
     }
 
     if ($reference) {
-        logActivity($db, $user, 'work_order.deleted', 'work_order', $id, $reference, $user['name'] . ' deleted work order ' . $reference);
+        logActivity($db, $user, 'work_order.deleted', 'work_order', $id, $reference, $user['name'] . ' deleted work order ' . $reference . ' and its ticket ' . ($reportReference ?: ''));
     }
 
     $db->commit();
@@ -63,6 +70,15 @@ try {
             @unlink($file);
         }
         @rmdir($uploadDir);
+    }
+    if ($reportId) {
+        $reportUploadDir = __DIR__ . '/../uploads/reports/' . $reportId . '/';
+        if (is_dir($reportUploadDir)) {
+            foreach (glob($reportUploadDir . '*') as $file) {
+                @unlink($file);
+            }
+            @rmdir($reportUploadDir);
+        }
     }
 
     sendJson(true, 200, ['id' => $id]);

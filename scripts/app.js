@@ -1548,7 +1548,7 @@ function confirmDeleteWorkOrder(arg, context) {
     var orderId = parseInt(arg);
     if (!orderId) return;
 
-    requestConfirm(context, 'Delete this work order? This cannot be undone.', 'Delete Work Order', function() {
+    requestConfirm(context, 'Delete this work order? Its ticket is deleted permanently too, not sent back to the Tickets queue. This cannot be undone.', 'Delete Work Order', function() {
         context.fetch('api/delete_work_order.php', { method: 'POST', body: { id: orderId } }, function(result) {
             if (!result.ok) {
                 showNotificationToast(context, (result && result.data) || 'Failed to delete work order', 'error');
@@ -1559,7 +1559,7 @@ function confirmDeleteWorkOrder(arg, context) {
             app.memory.filteredWorkOrders = (app.memory.filteredWorkOrders || []).filter(function(o) { return o.id !== orderId; });
 
             closePopup(context);
-            showNotificationToast(context, 'Work order deleted', 'success');
+            showNotificationToast(context, 'Work order and its ticket were deleted', 'success');
             if (typeof renderWorkOrdersSlice === 'function') renderWorkOrdersSlice(context);
         });
     }, 'reject', 'fa-trash');
