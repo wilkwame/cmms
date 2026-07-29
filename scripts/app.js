@@ -802,6 +802,26 @@ function markAllNotificationsRead(context) {
     showNotificationToast(context, 'All notifications marked as read', 'success');
 }
 
+// Permanently deletes every notification for the current user. No confirm
+// dialog on purpose — clearing your own notification list is low-stakes,
+// not a system record, so an "are you sure?" gate here would just be
+// friction. Updates the list immediately (the now-empty panel is its own
+// feedback) and fires the actual delete in the background; only surfaces a
+// message if that background request actually fails.
+function clearAllNotifications(context) {
+    if (!app.memory.notifications || app.memory.notifications.length === 0) return;
+
+    app.memory.notifications = [];
+    renderNotifications(context);
+    updateNotificationBadge(context);
+
+    context.fetch('api/delete_notifications.php', { method: 'POST', body: {} }, function(result) {
+        if (!result || !result.ok) {
+            showNotificationToast(context, (result && result.data) || 'Failed to clear notifications — reopen the bell to try again', 'error');
+        }
+    });
+}
+
 function updateNotificationBadge(context) {
     var badge = globalQuery('#notification-badge');
     if (!badge.exists) return;
@@ -2077,6 +2097,7 @@ window.closeMobileMenu = closeMobileMenu;
 window.toggleNotifications = toggleNotifications;
 window.markNotificationRead = markNotificationRead;
 window.markAllNotificationsRead = markAllNotificationsRead;
+window.clearAllNotifications = clearAllNotifications;
 window.openPopup = openPopup;
 window.closePopup = closePopup;
 window.openImageLightbox = openImageLightbox;

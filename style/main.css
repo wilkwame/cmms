@@ -240,6 +240,31 @@ app {
   background: #e5f0ff;
 }
 
+.notification-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.notification-header .clear-all-notifications {
+  font-size: 11px;
+  color: #ff3b30;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: inherit;
+  padding: 4px 10px;
+  border-radius: 4px;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.notification-header .clear-all-notifications:hover {
+  background: #ffdbdb;
+}
+
 /* Notification List */
 #notification-list {
   max-height: 380px;
