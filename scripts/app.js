@@ -704,22 +704,27 @@ function pollActivePageData() {
     }
 }
 
+// 5s — fast enough that changes made elsewhere (another device, another
+// user) show up within a few seconds without a manual refresh, while
+// pollActivePageData's own guards (skip if tab hidden, skip if a popup is
+// open) keep this from doing wasted work in the background.
 function startDataPolling() {
     if (app.memory.dataPollStarted) return;
     app.memory.dataPollStarted = true;
-    setInterval(pollActivePageData, 20000);
+    setInterval(pollActivePageData, 5000);
 }
 
-// Polls for new notifications every 30s so the bell badge stays current
+// Polls for new notifications every 8s so the bell badge stays current
 // without the user having to open the panel. Respects the Settings page's
 // Notifications toggle (localStorage.cmms_notifications).
 function startNotificationPolling() {
     if (app.memory.notificationPollStarted) return;
     app.memory.notificationPollStarted = true;
     setInterval(function() {
+        if (document.hidden) return;
         if (localStorage.getItem('cmms_notifications') === 'false') return;
         loadNotifications(domContext());
-    }, 30000);
+    }, 8000);
 }
 
 function renderNotifications(context) {
@@ -814,7 +819,7 @@ function updateNotificationBadge(context) {
 }
 
 function showNotificationToast(context, message, type) {
-    var toast = globalQuery('#notification-popup');
+    var toast = globalQuery('#app-toast');
     if (toast.exists) {
         toast.text(message);
         toast.element.className = 'notification-toast ' + (type || 'success');

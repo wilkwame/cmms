@@ -191,6 +191,13 @@
     <!-- Mobile Overlay -->
     <div id="mobile-overlay" action="closeMobileMenu"></div>
 
+    <!-- Toast messages (showNotificationToast in app.js) — its own element,
+         separate from #notification-popup (the bell's dropdown panel).
+         Those two used to share the same id, so every toast overwrote the
+         bell panel's content/class/inline styles, permanently breaking it
+         after the first toast fired anywhere in the app. -->
+    <div id="app-toast" class="notification-toast"></div>
+
     <!-- Popup Overlay -->
     <div id="popup-overlay">
       <div id="popup-dialog"></div>
@@ -399,12 +406,12 @@
 
   <script src="runtime/clera.js?v=13"></script>
   <script src="scripts/offline-queue.js?v=1"></script>
-  <script src="scripts/app.js?v=35"></script>
+  <script src="scripts/app.js?v=36"></script>
   <script src="scripts/logs.js?v=1"></script>
   <script src="scripts/category-stats.js?v=4"></script>
   <script src="scripts/reports.js?v=19"></script>
   <script src="scripts/workorders.js?v=14"></script>
-  <script src="scripts/staffs.js?v=18"></script>
+  <script src="scripts/staffs.js?v=19"></script>
   <script src="scripts/add-staff.js?v=15"></script>
   <script src="scripts/settings.js?v=11"></script>
   <script src="scripts/report-issue.js?v=15"></script>

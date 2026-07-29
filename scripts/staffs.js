@@ -235,18 +235,36 @@ function openEditSkillsPopup(arg, context) {
     var staffId = parseInt(arg);
     if (!staffId) return;
 
+    // Opens immediately either way — a popup that waits on a network
+    // request before it even appears reads as a dead button for however
+    // long that request takes. If departments aren't cached yet, the popup
+    // shows a "Loading departments…" placeholder and the real list is
+    // dropped into that one <select> in place once it arrives, instead of
+    // rebuilding (and losing progress on) the whole popup.
+    renderEditSkillsPopup(staffId, context);
+
     if (!app.memory.departments) {
         app.php('api/get_departments.php', {}).then(function(result) {
             app.memory.departments = (result.ok && Array.isArray(result.data)) ? result.data : [];
-            renderEditSkillsPopup(staffId, context);
+            fillEditSkillsDepartmentSelect(staffId);
         }).catch(function() {
             app.memory.departments = [];
-            renderEditSkillsPopup(staffId, context);
+            fillEditSkillsDepartmentSelect(staffId);
         });
-        return;
     }
+}
 
-    renderEditSkillsPopup(staffId, context);
+function fillEditSkillsDepartmentSelect(staffId) {
+    var select = document.getElementById('edit-skills-org-department');
+    if (!select) return; // popup was closed (or a different one opened) before this resolved
+
+    var staff = (app.memory.staff || []).filter(function(s) { return s.id === staffId; })[0];
+    var currentDeptId = staff ? staff.department_id : null;
+
+    select.innerHTML = '<option value="">— None —</option>' + (app.memory.departments || []).map(function(d) {
+        var selected = String(currentDeptId) === String(d.id) ? ' selected' : '';
+        return '<option value="' + d.id + '"' + selected + '>' + d.name + '</option>';
+    }).join('');
 }
 
 function renderEditSkillsPopup(staffId, context) {
@@ -265,10 +283,12 @@ function renderEditSkillsPopup(staffId, context) {
         return '<option value="' + c.name + '"' + selected + '>' + c.name + '</option>';
     }).join('');
 
-    var orgDeptOptions = '<option value="">— None —</option>' + (app.memory.departments || []).map(function(d) {
-        var selected = String(staff.department_id) === String(d.id) ? ' selected' : '';
-        return '<option value="' + d.id + '"' + selected + '>' + d.name + '</option>';
-    }).join('');
+    var orgDeptOptions = app.memory.departments
+        ? '<option value="">— None —</option>' + app.memory.departments.map(function(d) {
+            var selected = String(staff.department_id) === String(d.id) ? ' selected' : '';
+            return '<option value="' + d.id + '"' + selected + '>' + d.name + '</option>';
+        }).join('')
+        : '<option value="">Loading departments…</option>';
 
     var ROLES = ['admin', 'supervisor', 'technician', 'reporter'];
     var isSelf = app.memory.user && app.memory.user.id === staffId;
