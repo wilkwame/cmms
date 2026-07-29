@@ -7,13 +7,14 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     sendJson(false, 405, 'Method not allowed');
 }
 
-// Staff directory visibility is admin-only — see get_staff.php.
-requireRole(['admin']);
+// Staff directory visibility is admin-only company-wide, department-scoped
+// for a supervisor — see get_staff.php.
+$user = requireRole(['admin', 'supervisor']);
 
 try {
     $db = connectToDatabase();
 
-    $stmt = $db->query('
+    $sql = '
         SELECT
             u.id,
             u.name,
@@ -31,9 +32,19 @@ try {
             AND wo.status IN (\'pending\', \'in_progress\', \'overdue\')
         WHERE u.role != \'admin\'
           AND sp.is_active = 1
+    ';
+    $params = [];
+    if ($user['role'] === 'supervisor') {
+        $sql .= ' AND sp.department_id = :department_id';
+        $params[':department_id'] = $user['department_id'] ?? -1;
+    }
+    $sql .= '
         GROUP BY u.id, u.name, sp.department
         ORDER BY active_jobs DESC
-    ');
+    ';
+
+    $stmt = $db->prepare($sql);
+    $stmt->execute($params);
 
     $staff = $stmt->fetchAll();
 

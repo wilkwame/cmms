@@ -16,13 +16,31 @@ CREATE TABLE users (
 );
 
 
--- Facilities and locations reports can be tied to
+-- Organizational departments — distinct from `categories` (the maintenance
+-- trade a ticket needs) and from staff_profiles.department (a free-text
+-- mirror of a staff member's trade). This is the academic/organizational
+-- unit a location belongs to, e.g. "Computer Science" — used to scope what
+-- a departmental supervisor can see and act on.
+
+CREATE TABLE departments (
+    id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name        VARCHAR(100) NOT NULL UNIQUE,
+    created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- Facilities and locations reports can be tied to. A ticket's department is
+-- derived from its location (department_id), not chosen directly by the
+-- reporter.
 
 CREATE TABLE locations (
-    id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    name        VARCHAR(100) NOT NULL,
-    description TEXT,
-    created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name          VARCHAR(100) NOT NULL,
+    department_id INT UNSIGNED NULL,
+    description   TEXT,
+    created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_location_department FOREIGN KEY (department_id) REFERENCES departments(id)
 );
 
 
@@ -65,6 +83,23 @@ CREATE TABLE report_photos (
     created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_photo_report FOREIGN KEY (report_id) REFERENCES reports(id)
+);
+
+
+-- Optional reporter feedback once a ticket is closed: a 1-5 star rating
+-- plus an optional comment. UNIQUE on report_id — one feedback submission
+-- per ticket, matching the "optional, one-shot" UX rather than an
+-- editable/ongoing thread.
+
+CREATE TABLE report_feedback (
+    id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    report_id   INT UNSIGNED NOT NULL UNIQUE,
+    rating      TINYINT UNSIGNED NOT NULL,
+    comment     TEXT,
+    created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_feedback_report FOREIGN KEY (report_id) REFERENCES reports(id),
+    CONSTRAINT chk_feedback_rating CHECK (rating BETWEEN 1 AND 5)
 );
 
 
@@ -139,17 +174,25 @@ CREATE TABLE work_order_activity (
 );
 
 
--- Staff profiles (extends users for technician-specific data)
+-- Staff profiles (extends users for technician-specific data).
+-- `department` (free text, e.g. "Electrical") mirrors the staff member's
+-- trade for display — back-compat only, staff_skills is what auto-
+-- assignment actually matches on. `department_id` is a different thing
+-- entirely: their home *organizational* department (Computer Science,
+-- Engineering...), used to scope a departmental supervisor's reassignment
+-- pool to technicians who match both that department and the needed trade.
 
 CREATE TABLE staff_profiles (
     id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     user_id         INT UNSIGNED NOT NULL UNIQUE,
     department      VARCHAR(80),
+    department_id   INT UNSIGNED NULL,
     specialisation  VARCHAR(80),
     joined_at       DATE,
     is_active       TINYINT(1) NOT NULL DEFAULT 1,
 
-    CONSTRAINT fk_staff_user FOREIGN KEY (user_id) REFERENCES users(id)
+    CONSTRAINT fk_staff_user FOREIGN KEY (user_id) REFERENCES users(id),
+    CONSTRAINT fk_staff_department FOREIGN KEY (department_id) REFERENCES departments(id)
 );
 
 
@@ -192,3 +235,12 @@ INSERT INTO categories (name) VALUES
     ('Civil'),
     ('General'),
     ('Other');
+
+
+-- Seed: starting departments — admin can add more later the same way
+-- categories are extended.
+
+INSERT INTO departments (name) VALUES
+    ('Computer Science'),
+    ('Engineering'),
+    ('Fashion');

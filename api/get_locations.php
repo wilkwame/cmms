@@ -10,8 +10,13 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 requireLogin();
 
 try {
-    $db      = connectToDatabase();
-    $stmt    = $db->query('SELECT id, name FROM locations ORDER BY name ASC');
+    $db = connectToDatabase();
+    $stmt = $db->query('
+        SELECT l.id, l.name, l.department_id, d.name AS department_name
+        FROM locations l
+        LEFT JOIN departments d ON d.id = l.department_id
+        ORDER BY l.name ASC
+    ');
     $locations = $stmt->fetchAll();
     sendJson(true, 200, $locations);
 } catch (PDOException $e) {

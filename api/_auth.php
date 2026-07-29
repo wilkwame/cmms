@@ -21,7 +21,16 @@ function currentUser(): ?array {
     // otherwise pass every check here and then fail downstream with a
     // confusing foreign-key error the first time it tries to write anything.
     $db = connectToDatabase();
-    $stmt = $db->prepare('SELECT id, name, email, role FROM users WHERE id = :id');
+    // department_id is a departmental supervisor's (or technician's) home
+    // organizational department — null for admin/reporter, or for staff who
+    // haven't been assigned one yet. It's what scopes a supervisor's view
+    // of tickets/staff to their own department (see get_reports.php etc.).
+    $stmt = $db->prepare('
+        SELECT u.id, u.name, u.email, u.role, sp.department_id
+        FROM users u
+        LEFT JOIN staff_profiles sp ON sp.user_id = u.id
+        WHERE u.id = :id
+    ');
     $stmt->execute([':id' => $_SESSION['user_id']]);
     $user = $stmt->fetch();
 
@@ -32,10 +41,11 @@ function currentUser(): ?array {
     }
 
     $cached = [
-        'id'    => (int) $user['id'],
-        'name'  => $user['name'],
-        'email' => $user['email'],
-        'role'  => $user['role'],
+        'id'            => (int) $user['id'],
+        'name'          => $user['name'],
+        'email'         => $user['email'],
+        'role'          => $user['role'],
+        'department_id' => $user['department_id'] !== null ? (int) $user['department_id'] : null,
     ];
     return $cached;
 }

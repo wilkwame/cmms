@@ -19,6 +19,7 @@ $email = isset($body['email']) ? trim($body['email']) : '';
 $password = isset($body['password']) ? $body['password'] : '';
 $role = isset($body['role']) ? $body['role'] : '';
 $department = isset($body['department']) ? $body['department'] : '';
+$departmentId = isset($body['department_id']) && $body['department_id'] ? (int) $body['department_id'] : null;
 $skills = isset($body['skills']) && is_array($body['skills']) ? array_map('intval', $body['skills']) : [];
 $joinedAt = isset($body['joined_at']) && $body['joined_at'] ? $body['joined_at'] : null;
 $isActive = isset($body['is_active']) ? (int) $body['is_active'] : 1;
@@ -55,7 +56,15 @@ try {
     if ($checkStmt->fetch()) {
         sendJson(false, 409, 'Email already exists');
     }
-    
+
+    if ($departmentId !== null) {
+        $deptStmt = $db->prepare('SELECT id FROM departments WHERE id = :id');
+        $deptStmt->execute([':id' => $departmentId]);
+        if (!$deptStmt->fetch()) {
+            sendJson(false, 400, 'Invalid department');
+        }
+    }
+
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
     
     $db->beginTransaction();
@@ -81,12 +90,13 @@ try {
 
     // Insert staff profile
     $profileStmt = $db->prepare('
-        INSERT INTO staff_profiles (user_id, department, specialisation, joined_at, is_active)
-        VALUES (:user_id, :department, :specialisation, :joined_at, :is_active)
+        INSERT INTO staff_profiles (user_id, department, department_id, specialisation, joined_at, is_active)
+        VALUES (:user_id, :department, :department_id, :specialisation, :joined_at, :is_active)
     ');
     $profileStmt->execute([
         ':user_id' => $userId,
         ':department' => $department,
+        ':department_id' => $departmentId,
         ':specialisation' => $specialisation,
         ':joined_at' => $joinedAt,
         ':is_active' => $isActive

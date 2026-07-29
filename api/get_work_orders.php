@@ -23,6 +23,12 @@ try {
     if ($user['role'] === 'technician') {
         $whereClause = 'WHERE wo.assigned_to = :user_id';
         $params[':user_id'] = $user['id'];
+    } elseif ($user['role'] === 'supervisor') {
+        // Same departmental scoping as get_reports.php — a supervisor with
+        // no department (or a work order whose location has none) never
+        // matches, rather than defaulting to "show everything".
+        $whereClause = 'WHERE l.department_id = :department_id';
+        $params[':department_id'] = $user['department_id'] ?? -1;
     }
 
     $stmt = $db->prepare('
@@ -33,6 +39,7 @@ try {
             r.description,
             c.name          AS category,
             l.name          AS location,
+            d.name          AS department,
             wo.assigned_to  AS assigned_to_id,
             u_to.name       AS assigned_to,
             wo.priority,
@@ -48,11 +55,12 @@ try {
         JOIN reports   r    ON r.id  = wo.report_id
         JOIN categories c   ON c.id  = r.category_id
         JOIN locations  l   ON l.id  = r.location_id
+        LEFT JOIN departments d ON d.id = l.department_id
         LEFT JOIN users u_to ON u_to.id = wo.assigned_to
         LEFT JOIN report_photos rp ON rp.report_id = r.id
         LEFT JOIN work_order_photos wop ON wop.work_order_id = wo.id
         ' . $whereClause . '
-        GROUP BY wo.id, wo.reference, r.issue, r.description, c.name, l.name,
+        GROUP BY wo.id, wo.reference, r.issue, r.description, c.name, l.name, d.name,
                  wo.assigned_to, u_to.name, wo.priority, wo.status, wo.due_date,
                  wo.started_at, wo.completed_at, wo.notes, wo.created_at
         ORDER BY wo.created_at DESC

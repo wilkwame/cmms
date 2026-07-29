@@ -14,19 +14,36 @@ function loadAddStaffPage(context) {
             dateInput.element.value = today;
         }
     }
-    
+
     // Reset form status
     var status = context.query('#form-status');
     if (status.exists) {
         status.text('All fields marked with * are required');
         status.element.style.color = '#999';
     }
-    
+
     // Reset submit button
     var submitBtn = context.query('#submit-btn');
     if (submitBtn.exists) {
         submitBtn.element.disabled = false;
         submitBtn.html('<i class="fas fa-save"></i> Add Staff');
+    }
+
+    var deptSelect = context.query('#ad-department-select');
+    if (deptSelect.exists) {
+        app.php('api/get_departments.php', {}).then(function(result) {
+            if (!result.ok || !Array.isArray(result.data)) {
+                deptSelect.html('<option value="">Failed to load departments</option>');
+                return;
+            }
+            var html = '<option value="">Select Department</option>';
+            result.data.forEach(function(d) {
+                html += '<option value="' + d.id + '">' + d.name + '</option>';
+            });
+            deptSelect.html(html);
+        }).catch(function() {
+            deptSelect.html('<option value="">Failed to load departments</option>');
+        });
     }
 }
 
@@ -44,6 +61,7 @@ function submitNewStaff(context) {
     var confirmPassword = context.values.confirm_password || '';
     var role = context.values.role || '';
     var department = context.values.department || '';
+    var departmentId = context.values.department_id || '';
     var joinedAt = context.values.joined_at || '';
     var isActive = context.values.is_active || '1';
 
@@ -65,7 +83,8 @@ function submitNewStaff(context) {
     if (password && password.length < 6) errors.push('Password must be at least 6 characters');
     if (password !== confirmPassword) errors.push('Passwords do not match');
     if (!role) errors.push('Please select a role');
-    if (!department) errors.push('Please select a department');
+    if (!department) errors.push('Please select a trade/specialty');
+    if (!departmentId) errors.push('Please select a department');
     if (skills.length === 0) errors.push('Please select at least one skill');
 
     // Show errors if any. #form-status is a persistent inline status line;
@@ -89,6 +108,7 @@ function submitNewStaff(context) {
         password: password,
         role: role,
         department: department,
+        department_id: parseInt(departmentId, 10),
         skills: skills,
         joined_at: joinedAt || null,
         is_active: parseInt(isActive)

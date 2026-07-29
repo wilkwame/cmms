@@ -133,6 +133,71 @@ function openMyReportPopup(arg, context) {
     });
 }
 
+// ===== FEEDBACK (optional, once a ticket is closed) =====
+function buildFeedbackHtml(reportId, status, feedback) {
+    if (status !== 'closed') return '';
+
+    if (feedback) {
+        var stars = '';
+        for (var i = 1; i <= 5; i++) {
+            stars += '<i class="fas fa-star feedback-star' + (i <= feedback.rating ? ' active' : '') + '"></i>';
+        }
+        return '<div class="popup-field feedback-field">' +
+            '<label><i class="fas fa-comment-dots"></i> Your Feedback</label>' +
+            '<div class="feedback-stars feedback-stars-readonly">' + stars + '</div>' +
+            (feedback.comment ? '<p class="feedback-comment-readonly">' + escapeHtml(feedback.comment) + '</p>' : '') +
+            '</div>';
+    }
+
+    var starsInput = '';
+    for (var s = 1; s <= 5; s++) {
+        starsInput += '<i class="fas fa-star feedback-star" data-value="' + s + '" action="setFeedbackRating: ' + s + '"></i>';
+    }
+    return '<div class="popup-field feedback-field">' +
+        '<label><i class="fas fa-comment-dots"></i> How did we do? <span class="field-hint">(optional, but recommended)</span></label>' +
+        '<div class="feedback-stars" id="feedback-stars">' + starsInput + '</div>' +
+        '<textarea id="feedback-comment" class="feedback-comment-input" rows="2" placeholder="Any comments about how this was handled? (optional)"></textarea>' +
+        '<button type="button" class="popup-btn approve feedback-submit-btn" action="submitFeedback: ' + reportId + '"><i class="fas fa-paper-plane"></i> Send Feedback</button>' +
+        '</div>';
+}
+
+function setFeedbackRating(arg) {
+    var rating = parseInt(arg, 10);
+    app.memory.pendingFeedbackRating = rating;
+    var stars = document.querySelectorAll('#feedback-stars .feedback-star');
+    stars.forEach(function(star) {
+        var value = parseInt(star.getAttribute('data-value'), 10);
+        star.classList.toggle('active', value <= rating);
+    });
+}
+
+function submitFeedback(arg, context) {
+    var reportId = parseInt(arg, 10);
+    var rating = app.memory.pendingFeedbackRating || 0;
+    if (!rating) {
+        showNotificationToast(context, 'Tap a star to rate before sending — or just skip it, feedback is optional.', 'warning');
+        return;
+    }
+
+    var commentEl = document.getElementById('feedback-comment');
+    var comment = commentEl ? commentEl.value.trim() : '';
+
+    app.php('api/submit_report_feedback.php', { report_id: reportId, rating: rating, comment: comment })
+        .then(function(result) {
+            if (!result.ok) {
+                showNotificationToast(context, (result && result.data) || 'Failed to send feedback', 'error');
+                return;
+            }
+            app.memory.pendingFeedbackRating = null;
+            showNotificationToast(context, 'Thanks for your feedback!', 'success');
+            openMyReportPopup(reportId, context);
+        })
+        .catch(function(error) {
+            console.error('Failed to submit feedback:', error);
+            showNotificationToast(context, 'Something went wrong sending feedback. Check the browser console for details.', 'error');
+        });
+}
+
 function buildMyReportTimelinePopup(data) {
     var report = data.report;
     var photos = data.photos || [];
@@ -177,6 +242,7 @@ function buildMyReportTimelinePopup(data) {
         '  </div>' +
         photosHtml +
         timelineHtml +
+        buildFeedbackHtml(report.id, report.status, data.feedback) +
         '</div>' +
         '<div class="popup-footer">' +
         '  <button class="popup-btn secondary" action="closePopup"><i class="fas fa-times"></i> Close</button>' +
@@ -187,3 +253,5 @@ function buildMyReportTimelinePopup(data) {
 window.loadUserHomePage = loadUserHomePage;
 window.goToReportIssue = goToReportIssue;
 window.openMyReportPopup = openMyReportPopup;
+window.setFeedbackRating = setFeedbackRating;
+window.submitFeedback = submitFeedback;

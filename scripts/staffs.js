@@ -235,6 +235,21 @@ function openEditSkillsPopup(arg, context) {
     var staffId = parseInt(arg);
     if (!staffId) return;
 
+    if (!app.memory.departments) {
+        app.php('api/get_departments.php', {}).then(function(result) {
+            app.memory.departments = (result.ok && Array.isArray(result.data)) ? result.data : [];
+            renderEditSkillsPopup(staffId, context);
+        }).catch(function() {
+            app.memory.departments = [];
+            renderEditSkillsPopup(staffId, context);
+        });
+        return;
+    }
+
+    renderEditSkillsPopup(staffId, context);
+}
+
+function renderEditSkillsPopup(staffId, context) {
     var staff = (app.memory.staff || []).filter(function(s) { return s.id === staffId; })[0];
     if (!staff) return;
 
@@ -248,6 +263,11 @@ function openEditSkillsPopup(arg, context) {
     var deptOptions = STAFF_CATEGORIES.map(function(c) {
         var selected = staff.department === c.name ? ' selected' : '';
         return '<option value="' + c.name + '"' + selected + '>' + c.name + '</option>';
+    }).join('');
+
+    var orgDeptOptions = '<option value="">— None —</option>' + (app.memory.departments || []).map(function(d) {
+        var selected = String(staff.department_id) === String(d.id) ? ' selected' : '';
+        return '<option value="' + d.id + '"' + selected + '>' + d.name + '</option>';
     }).join('');
 
     var ROLES = ['admin', 'supervisor', 'technician', 'reporter'];
@@ -276,10 +296,17 @@ function openEditSkillsPopup(arg, context) {
         '    </div>' +
         '    <p style="font-size:13px;color:#6b7280;margin-bottom:14px;">Giving this account skills makes it eligible for auto-assignment on matching tickets — regardless of role.</p>' +
         '    <div class="popup-field">' +
-        '      <label><i class="fas fa-building"></i> Department</label>' +
+        '      <label><i class="fas fa-toolbox"></i> Trade / Specialty</label>' +
         '      <select id="edit-skills-department" style="' + selectStyle + '">' +
         deptOptions +
         '      </select>' +
+        '    </div>' +
+        '    <div class="popup-field">' +
+        '      <label><i class="fas fa-building"></i> Department</label>' +
+        '      <select id="edit-skills-org-department" style="' + selectStyle + '">' +
+        orgDeptOptions +
+        '      </select>' +
+        '      <p style="font-size:11px;color:#9aa1ac;margin-top:4px;">Scopes what a Supervisor can see/manage, and a Technician\'s reassignment pool.</p>' +
         '    </div>' +
         '    <div class="popup-field">' +
         '      <label><i class="fas fa-toolbox"></i> Skills (auto-assignment matches on these)</label>' +
@@ -300,6 +327,7 @@ function saveStaffSkills(arg, context) {
     var staffId = parseInt(arg);
     var roleSelect = document.getElementById('edit-skills-role');
     var deptSelect = document.getElementById('edit-skills-department');
+    var orgDeptSelect = document.getElementById('edit-skills-org-department');
     var skillsSelect = document.getElementById('edit-skills-select');
     if (!staffId || !deptSelect || !skillsSelect) return;
 
@@ -309,7 +337,12 @@ function saveStaffSkills(arg, context) {
         return;
     }
 
-    var payload = { user_id: staffId, department: deptSelect.value, skills: skills };
+    var payload = {
+        user_id: staffId,
+        department: deptSelect.value,
+        department_id: (orgDeptSelect && orgDeptSelect.value) ? parseInt(orgDeptSelect.value, 10) : null,
+        skills: skills
+    };
     if (roleSelect && !roleSelect.disabled) {
         payload.role = roleSelect.value;
     }
@@ -327,6 +360,7 @@ function saveStaffSkills(arg, context) {
             if (app.memory.staff[i].id === staffId) {
                 app.memory.staff[i].role = result.data.role;
                 app.memory.staff[i].department = result.data.department;
+                app.memory.staff[i].department_id = result.data.department_id;
                 app.memory.staff[i].specialisation = result.data.specialisation;
                 app.memory.staff[i].skill_ids = result.data.skills.join(',');
                 app.memory.staff[i].is_active = 1;

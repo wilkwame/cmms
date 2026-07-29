@@ -81,3 +81,61 @@ CREATE TABLE IF NOT EXISTS audit_log (
     ip_address       VARCHAR(45) NULL,
     created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Optional reporter feedback once a ticket is closed (2026-07-25): a 1-5
+-- star rating plus an optional comment. UNIQUE on report_id — one feedback
+-- submission per ticket, matching the "optional, one-shot" UX rather than
+-- an editable/ongoing thread.
+CREATE TABLE IF NOT EXISTS report_feedback (
+    id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    report_id   INT UNSIGNED NOT NULL UNIQUE,
+    rating      TINYINT UNSIGNED NOT NULL,
+    comment     TEXT NULL,
+    created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_feedback_report FOREIGN KEY (report_id) REFERENCES reports(id),
+    CONSTRAINT chk_feedback_rating CHECK (rating BETWEEN 1 AND 5)
+);
+
+-- Organizational departments (2026-07-25) — distinct from `categories`
+-- (the maintenance trade a ticket needs: Electrical, Plumbing...) and from
+-- staff_profiles.department (free-text mirror of a staff member's trade).
+-- This is the academic/organizational unit a location belongs to, e.g.
+-- "Computer Science", used to scope what a departmental supervisor can see
+-- and act on. Seeded with a starting set; admin can add more later the same
+-- way categories are extended.
+CREATE TABLE IF NOT EXISTS departments (
+    id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name        VARCHAR(100) NOT NULL UNIQUE,
+    created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT IGNORE INTO departments (name) VALUES
+    ('Computer Science'),
+    ('Engineering'),
+    ('Fashion');
+
+-- A ticket's department is derived from its location, not chosen directly
+-- by the reporter — so the FK lives on locations. NULL for now on existing
+-- locations until an admin assigns each one to a department.
+SET @loc_dept_exists = (SELECT COUNT(*) FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'locations' AND COLUMN_NAME = 'department_id');
+SET @sql = IF(@loc_dept_exists = 0,
+    'ALTER TABLE locations ADD COLUMN department_id INT UNSIGNED NULL AFTER name, ADD CONSTRAINT fk_location_department FOREIGN KEY (department_id) REFERENCES departments(id)',
+    'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- A staff member's home department (supervisor or technician) — separate
+-- from their trade skill(s) in staff_skills. A departmental supervisor's
+-- reassignment pool is technicians who match BOTH this department and the
+-- ticket's required trade.
+SET @staff_dept_exists = (SELECT COUNT(*) FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'staff_profiles' AND COLUMN_NAME = 'department_id');
+SET @sql = IF(@staff_dept_exists = 0,
+    'ALTER TABLE staff_profiles ADD COLUMN department_id INT UNSIGNED NULL AFTER department, ADD CONSTRAINT fk_staff_department FOREIGN KEY (department_id) REFERENCES departments(id)',
+    'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;

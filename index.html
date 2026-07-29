@@ -327,7 +327,11 @@
               </div>
             </div>
 
-            <!-- Staff Workload (admin-only — staff directory visibility is restricted to admin) -->
+            <!-- Staff Workload (admin-only by design — a supervisor's admin-like
+                 privilege is scoped to assigning/reassigning tickets, done
+                 from the Work Order popup itself, not full staff management
+                 like Add/Edit Skills/Deactivate/Delete which live on this
+                 page's "See All" destination). -->
             <div class="staff-workload card-panel" data-roles="admin">
               <div class="panel-header">
                 <h4><i class="fas fa-users"></i> Staff Workload</h4>
@@ -395,14 +399,14 @@
 
   <script src="runtime/clera.js?v=13"></script>
   <script src="scripts/offline-queue.js?v=1"></script>
-  <script src="scripts/app.js?v=34"></script>
+  <script src="scripts/app.js?v=35"></script>
   <script src="scripts/logs.js?v=1"></script>
   <script src="scripts/category-stats.js?v=3"></script>
   <script src="scripts/reports.js?v=19"></script>
   <script src="scripts/workorders.js?v=14"></script>
-  <script src="scripts/staffs.js?v=17"></script>
-  <script src="scripts/add-staff.js?v=14"></script>
-  <script src="scripts/settings.js?v=10"></script>
+  <script src="scripts/staffs.js?v=18"></script>
+  <script src="scripts/add-staff.js?v=15"></script>
+  <script src="scripts/settings.js?v=11"></script>
   <script src="scripts/report-issue.js?v=15"></script>
   <script src="scripts/user-dashboard.js?v=13"></script>
 </body>

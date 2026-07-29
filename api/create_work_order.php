@@ -29,7 +29,12 @@ try {
     // order and no way back into the pending queue if no staff match. Also
     // accepts an already-"approved" report, so a previously stranded one
     // (from before this fix) can still be retried here.
-    $reportStmt = $db->prepare('SELECT id, status FROM reports WHERE id = :id');
+    $reportStmt = $db->prepare('
+        SELECT r.id, r.status, l.department_id
+        FROM reports r
+        JOIN locations l ON l.id = r.location_id
+        WHERE r.id = :id
+    ');
     $reportStmt->execute([':id' => $reportId]);
     $report = $reportStmt->fetch();
     if (!$report) {
@@ -37,6 +42,12 @@ try {
     }
     if (!in_array($report['status'], ['pending', 'approved'], true)) {
         sendJson(false, 409, 'Report is ' . $report['status'] . ' and cannot be turned into a work order');
+    }
+    // Departmental scoping, enforced server-side too — a supervisor only
+    // ever sees their own department's reports via get_reports.php, but
+    // this closes the gap for a report_id passed directly.
+    if ($currentUser['role'] === 'supervisor' && (int) $report['department_id'] !== ($currentUser['department_id'] ?? -1)) {
+        sendJson(false, 403, 'This ticket is outside your department');
     }
 
     $dupeStmt = $db->prepare('SELECT id FROM work_orders WHERE report_id = :report_id LIMIT 1');

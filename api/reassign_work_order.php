@@ -11,9 +11,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     sendJson(false, 405, 'Method not allowed');
 }
 
-// Reassigning requires picking from the staff roster, and staff visibility
-// is admin-only — see get_staff.php.
-$user = requireRole(['admin']);
+// Reassigning requires picking from the staff roster — admin sees/reassigns
+// company-wide, a supervisor is scoped to their own department (both the
+// work order and the new assignee must be in it) — see get_staff.php.
+$user = requireRole(['admin', 'supervisor']);
+$isSupervisor = $user['role'] === 'supervisor';
 
 $body = json_decode(file_get_contents('php://input'), true);
 $workOrderId = (int) ($body['work_order_id'] ?? 0);
@@ -30,8 +32,10 @@ try {
     $db = connectToDatabase();
 
     $woStmt = $db->prepare('
-        SELECT wo.id, wo.reference, wo.status, u.name AS current_assignee
+        SELECT wo.id, wo.reference, wo.status, u.name AS current_assignee, l.department_id
         FROM work_orders wo
+        JOIN reports r ON r.id = wo.report_id
+        JOIN locations l ON l.id = r.location_id
         LEFT JOIN users u ON u.id = wo.assigned_to
         WHERE wo.id = :id
     ');
@@ -44,9 +48,12 @@ try {
     if (in_array($workOrder['status'], ['completed', 'cancelled'], true)) {
         sendJson(false, 409, 'Cannot reassign a ' . $workOrder['status'] . ' work order');
     }
+    if ($isSupervisor && (int) $workOrder['department_id'] !== ($user['department_id'] ?? -1)) {
+        sendJson(false, 403, 'This work order is outside your department');
+    }
 
     $staffStmt = $db->prepare('
-        SELECT u.id, u.name
+        SELECT u.id, u.name, sp.department_id
         FROM users u
         JOIN staff_profiles sp ON sp.user_id = u.id
         WHERE u.id = :id AND sp.is_active = 1 AND u.role != "admin"
@@ -56,6 +63,9 @@ try {
 
     if (!$newStaff) {
         sendJson(false, 404, 'Selected staff member is not active or not found');
+    }
+    if ($isSupervisor && (int) $newStaff['department_id'] !== ($user['department_id'] ?? -1)) {
+        sendJson(false, 403, 'You can only reassign to staff in your own department');
     }
 
     // Reassigning a "pending_review" work order (the previous assignee

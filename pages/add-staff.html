@@ -55,9 +55,9 @@
               <p class="field-hint">This form is for adding workers only — everyone else signs in as a reporter via Google.</p>
             </div>
             <div class="form-group">
-              <label>Department <span class="required">*</span></label>
+              <label>Trade / Specialty <span class="required">*</span></label>
               <select name="department" required>
-                <option value="">Select Department</option>
+                <option value="">Select Trade</option>
                 <option value="Electrical">Electrical</option>
                 <option value="Plumbing">Plumbing</option>
                 <option value="Carpentry">Carpentry</option>
@@ -66,6 +66,15 @@
                 <option value="Civil">Civil</option>
                 <option value="General">General</option>
               </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Department <span class="required">*</span></label>
+              <select name="department_id" id="ad-department-select" required>
+                <option value="">Loading departments…</option>
+              </select>
+              <p class="field-hint">A Supervisor manages tickets in this department only. A Technician's home department matters for reassignment.</p>
             </div>
           </div>
           <div class="form-row">

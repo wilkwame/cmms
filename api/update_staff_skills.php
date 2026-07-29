@@ -12,7 +12,11 @@ require_once __DIR__ . '/_audit.php';
 // from skill eligibility, since a "reporter" can validly hold skills
 // without becoming a technician in the UI sense.
 //
-// Expected POST body: { "user_id": int, "department": string, "skills": int[], "role"?: string }
+// Expected POST body: { "user_id": int, "department": string, "department_id"?: int|null, "skills": int[], "role"?: string }
+// "department" is the trade/specialty label (Electrical, Plumbing, ...).
+// "department_id" is the organizational department (Computer Science,
+// Engineering, ...) used for supervisor reassignment scoping — separate
+// concept, kept as a distinct nullable column on purpose.
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     sendJson(false, 405, 'Method not allowed');
@@ -20,11 +24,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $currentAdmin = requireRole(['admin']);
 
-$body       = json_decode(file_get_contents('php://input'), true);
-$userId     = (int) ($body['user_id'] ?? 0);
-$department = isset($body['department']) ? trim($body['department']) : '';
-$skills     = isset($body['skills']) && is_array($body['skills']) ? array_map('intval', $body['skills']) : [];
-$role       = isset($body['role']) ? trim($body['role']) : null;
+$body         = json_decode(file_get_contents('php://input'), true);
+$userId       = (int) ($body['user_id'] ?? 0);
+$department   = isset($body['department']) ? trim($body['department']) : '';
+$departmentId = isset($body['department_id']) && $body['department_id'] ? (int) $body['department_id'] : null;
+$skills       = isset($body['skills']) && is_array($body['skills']) ? array_map('intval', $body['skills']) : [];
+$role         = isset($body['role']) ? trim($body['role']) : null;
 
 $allowedRoles = ['admin', 'supervisor', 'technician', 'reporter'];
 
@@ -54,6 +59,14 @@ try {
         sendJson(false, 404, 'User not found');
     }
 
+    if ($departmentId !== null) {
+        $deptStmt = $db->prepare('SELECT id FROM departments WHERE id = :id');
+        $deptStmt->execute([':id' => $departmentId]);
+        if (!$deptStmt->fetch()) {
+            sendJson(false, 400, 'Invalid department');
+        }
+    }
+
     $db->beginTransaction();
 
     if ($role !== null) {
@@ -66,15 +79,17 @@ try {
     $specialisation = implode(', ', array_column($namesStmt->fetchAll(), 'name'));
 
     $db->prepare('
-        INSERT INTO staff_profiles (user_id, department, specialisation, joined_at, is_active)
-        VALUES (:user_id, :department, :specialisation, CURDATE(), 1)
+        INSERT INTO staff_profiles (user_id, department, department_id, specialisation, joined_at, is_active)
+        VALUES (:user_id, :department, :department_id, :specialisation, CURDATE(), 1)
         ON DUPLICATE KEY UPDATE
             department = VALUES(department),
+            department_id = VALUES(department_id),
             specialisation = VALUES(specialisation),
             is_active = 1
     ')->execute([
         ':user_id' => $userId,
         ':department' => $department,
+        ':department_id' => $departmentId,
         ':specialisation' => $specialisation,
     ]);
 
@@ -98,6 +113,7 @@ try {
         'user_id' => $userId,
         'role' => $finalRole,
         'department' => $department,
+        'department_id' => $departmentId,
         'skills' => $skills,
         'specialisation' => $specialisation,
     ]);

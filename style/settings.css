@@ -304,6 +304,31 @@
 }
 
 /* ========================================
+   DEPARTMENT-LOCATION SELECT
+   ======================================== */
+
+.dept-location-select {
+  padding: 5px 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: white;
+  font-size: 12px;
+  font-weight: 500;
+  color: #555;
+  font-family: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
+  max-width: 160px;
+}
+
+.dept-location-select:hover,
+.dept-location-select:focus {
+  border-color: #237FEA;
+  color: #237FEA;
+  outline: none;
+}
+
+/* ========================================
    TOGGLE SWITCH
    ======================================== */
 

@@ -281,6 +281,72 @@
   font-style: italic;
 }
 
+/* ========================================
+   FEEDBACK — optional, once a ticket is closed
+   ======================================== */
+
+.feedback-field {
+  background: #f7fafe;
+  border: 1px solid #eef1f5;
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.feedback-stars {
+  display: flex;
+  gap: 6px;
+  margin: 6px 0 10px;
+}
+
+.feedback-star {
+  font-size: 22px;
+  color: #dfe3e8;
+  cursor: pointer;
+  transition: color 0.15s, transform 0.1s;
+}
+
+.feedback-stars:not(.feedback-stars-readonly) .feedback-star:hover {
+  transform: scale(1.12);
+}
+
+.feedback-star.active {
+  color: #f5a623;
+}
+
+.feedback-stars-readonly .feedback-star {
+  cursor: default;
+  font-size: 18px;
+}
+
+.feedback-comment-input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #dfe3e8;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+  margin-bottom: 10px;
+  box-sizing: border-box;
+}
+
+.feedback-comment-input:focus {
+  outline: none;
+  border-color: #237FEA;
+}
+
+.feedback-submit-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.feedback-comment-readonly {
+  font-size: 13px;
+  color: #4b5563;
+  margin: 4px 0 0;
+  font-style: italic;
+}
+
 @media (max-width: 600px) {
   #user-home section {
     padding: 12px 14px 20px;

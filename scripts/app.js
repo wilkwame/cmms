@@ -952,6 +952,11 @@ function buildReportDetailPopup(report) {
         '      <p><span class="' + statusClass + '">' + statusLabel(report.status) + '</span></p>' +
         '    </div>' +
         '  </div>' +
+        (report.department ?
+        '  <div class="popup-field">' +
+        '    <label><i class="fas fa-building"></i> Department</label>' +
+        '    <p>' + report.department + '</p>' +
+        '  </div>' : '') +
         '  <div class="popup-field">' +
         '    <label><i class="fas fa-calendar-alt"></i> Submitted</label>' +
         '    <p>' + date + '</p>' +
@@ -1059,13 +1064,13 @@ function buildWorkOrderDetailPopup(order, reassignPanelHtml) {
     var completionPhotosHtml = buildPhotosHtml(order, 'completion_photo_urls', 'Completion Evidence', 'fa-check-circle');
 
     var role = app.memory.user ? app.memory.user.role : null;
-    var isAdmin = role === 'admin';
     var isPrivileged = role === 'admin' || role === 'supervisor';
     var isOwner = !!(app.memory.user && order.assigned_to_id === app.memory.user.id);
     var isTerminal = ['completed', 'cancelled'].indexOf(order.status) !== -1;
-    // Reassigning requires the staff roster, which is admin-only visibility
-    // (see get_staff.php) — so only admin gets the Reassign button.
-    var canReassign = !isTerminal && isAdmin;
+    // Reassigning is admin company-wide, supervisor scoped to their own
+    // department — get_staff.php and reassign_work_order.php both enforce
+    // that scoping server-side regardless of what this button gate does.
+    var canReassign = !isTerminal && isPrivileged;
     var canDelete = isPrivileged;
     // A technician can move their own work order through start/complete/
     // cancel; admin/supervisor can do the same on any work order.
@@ -1137,6 +1142,11 @@ function buildWorkOrderDetailPopup(order, reassignPanelHtml) {
         '      <p><span class="' + statusClass + '">' + statusLabel(order.status) + '</span></p>' +
         '    </div>' +
         '  </div>' +
+        (order.department ?
+        '  <div class="popup-field">' +
+        '    <label><i class="fas fa-building"></i> Department</label>' +
+        '    <p>' + escapeHtml(order.department) + '</p>' +
+        '  </div>' : '') +
         photosHtml +
         completionPhotosHtml +
         (reassignPanelHtml || '') +

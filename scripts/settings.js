@@ -14,6 +14,72 @@ function loadSettingsPage(context) {
 
     loadSettingsStats(context);
     loadPreferences(context);
+    loadDepartmentLocations(context);
+}
+
+// ===== DEPARTMENTS: assign each location to a department =====
+async function loadDepartmentLocations(context) {
+    var list = context.query('#dept-locations-list');
+    if (!list.exists) return;
+
+    try {
+        var results = await Promise.all([
+            app.php('api/get_locations.php', {}),
+            app.php('api/get_departments.php', {})
+        ]);
+        var locationsResult = results[0];
+        var departmentsResult = results[1];
+
+        if (!locationsResult.ok || !Array.isArray(locationsResult.data)) {
+            list.html('<p class="empty-state">Failed to load locations.</p>');
+            return;
+        }
+        var locations = locationsResult.data;
+        var departments = (departmentsResult.ok && Array.isArray(departmentsResult.data)) ? departmentsResult.data : [];
+
+        if (locations.length === 0) {
+            list.html('<p class="empty-state">No locations yet.</p>');
+            return;
+        }
+
+        var html = locations.map(function(loc) {
+            var options = '<option value="">— Unassigned —</option>' + departments.map(function(d) {
+                var selected = String(loc.department_id) === String(d.id) ? ' selected' : '';
+                return '<option value="' + d.id + '"' + selected + '>' + d.name + '</option>';
+            }).join('');
+
+            return '<div class="setting-item">' +
+                '  <div class="setting-info">' +
+                '    <span class="setting-label"><i class="fas fa-map-marker-alt"></i> ' + loc.name + '</span>' +
+                '  </div>' +
+                '  <select class="dept-location-select" onchange="saveLocationDepartment: ' + loc.id + '">' + options + '</select>' +
+                '</div>';
+        }).join('');
+
+        list.html(html);
+    } catch (error) {
+        console.error('Failed to load department/location data:', error);
+        list.html('<p class="empty-state">Failed to load locations.</p>');
+    }
+}
+
+function saveLocationDepartment(arg, context) {
+    var locationId = parseInt(arg, 10);
+    var select = context.event ? context.event.target : null;
+    if (!locationId || !select) return;
+
+    var departmentId = select.value ? parseInt(select.value, 10) : null;
+
+    context.fetch('api/update_location_department.php', {
+        method: 'POST',
+        body: { location_id: locationId, department_id: departmentId }
+    }, function(result) {
+        if (!result.ok) {
+            showNotificationToast(context, (result && result.data) || 'Failed to update department', 'error');
+            return;
+        }
+        showNotificationToast(context, 'Department updated', 'success');
+    });
 }
 
 // Fetches real counts from the database instead of reusing whatever
@@ -174,6 +240,8 @@ function applyCompactMode(isCompact) {
 // ========================================
 
 window.loadSettingsPage = loadSettingsPage;
+window.loadDepartmentLocations = loadDepartmentLocations;
+window.saveLocationDepartment = saveLocationDepartment;
 window.toggleDarkMode = toggleDarkMode;
 window.toggleNotificationsPref = toggleNotificationsPref;
 window.toggleCompactMode = toggleCompactMode;

@@ -33,6 +33,7 @@ try {
             r.description,
             c.name   AS category,
             l.name   AS location,
+            d.name   AS department,
             r.priority,
             r.status,
             r.submitted_at,
@@ -41,6 +42,7 @@ try {
         FROM reports r
         JOIN categories c ON c.id = r.category_id
         JOIN locations  l ON l.id = r.location_id
+        LEFT JOIN departments d ON d.id = l.department_id
         LEFT JOIN work_orders wo ON wo.id = (
             SELECT wo2.id FROM work_orders wo2
             WHERE wo2.report_id = r.id AND wo2.status != "cancelled"
@@ -50,11 +52,20 @@ try {
         LEFT JOIN users u_to ON u_to.id = wo.assigned_to
         LEFT JOIN report_photos rp ON rp.report_id = r.id
     ';
-    $groupBy = ' GROUP BY r.id, r.reference, r.issue, r.description, c.name, l.name, r.priority, r.status, r.submitted_at, u_to.name';
+    $groupBy = ' GROUP BY r.id, r.reference, r.issue, r.description, c.name, l.name, d.name, r.priority, r.status, r.submitted_at, u_to.name';
 
     if ($user['role'] === 'reporter') {
         $stmt = $db->prepare($baseSql . ' WHERE r.submitted_by = :submitted_by' . $groupBy . ' ORDER BY r.submitted_at DESC');
         $stmt->execute([':submitted_by' => $user['id']]);
+    } elseif ($user['role'] === 'supervisor') {
+        // Departmental scoping: a supervisor only sees tickets whose
+        // location is confirmed to be in their own department. A ticket
+        // whose location has no department assigned yet, or a supervisor
+        // with no department of their own, never matches — admin remains
+        // responsible for those until an admin assigns them, rather than
+        // defaulting to "show everything" and leaking cross-department data.
+        $stmt = $db->prepare($baseSql . ' WHERE r.status = "pending" AND l.department_id = :department_id' . $groupBy . ' ORDER BY r.submitted_at DESC');
+        $stmt->execute([':department_id' => $user['department_id'] ?? -1]);
     } else {
         $stmt = $db->prepare($baseSql . ' WHERE r.status = "pending"' . $groupBy . ' ORDER BY r.submitted_at DESC');
         $stmt->execute();

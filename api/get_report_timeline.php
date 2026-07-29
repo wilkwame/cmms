@@ -45,6 +45,10 @@ try {
     $photosStmt->execute([':id' => $reportId]);
     $photos = array_column($photosStmt->fetchAll(), 'url');
 
+    $feedbackStmt = $db->prepare('SELECT rating, comment, created_at FROM report_feedback WHERE report_id = :id');
+    $feedbackStmt->execute([':id' => $reportId]);
+    $feedback = $feedbackStmt->fetch() ?: null;
+
     $timeline = [[
         'event'     => 'submitted',
         'label'     => 'Submitted',
@@ -97,6 +101,7 @@ try {
         'photos'     => $photos,
         'work_order' => $workOrder ?: null,
         'timeline'   => $timeline,
+        'feedback'   => $feedback,
     ]);
 
 } catch (PDOException $e) {
