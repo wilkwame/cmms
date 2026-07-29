@@ -32,6 +32,7 @@ try {
     $refStmt->execute([':id' => $id]);
     $reference = $refStmt->fetchColumn();
 
+    $db->prepare('DELETE FROM report_feedback WHERE report_id = :id')->execute([':id' => $id]);
     $db->prepare('DELETE FROM report_photos WHERE report_id = :id')->execute([':id' => $id]);
 
     $stmt = $db->prepare('DELETE FROM reports WHERE id = :id');

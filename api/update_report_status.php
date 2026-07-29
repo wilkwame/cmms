@@ -41,6 +41,24 @@ try {
     $refStmt = $db->prepare('SELECT reference FROM reports WHERE id = :id');
     $refStmt->execute([':id' => $id]);
     $reference = $refStmt->fetchColumn();
+    if (!$reference) {
+        sendJson(false, 404, 'Report not found');
+    }
+
+    // A report with a work order has already been approved and acted on —
+    // rejecting it here would leave it stuck: the reject flow immediately
+    // tries to delete the report afterward (see reports.js), but
+    // delete_report.php refuses to delete one that still has a work order.
+    // Without this guard, that refusal happens silently and the report is
+    // left orphaned at status "rejected" forever — invisible everywhere in
+    // the UI (which only ever shows "pending" reports) but still counted
+    // in the Dashboard's all-status report total. This is exactly the bug
+    // that produced two such phantom reports before this guard existed.
+    $woStmt = $db->prepare('SELECT id FROM work_orders WHERE report_id = :id LIMIT 1');
+    $woStmt->execute([':id' => $id]);
+    if ($woStmt->fetch()) {
+        sendJson(false, 409, 'This ticket already has a work order and cannot be rejected — delete the work order instead if you want to undo it.');
+    }
 
     $stmt = $db->prepare('UPDATE reports SET status = :status WHERE id = :id');
     $stmt->execute([':status' => $status, ':id' => $id]);

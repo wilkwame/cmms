@@ -33,11 +33,19 @@ try {
         // even when reports existed. "In Progress"/"Completed"/"Overdue"
         // only apply once a work order exists, so those still come from
         // work_orders.
+        // Excludes "rejected" — those are meant to be deleted immediately
+        // (see reports.js), not linger in the count. Excluding it here too
+        // is a safety net: a rejected report that somehow survives (it
+        // shouldn't, now that update_report_status.php refuses to reject
+        // anything with a work order attached) shows up nowhere in the UI,
+        // so counting it in "Total" would silently produce a number with
+        // no visible source — exactly the bug this line prevents.
         $reportStmt = $db->query("
             SELECT
                 COUNT(*)                AS total,
                 SUM(status = 'pending') AS pending
             FROM reports
+            WHERE status != 'rejected'
         ");
         $reportKpi = $reportStmt->fetch();
     }
