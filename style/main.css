@@ -349,42 +349,8 @@ app {
   margin-bottom: 8px;
 }
 
-/* ========================================
-   NOTIFICATION TOAST
-   ======================================== */
-
-.notification-toast {
-  position: fixed !important;
-  top: 70px !important;
-  right: 20px !important;
-  background: white !important;
-  border-radius: 8px !important;
-  padding: 12px 16px !important;
-  min-width: 200px !important;
-  max-width: 350px !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-  z-index: 2000 !important;
-  font-size: 13px !important;
-  color: #1a1a1a !important;
-  display: none;
-  border-left: 4px solid #34c759;
-}
-
-.notification-toast.success {
-  border-left-color: #34c759;
-}
-
-.notification-toast.error {
-  border-left-color: #ff3b30;
-}
-
-.notification-toast.warning {
-  border-left-color: #ff9500;
-}
-
-.notification-toast.info {
-  border-left-color: #237FEA;
-}
+/* Toast messages were replaced by the message-modal popup system — see
+   #message-overlay in index.html and popups.css. */
 
 /* ========================================
    SIDEBAR / LEFT NAV
@@ -1448,14 +1414,6 @@ page {
   
   .notification-item {
     padding: 10px 14px;
-  }
-  
-  .notification-toast {
-    top: 65px !important;
-    right: 10px !important;
-    left: 10px !important;
-    min-width: unset !important;
-    max-width: unset !important;
   }
   
   tabbar {

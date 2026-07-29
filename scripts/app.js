@@ -818,19 +818,47 @@ function updateNotificationBadge(context) {
     }
 }
 
-function showNotificationToast(context, message, type) {
-    var toast = globalQuery('#app-toast');
-    if (toast.exists) {
-        toast.text(message);
-        toast.element.className = 'notification-toast ' + (type || 'success');
-        toast.element.style.display = 'block';
-        var borderColor = type === 'error' ? '#ff3b30' : type === 'warning' ? '#ff9500' : '#34c759';
-        toast.element.style.borderLeft = '4px solid ' + borderColor;
+var NOTIFICATION_TONE = {
+    success: { tone: 'approve', icon: 'fa-circle-check', title: 'Success' },
+    error:   { tone: 'reject',  icon: 'fa-circle-xmark',  title: 'Something Went Wrong' },
+    warning: { tone: 'warning', icon: 'fa-triangle-exclamation', title: 'Heads Up' },
+    info:    { tone: 'info',    icon: 'fa-circle-info',   title: 'Notice' }
+};
 
-        context.timeout(function() {
-            toast.element.style.display = 'none';
-        }, 3000);
-    }
+// A proper dismissible popup for every success/error/warning/info message
+// in the app (replaces the old corner toast bubble, which used to share an
+// element id with the notification bell's dropdown — see #message-overlay
+// in index.html / popups.css for the full story). Its own overlay, so it
+// can be shown even while a detail popup is being opened/closed around the
+// same action without the two competing for the same dialog.
+function showNotificationToast(context, message, type) {
+    var overlay = globalQuery('#message-overlay');
+    var dialog = globalQuery('#message-dialog');
+    if (!overlay.exists || !dialog.exists) return;
+
+    var spec = NOTIFICATION_TONE[type] || NOTIFICATION_TONE.success;
+
+    dialog.html(
+        '<div class="popup-content confirm-popup">' +
+        '  <button class="popup-close confirm-popup-close" action="closeMessageModal"><i class="fas fa-times"></i></button>' +
+        '  <div class="confirm-icon-badge ' + spec.tone + '"><i class="fas ' + spec.icon + '"></i></div>' +
+        '  <h3 class="confirm-title">' + spec.title + '</h3>' +
+        '  <p class="confirm-message">' + escapeHtml(message) + '</p>' +
+        '  <div class="confirm-actions">' +
+        '    <button class="popup-btn ' + spec.tone + '" action="closeMessageModal">OK</button>' +
+        '  </div>' +
+        '</div>'
+    );
+    overlay.element.classList.add('active');
+}
+
+function closeMessageModal(context) {
+    var overlay = globalQuery('#message-overlay');
+    var dialog = globalQuery('#message-dialog');
+    if (!overlay.exists || !dialog.exists) return;
+
+    overlay.element.classList.remove('active');
+    dialog.html('');
 }
 
 // ========================================
@@ -2084,5 +2112,6 @@ window.priorityLabel = priorityLabel;
 window.getStatusClass = getStatusClass;
 window.getPriorityClass = getPriorityClass;
 window.showNotificationToast = showNotificationToast;
+window.closeMessageModal = closeMessageModal;
 window.updateNotificationBadge = updateNotificationBadge;
 window.refreshAllData = refreshAllData;

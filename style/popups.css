@@ -39,6 +39,41 @@
 }
 
 /* ========================================
+   MESSAGE MODAL (showNotificationToast() in app.js)
+   Replaces the old corner toast bubble — every success/error/info message
+   in the app now shows as a proper dismissible popup instead. Its own
+   overlay (not #popup-overlay) so a message can be shown at the same time
+   a detail popup is being opened/closed around the same action (e.g.
+   submitting feedback shows a message, then reopens the ticket popup)
+   without the two fighting over one dialog. Sits above #popup-overlay.
+   ======================================== */
+
+#message-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  transition: opacity 0.15s ease-out;
+}
+
+#message-overlay.active {
+  display: flex;
+  opacity: 1;
+}
+
+#message-dialog {
+  width: 100%;
+  max-width: 380px;
+}
+
+/* ========================================
    IMAGE LIGHTBOX
    Separate overlay from popup-overlay so it stacks above an already-open
    report/work order popup (higher z-index) instead of replacing it.
@@ -277,6 +312,24 @@
   background: #e0e7ff;
 }
 
+.popup-btn.warning {
+  background: #ff9500;
+  color: #fff;
+}
+
+.popup-btn.warning:hover {
+  background: #e08600;
+}
+
+.popup-btn.info {
+  background: #237FEA;
+  color: #fff;
+}
+
+.popup-btn.info:hover {
+  background: #1a6bcc;
+}
+
 .reassign-controls {
   display: flex;
   gap: 8px;
@@ -345,6 +398,16 @@
 .confirm-icon-badge.secondary {
   background: #f3f4f6;
   color: #6b7280;
+}
+
+.confirm-icon-badge.warning {
+  background: #fff3cd;
+  color: #92400e;
+}
+
+.confirm-icon-badge.info {
+  background: #e8f1fd;
+  color: #237FEA;
 }
 
 .confirm-title {
