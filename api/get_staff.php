@@ -35,14 +35,14 @@ try {
             sp.specialisation,
             sp.joined_at,
             COALESCE(sp.is_active, 0) AS is_active,
-            COUNT(DISTINCT wo.id) AS active_jobs,
+            COUNT(DISTINCT CASE WHEN wo.status IN ("pending", "in_progress") THEN wo.id END) AS active_jobs,
+            COUNT(DISTINCT CASE WHEN wo.status = "completed" THEN wo.id END) AS completed_jobs,
+            COUNT(DISTINCT wo.id) AS total_jobs,
             GROUP_CONCAT(DISTINCT ss.category_id) AS skill_ids
         FROM users u
         LEFT JOIN staff_profiles sp ON sp.user_id = u.id
         LEFT JOIN departments d ON d.id = sp.department_id
-        LEFT JOIN work_orders wo
-            ON wo.assigned_to = u.id
-            AND wo.status IN ("pending", "in_progress")
+        LEFT JOIN work_orders wo ON wo.assigned_to = u.id
         LEFT JOIN staff_skills ss ON ss.staff_user_id = u.id
     ';
     $params = [];

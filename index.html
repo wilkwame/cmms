@@ -38,12 +38,13 @@
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <link rel="stylesheet" href="style/main.css?v=17">
+  <link rel="stylesheet" href="style/main.css?v=18">
   <link rel="stylesheet" href="style/mobile.css?v=10">
-  <link rel="stylesheet" href="style/staffs.css?v=11">
+  <link rel="stylesheet" href="style/staffs.css?v=12">
   <link rel="stylesheet" href="style/confirmation.css?v=10">
   <link rel="stylesheet" href="style/popups.css?v=15">
   <script src="https://unpkg.com/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="scripts/platform.js?v=10"></script>
   <!-- <title>CMMS - Maintenance</title> -->
 
@@ -349,9 +350,10 @@
                 <span class="view-more" action="goToStaff">See All <i class="fas fa-arrow-right"></i></span>
               </div>
               <div class="workload-header">
-                <span class="col-staff">Staff</span>
-                <span class="col-jobs">Jobs</span>
-                <span class="col-load">Load</span>
+                <span class="wl-staff">Staff</span>
+                <span class="wl-jobs">Active</span>
+                <span class="wl-done">Done</span>
+                <span class="wl-load">Load</span>
               </div>
               <div id="dashboard-workload-body">
                 <p class="loading-text">Loading staff...</p>
@@ -409,16 +411,16 @@
   </app>
 
   <script src="runtime/clera.js?v=13"></script>
-  <script src="scripts/offline-queue.js?v=1"></script>
-  <script src="scripts/app.js?v=42"></script>
+  <script src="scripts/offline-queue.js?v=2"></script>
+  <script src="scripts/app.js?v=43"></script>
   <script src="scripts/logs.js?v=1"></script>
-  <script src="scripts/category-stats.js?v=4"></script>
+  <script src="scripts/category-stats.js?v=5"></script>
   <script src="scripts/reports.js?v=19"></script>
   <script src="scripts/workorders.js?v=14"></script>
-  <script src="scripts/staffs.js?v=19"></script>
+  <script src="scripts/staffs.js?v=20"></script>
   <script src="scripts/add-staff.js?v=15"></script>
-  <script src="scripts/settings.js?v=11"></script>
-  <script src="scripts/report-issue.js?v=15"></script>
+  <script src="scripts/settings.js?v=12"></script>
+  <script src="scripts/report-issue.js?v=16"></script>
   <script src="scripts/user-dashboard.js?v=17"></script>
 </body>
 </html>

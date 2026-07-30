@@ -1056,18 +1056,24 @@ page {
   max-width: 80px;
 }
 
-.col-staff {
+/* Dashboard "Staff Workload" widget columns — deliberately its own
+   wl-prefixed names, not .col-* (staffs.css defines its own, differently-
+   sized .col-jobs for the full Staff page table; that class name is
+   otherwise unscoped and would leak onto this widget on every page, since
+   staffs.css loads globally like every other stylesheet). */
+.wl-staff {
   flex: 2;
 }
 
-.col-jobs {
+.wl-jobs,
+.wl-done {
   flex: 0 0 40px;
   max-width: 40px;
   text-align: center;
   font-weight: 600;
 }
 
-.col-load {
+.wl-load {
   flex: 0 0 55px;
   max-width: 55px;
   text-align: center;

@@ -23,7 +23,10 @@ function openOfflineDb() {
     });
 }
 
-// report: { issue, description, category_id, location_id, priority }
+// report: { issue, description, category_id, priority, location_id }
+//   or:   { issue, description, category_id, priority, location_name, department_id? }
+//   (the latter when the reporter typed a custom "Other" location — see
+//   report-issue.js's submitReportIssue)
 // photos: array of File/Blob objects (already compressed by the caller)
 function offlineQueueAdd(report, photos) {
     return openOfflineDb().then(function(db) {

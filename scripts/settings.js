@@ -63,6 +63,76 @@ async function loadDepartmentLocations(context) {
     }
 }
 
+// ===== ADD LOCATION (Administrator) =====
+async function openAddLocationPopup(context) {
+    var departments = [];
+    try {
+        var result = await app.php('api/get_departments.php', {});
+        if (result.ok && Array.isArray(result.data)) departments = result.data;
+    } catch (error) {
+        // Non-fatal — the popup still opens, just with only "— Unassigned —"
+        // available; the admin can assign a department afterward from the
+        // location list below instead.
+    }
+
+    var options = '<option value="">— Unassigned —</option>' + departments.map(function(d) {
+        return '<option value="' + d.id + '">' + escapeHtml(d.name) + '</option>';
+    }).join('');
+
+    openPopup(context,
+        '<div class="popup-content">' +
+        '  <div class="popup-header">' +
+        '    <h3><i class="fas fa-map-marker-alt"></i> Add Location</h3>' +
+        '    <button class="popup-close" action="closePopup"><i class="fas fa-times"></i></button>' +
+        '  </div>' +
+        '  <div class="popup-body">' +
+        '    <div class="popup-field">' +
+        '      <label><i class="fas fa-signature"></i> Location Name</label>' +
+        '      <input type="text" id="new-location-name" placeholder="e.g. Block D, Science Annex" style="width:100%;padding:8px 10px;border:1px solid #dfe3e8;border-radius:8px;font-size:13px;font-family:inherit;" />' +
+        '    </div>' +
+        '    <div class="popup-field">' +
+        '      <label><i class="fas fa-building"></i> Department</label>' +
+        '      <select id="new-location-department" style="width:100%;padding:8px 10px;border:1px solid #dfe3e8;border-radius:8px;font-size:13px;font-family:inherit;">' + options + '</select>' +
+        '    </div>' +
+        '  </div>' +
+        '  <div class="popup-footer">' +
+        '    <button class="popup-btn secondary" action="closePopup">Cancel</button>' +
+        '    <button class="popup-btn approve" action="submitNewLocation"><i class="fas fa-check"></i> Add</button>' +
+        '  </div>' +
+        '</div>'
+    );
+
+    var nameInput = document.getElementById('new-location-name');
+    if (nameInput) nameInput.focus();
+}
+
+function submitNewLocation(context) {
+    var nameInput = document.getElementById('new-location-name');
+    var deptSelect = document.getElementById('new-location-department');
+    var name = nameInput ? nameInput.value.trim() : '';
+
+    if (!name) {
+        showNotificationToast(context, 'Enter a location name.', 'error');
+        return;
+    }
+
+    context.fetch('api/create_location.php', {
+        method: 'POST',
+        body: {
+            name: name,
+            department_id: (deptSelect && deptSelect.value) ? parseInt(deptSelect.value, 10) : null
+        }
+    }, function(result) {
+        if (!result.ok) {
+            showNotificationToast(context, (result && result.data) || 'Failed to add location', 'error');
+            return;
+        }
+        closePopup(context);
+        showNotificationToast(context, 'Location added', 'success');
+        loadDepartmentLocations(context);
+    });
+}
+
 function saveLocationDepartment(arg, context) {
     var locationId = parseInt(arg, 10);
     var select = context.event ? context.event.target : null;
@@ -242,6 +312,8 @@ function applyCompactMode(isCompact) {
 window.loadSettingsPage = loadSettingsPage;
 window.loadDepartmentLocations = loadDepartmentLocations;
 window.saveLocationDepartment = saveLocationDepartment;
+window.openAddLocationPopup = openAddLocationPopup;
+window.submitNewLocation = submitNewLocation;
 window.toggleDarkMode = toggleDarkMode;
 window.toggleNotificationsPref = toggleNotificationsPref;
 window.toggleCompactMode = toggleCompactMode;

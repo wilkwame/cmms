@@ -96,7 +96,10 @@ function renderStaffSlice(context) {
             html += '  <span class="col-role">' + role + '</span>';
             html += '  <span class="col-department">' + escapeHtml(dept) + '</span>';
             html += '  <span class="col-status"><span class="' + statusClass + '">' + statusLabel + '</span></span>';
-            html += '  <span class="col-jobs">' + (s.active_jobs || 0) + '</span>';
+            html += '  <span class="col-jobs" title="' + (s.active_jobs || 0) + ' active, ' + (s.completed_jobs || 0) + ' completed">' +
+                '<span class="jobs-active"><strong>' + (s.active_jobs || 0) + '</strong> active</span>' +
+                '<span class="jobs-done">' + (s.completed_jobs || 0) + ' done</span>' +
+                '</span>';
             html += '  <span class="col-joined">' + joinDate + '</span>';
             var isSelf = app.memory.user && app.memory.user.id === s.id;
 

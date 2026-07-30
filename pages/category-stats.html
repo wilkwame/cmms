@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="style/category-stats.css?v=4">
+  <link rel="stylesheet" href="style/category-stats.css?v=5">
 </head>
 <body>
   <page name="category-stats" id="category-stats" onshow="loadCategoryStatsPage">
@@ -48,12 +48,21 @@
 
     <div class="category-bars-panel card-panel">
       <div class="panel-header">
-        <h4><i class="fas fa-chart-pie"></i> Tickets by Category</h4>
-        <button class="btn-download-chart" action="downloadCategoryChart" title="Download chart as an image">
-          <i class="fas fa-download"></i> Download
-        </button>
+        <h4><i class="fas fa-chart-pie"></i> <span id="cs-chart-title">Tickets by Category</span></h4>
+        <div class="panel-header-actions">
+          <button class="btn-download-chart" action="downloadCategoryChart: png" title="Download chart as a PNG image">
+            <i class="fas fa-image"></i> PNG
+          </button>
+          <button class="btn-download-chart" action="downloadCategoryChart: pdf" title="Download chart as a PDF document">
+            <i class="fas fa-file-pdf"></i> PDF
+          </button>
+        </div>
       </div>
-      <p class="panel-sub">Sorted by ticket volume, highest first</p>
+      <div class="view-toggle">
+        <button class="view-toggle-btn active" id="cs-view-category" action="switchCategoryStatsView: category">By Category</button>
+        <button class="view-toggle-btn" id="cs-view-department" action="switchCategoryStatsView: department">By Department</button>
+      </div>
+      <p class="panel-sub" id="cs-panel-sub">Sorted by ticket volume, highest first — approved and closed tickets only</p>
       <div id="category-bars-body">
         <p class="loading-text">Loading ticket breakdown...</p>
       </div>

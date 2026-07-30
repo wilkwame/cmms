@@ -19,17 +19,16 @@ try {
             u.id,
             u.name,
             sp.department,
-            COUNT(wo.id) AS active_jobs,
+            COUNT(DISTINCT CASE WHEN wo2.status IN (\'pending\', \'in_progress\', \'overdue\') THEN wo2.id END) AS active_jobs,
+            COUNT(DISTINCT CASE WHEN wo2.status = \'completed\' THEN wo2.id END) AS completed_jobs,
             CASE
-                WHEN COUNT(wo.id) >= 5 THEN \'High\'
-                WHEN COUNT(wo.id) >= 3 THEN \'Medium\'
+                WHEN COUNT(DISTINCT CASE WHEN wo2.status IN (\'pending\', \'in_progress\', \'overdue\') THEN wo2.id END) >= 5 THEN \'High\'
+                WHEN COUNT(DISTINCT CASE WHEN wo2.status IN (\'pending\', \'in_progress\', \'overdue\') THEN wo2.id END) >= 3 THEN \'Medium\'
                 ELSE \'Low\'
             END AS load_level
         FROM users u
         JOIN staff_profiles sp ON sp.user_id = u.id
-        LEFT JOIN work_orders wo
-            ON wo.assigned_to = u.id
-            AND wo.status IN (\'pending\', \'in_progress\', \'overdue\')
+        LEFT JOIN work_orders wo2 ON wo2.assigned_to = u.id
         WHERE u.role != \'admin\'
           AND sp.is_active = 1
     ';

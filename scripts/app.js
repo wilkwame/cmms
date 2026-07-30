@@ -1782,9 +1782,10 @@ async function loadDashboardStaff(context) {
         var s = staff[i];
         var loadClass = 'load-' + s.load_level.toLowerCase();
         html += '<div class="workload-row">';
-        html += '  <span class="col-staff">' + s.name + '</span>';
-        html += '  <span class="col-jobs">' + s.active_jobs + '</span>';
-        html += '  <span class="col-load"><span class="' + loadClass + '">' + s.load_level + '</span></span>';
+        html += '  <span class="wl-staff">' + s.name + '</span>';
+        html += '  <span class="wl-jobs">' + s.active_jobs + '</span>';
+        html += '  <span class="wl-done">' + (s.completed_jobs || 0) + '</span>';
+        html += '  <span class="wl-load"><span class="' + loadClass + '">' + s.load_level + '</span></span>';
         html += '</div>';
     }
 

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="style/report-issue.css?v=9">
+  <link rel="stylesheet" href="style/report-issue.css?v=10">
 </head>
 <body>
 <page name="report-issue" id="report-issue" onshow="loadReportIssuePage">
@@ -55,10 +55,22 @@
       </div>
 
       <div class="field">
-        <label for="ri-location">Location <span class="required">*</span></label>
-        <select id="ri-location">
-          <option value="">Loading locations...</option>
+        <label for="ri-department">Department <span class="field-hint">(optional — narrows the location list below)</span></label>
+        <select id="ri-department">
+          <option value="">All departments</option>
         </select>
+      </div>
+
+      <div class="field">
+        <label for="ri-location-search">Location <span class="required">*</span></label>
+        <div class="location-combobox">
+          <input type="text" id="ri-location-search" autocomplete="off" placeholder="Search for a location..." />
+          <div id="ri-location-results" class="location-results hidden"></div>
+        </div>
+        <div id="ri-location-custom-wrap" class="location-custom-wrap hidden">
+          <input type="text" id="ri-location-custom" placeholder="Type the location name (e.g. Block D, Room 12)" />
+          <p class="field-hint">Not in the list — this will be added as a new location.</p>
+        </div>
       </div>
 
       <div class="field">
