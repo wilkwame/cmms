@@ -22,7 +22,7 @@ function refreshUserHomeData(context) {
         ? offlineQueueGetAll().catch(function() { return []; })
         : Promise.resolve([]);
 
-    return Promise.all([app.php('api/get_reports.php', {}), pendingOffline]).then(function(results) {
+    return Promise.all([app.php('api/get_reports.php', { scope: 'mine' }), pendingOffline]).then(function(results) {
         var result = results[0];
         var offlineItems = results[1] || [];
 

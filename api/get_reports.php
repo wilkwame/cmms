@@ -4,12 +4,15 @@ require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/_auth.php';
 
 // Returns reports in one payload. Pagination is handled client-side.
-// POST body is intentionally empty: no parameters needed.
 //
-// - reporter: all of their own reports, any status (for "My Reports").
-// - admin/supervisor: the pending approval queue.
-// - technician: not this endpoint — the pending-approval queue is an
-//   admin/supervisor decision, not something a technician sees or acts on.
+// - body {"scope":"mine"}: the caller's OWN submitted reports, any status,
+//   regardless of role — this is what "My Reports"/feedback (user-home)
+//   uses, since anyone can submit a ticket via Report Issue and should be
+//   able to track and leave feedback on it, not just role="reporter".
+// - empty body, reporter: same as scope=mine (kept for back-compat).
+// - empty body, admin/supervisor: the pending approval queue.
+// - empty body, technician: not this endpoint — the pending-approval queue
+//   is an admin/supervisor decision, not something a technician acts on.
 //   Technicians work off get_work_orders.php once a report is approved.
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -18,7 +21,10 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $user = requireLogin();
 
-if ($user['role'] !== 'reporter' && !in_array($user['role'], ['admin', 'supervisor'], true)) {
+$body  = json_decode(file_get_contents('php://input'), true) ?: [];
+$scope = isset($body['scope']) ? (string) $body['scope'] : '';
+
+if ($scope !== 'mine' && $user['role'] !== 'reporter' && !in_array($user['role'], ['admin', 'supervisor'], true)) {
     sendJson(false, 403, 'You do not have permission to view the reports queue');
 }
 
@@ -57,7 +63,7 @@ try {
     ';
     $groupBy = ' GROUP BY r.id, r.reference, r.issue, r.description, c.name, l.name, d.name, r.priority, r.status, r.submitted_at, u_to.name, rf.rating, rf.comment';
 
-    if ($user['role'] === 'reporter') {
+    if ($scope === 'mine' || $user['role'] === 'reporter') {
         $stmt = $db->prepare($baseSql . ' WHERE r.submitted_by = :submitted_by' . $groupBy . ' ORDER BY r.submitted_at DESC');
         $stmt->execute([':submitted_by' => $user['id']]);
     } elseif ($user['role'] === 'supervisor') {

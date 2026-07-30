@@ -40,7 +40,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <link rel="stylesheet" href="style/main.css?v=19">
   <link rel="stylesheet" href="style/mobile.css?v=10">
-  <link rel="stylesheet" href="style/staffs.css?v=12">
+  <link rel="stylesheet" href="style/staffs.css?v=13">
   <link rel="stylesheet" href="style/confirmation.css?v=10">
   <link rel="stylesheet" href="style/popups.css?v=15">
   <script src="https://unpkg.com/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
@@ -84,11 +84,11 @@
         <span class="tab-icon"><i class="fas fa-cog"></i></span>
         <span class="tab-label">Settings</span>
       </tab>
-      <tab page="user-home" data-roles="reporter">
+      <tab page="user-home" data-roles="admin,supervisor,technician,reporter">
         <span class="tab-icon"><i class="fas fa-clipboard-list"></i></span>
         <span class="tab-label">My Tickets</span>
       </tab>
-      <tab page="report-issue" data-roles="reporter">
+      <tab page="report-issue" data-roles="admin,supervisor,technician,reporter">
         <span class="tab-icon"><i class="fas fa-plus-circle"></i></span>
         <span class="tab-label">New Ticket</span>
       </tab>
@@ -172,11 +172,11 @@
         <i class="fas fa-chart-pie"></i>
         <span>Reports</span>
       </tab>
-      <tab page="user-home" data-roles="reporter">
+      <tab page="user-home" data-roles="admin,supervisor,technician,reporter">
         <i class="fas fa-clipboard-list"></i>
         <span>My Tickets</span>
       </tab>
-      <tab page="report-issue" data-roles="reporter">
+      <tab page="report-issue" data-roles="admin,supervisor,technician,reporter">
         <i class="fas fa-plus-circle"></i>
         <span>New Ticket</span>
       </tab>
@@ -412,7 +412,7 @@
 
   <script src="runtime/clera.js?v=13"></script>
   <script src="scripts/offline-queue.js?v=2"></script>
-  <script src="scripts/app.js?v=44"></script>
+  <script src="scripts/app.js?v=45"></script>
   <script src="scripts/logs.js?v=1"></script>
   <script src="scripts/category-stats.js?v=5"></script>
   <script src="scripts/reports.js?v=19"></script>
@@ -421,6 +421,6 @@
   <script src="scripts/add-staff.js?v=15"></script>
   <script src="scripts/settings.js?v=14"></script>
   <script src="scripts/report-issue.js?v=17"></script>
-  <script src="scripts/user-dashboard.js?v=17"></script>
+  <script src="scripts/user-dashboard.js?v=18"></script>
 </body>
 </html>

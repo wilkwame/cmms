@@ -161,7 +161,7 @@ function onOfflineReportSynced(savedReport) {
     updateOfflineIndicator();
     showNotificationToast(domContext(), 'Offline ticket ' + savedReport.reference + ' sent successfully.', 'success');
 
-    if (app.memory.user && app.memory.user.role === 'reporter' && typeof loadUserHomePage === 'function') {
+    if (typeof loadUserHomePage === 'function') {
         var activePage = document.querySelector('page[active]');
         if (activePage && activePage.id === 'user-home') {
             loadUserHomePage(domContext());

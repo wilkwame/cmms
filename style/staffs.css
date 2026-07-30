@@ -124,7 +124,7 @@
 .table-container {
   background: white;
   border-radius: 8px;
-  padding: 14px 16px;
+  padding: 18px 20px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.06);
 }
 
@@ -132,7 +132,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 14px;
 }
 
 .table-header h4 {
@@ -167,18 +167,18 @@
 
 .table-head {
   display: flex;
-  padding: 6px 0;
+  padding: 8px 0;
   border-bottom: 2px solid #f0f0f0;
   font-size: 10px;
   font-weight: 600;
   color: #999;
   text-transform: uppercase;
   letter-spacing: 0.3px;
-  min-width: 780px;
+  min-width: 860px;
 }
 
 .table-head span {
-  padding: 4px 6px;
+  padding: 6px 10px;
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -191,12 +191,12 @@
    ======================================== */
 
 #staffs-body {
-  min-width: 780px;
+  min-width: 860px;
 }
 
 .staff-row {
   display: flex;
-  padding: 8px 0;
+  padding: 14px 0;
   border-bottom: 1px solid #f5f5f5;
   font-size: 12px;
   align-items: center;
@@ -208,7 +208,7 @@
 }
 
 .staff-row span {
-  padding: 4px 6px;
+  padding: 6px 10px;
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -252,8 +252,10 @@
 }
 
 .col-status {
-  flex: 0 0 70px;
-  max-width: 70px;
+  /* "Not Configured" (the longest status label, uppercase) needs more room
+     than "Active"/"Inactive" — at 70px it was clipping mid-word. */
+  flex: 0 0 100px;
+  max-width: 100px;
 }
 
 .col-jobs {
@@ -429,11 +431,11 @@
 
   .table-head {
     font-size: 9px;
-    min-width: 560px;
+    min-width: 590px;
   }
 
   #staffs-body {
-    min-width: 560px;
+    min-width: 590px;
   }
 
   .staff-row {
@@ -456,8 +458,8 @@
   }
 
   .col-status {
-    flex: 0 0 60px;
-    max-width: 60px;
+    flex: 0 0 85px;
+    max-width: 85px;
   }
 
   .col-jobs {
