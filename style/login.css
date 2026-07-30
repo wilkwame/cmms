@@ -25,6 +25,9 @@
   --font-body: 'Inter', 'Segoe UI', system-ui, sans-serif;
 }
 
+body{
+  margin: 0px;
+}
 /* Reset any inherited styles */
 #login {
   min-height: 100vh;
