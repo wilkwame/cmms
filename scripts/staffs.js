@@ -83,7 +83,7 @@ function renderStaffSlice(context) {
             var s = slice[i];
             var configured = !!s.department;
             var statusClass = s.is_active == 1 ? 'status-badge active' : 'status-badge inactive';
-            var statusLabel = configured ? (s.is_active == 1 ? 'Active' : 'Inactive') : 'Not configured';
+            var statusLabel = configured ? (s.is_active == 1 ? 'Active' : 'Inactive') : 'Not set';
             var joinDate = s.joined_at ? formatDate(s.joined_at) : '—';
             var role = s.role ? s.role.charAt(0).toUpperCase() + s.role.slice(1) : 'N/A';
             var dept = s.department || '—';
