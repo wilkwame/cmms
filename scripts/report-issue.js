@@ -191,10 +191,19 @@ function wireReportIssueLocationSearch(context) {
     if (deptEl.exists) {
         deptEl.element.addEventListener('change', function() {
             // Switching department invalidates whatever was already picked
-            // (it may no longer be in the narrowed-down list) and reveals
-            // the free-text field immediately if the reporter's own
-            // department genuinely isn't in the list.
+            // (it may no longer be in the narrowed-down list).
             app.memory.riSelectedLocationId = null;
+
+            if (deptEl.element.value === 'other') {
+                // Their department isn't listed, so their location almost
+                // certainly isn't either — jump straight to the free-text
+                // field instead of making them also find and click "Other"
+                // a second time inside the location search results.
+                selectReportIssueLocation('other', context);
+                return;
+            }
+
+            if (customWrap.exists) customWrap.element.classList.add('hidden');
             if (searchEl.element.value) renderLocationResults(context);
         });
     }

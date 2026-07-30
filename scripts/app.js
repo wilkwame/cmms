@@ -949,6 +949,53 @@ function closePopup(context) {
     dialog.html('');
 }
 
+// ===== KEYBOARD SHORTCUTS FOR POPUPS =====
+// Enter confirms, Escape cancels/dismisses — for whichever of the three
+// overlay systems is currently open (#confirmation-overlay, #message-overlay,
+// #popup-overlay). Enter only auto-clicks a button when there's exactly one
+// non-secondary action in the dialog: detail popups like a pending ticket's
+// (Approve, Reject) both stay live options at once, and guessing between two
+// real, opposite outcomes would be worse than doing nothing.
+document.addEventListener('keydown', function(e) {
+    if (e.key !== 'Enter' && e.key !== 'Escape') return;
+
+    var confirmationOverlay = document.getElementById('confirmation-overlay');
+    if (confirmationOverlay && confirmationOverlay.classList.contains('active')) {
+        e.preventDefault();
+        if (e.key === 'Escape') { closeConfirmation(); return; }
+        var confirmBtn = document.getElementById('confirmation-btn');
+        if (confirmBtn) confirmBtn.click();
+        return;
+    }
+
+    var messageOverlay = document.getElementById('message-overlay');
+    if (messageOverlay && messageOverlay.classList.contains('active')) {
+        e.preventDefault();
+        closeMessageModal();
+        return;
+    }
+
+    var popupOverlay = document.getElementById('popup-overlay');
+    if (popupOverlay && popupOverlay.classList.contains('active')) {
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            closePopup();
+            return;
+        }
+        // Never hijack Enter's newline in a multi-line field (e.g. the
+        // feedback comment textarea).
+        if (document.activeElement && document.activeElement.tagName === 'TEXTAREA') return;
+
+        var dialog = document.getElementById('popup-dialog');
+        if (!dialog) return;
+        var primaryBtns = dialog.querySelectorAll('.popup-btn:not(.secondary)');
+        if (primaryBtns.length !== 1) return;
+
+        e.preventDefault();
+        primaryBtns[0].click();
+    }
+});
+
 // ========================================
 // REPORT POPUP FUNCTIONS
 // ========================================

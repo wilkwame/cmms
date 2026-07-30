@@ -358,6 +358,17 @@
             });
         }
 
+        // Info modal: Enter/Escape both just dismiss it — it's a single
+        // "Got it" acknowledgement, not a Confirm/Cancel choice.
+        document.addEventListener('keydown', function(e) {
+            if (e.key !== 'Enter' && e.key !== 'Escape') return;
+            var modalOverlay = $('info-modal-overlay');
+            if (modalOverlay && modalOverlay.classList.contains('active')) {
+                e.preventDefault();
+                hideInfoModal();
+            }
+        });
+
         console.log('Login page ready!');
     });
 
