@@ -127,8 +127,43 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 10px;
   padding: 16px 20px;
   border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+}
+
+.settings-card.collapsed .card-header {
+  border-bottom-color: transparent;
+}
+
+.card-toggle-btn {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: #999;
+  font-size: 13px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, transform 0.2s;
+}
+
+.card-toggle-btn:hover {
+  background: #f0f4f8;
+  color: #237FEA;
+}
+
+.settings-card.collapsed .card-toggle-btn {
+  transform: rotate(-90deg);
+}
+
+.settings-card.collapsed .card-body {
+  display: none;
 }
 
 .card-header-left {

@@ -15,8 +15,16 @@ body {
 }
 
 app {
+  /* display was never set here, so this unknown custom element rendered
+     as the browser's inline-element default — meaning min-height:100vh
+     had zero effect (inline boxes ignore it), and every #<page> below
+     never got a definite height to flex/scroll against. That's why
+     content on basically every page could grow past the viewport with
+     no working internal scrollbar, only "fixable" by zooming out. */
+  display: flex;
+  flex-direction: column;
   background: #f5f7fa;
-  min-height: 100vh;
+  height: 100vh;
 }
 
 /* ========================================
@@ -626,8 +634,13 @@ page {
   display: flex;
   flex-direction: column;
   flex: 1;
+  /* Flex items default to min-height:auto (content-based), which lets a
+     tall page silently blow past app's 100vh instead of respecting it.
+     min-height:0 is what actually lets this shrink to the space app has
+     available, so each page's own "section { flex:1; overflow-y:auto }"
+     gets a real, bounded box to scroll within. */
+  min-height: 0;
   padding-left: 0;
-  min-height: 100vh;
   background: #f5f7fa;
 }
 

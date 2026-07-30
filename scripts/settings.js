@@ -135,6 +135,14 @@ function submitNewLocation(context) {
     });
 }
 
+// ===== COLLAPSIBLE SETTINGS CARDS =====
+function toggleSettingsCard(context) {
+    var header = context.event ? context.event.target.closest('.card-header') : null;
+    var card = header ? header.closest('.settings-card') : null;
+    if (!card) return;
+    card.classList.toggle('collapsed');
+}
+
 // ===== RENAME LOCATION (Administrator) =====
 function openRenameLocationPopup(arg, context) {
     var locationId = parseInt(arg, 10);
@@ -367,6 +375,7 @@ function applyCompactMode(isCompact) {
 // ========================================
 
 window.loadSettingsPage = loadSettingsPage;
+window.toggleSettingsCard = toggleSettingsCard;
 window.loadDepartmentLocations = loadDepartmentLocations;
 window.saveLocationDepartment = saveLocationDepartment;
 window.openAddLocationPopup = openAddLocationPopup;
