@@ -50,7 +50,9 @@ async function loadDepartmentLocations(context) {
 
             return '<div class="setting-item">' +
                 '  <div class="setting-info">' +
-                '    <span class="setting-label"><i class="fas fa-map-marker-alt"></i> ' + loc.name + '</span>' +
+                '    <span class="setting-label"><i class="fas fa-map-marker-alt"></i> ' + escapeHtml(loc.name) +
+                '      <button type="button" class="location-edit-btn" title="Rename location" data-loc-name="' + escapeHtml(loc.name) + '" action="openRenameLocationPopup: ' + loc.id + '"><i class="fas fa-pen"></i></button>' +
+                '    </span>' +
                 '  </div>' +
                 '  <select class="dept-location-select" onchange="saveLocationDepartment: ' + loc.id + '">' + options + '</select>' +
                 '</div>';
@@ -129,6 +131,61 @@ function submitNewLocation(context) {
         }
         closePopup(context);
         showNotificationToast(context, 'Location added', 'success');
+        loadDepartmentLocations(context);
+    });
+}
+
+// ===== RENAME LOCATION (Administrator) =====
+function openRenameLocationPopup(arg, context) {
+    var locationId = parseInt(arg, 10);
+    if (!locationId) return;
+
+    var btn = context.event ? context.event.target.closest('.location-edit-btn') : null;
+    var currentName = btn ? (btn.dataset.locName || '') : '';
+
+    openPopup(context,
+        '<div class="popup-content">' +
+        '  <div class="popup-header">' +
+        '    <h3><i class="fas fa-pen"></i> Rename Location</h3>' +
+        '    <button class="popup-close" action="closePopup"><i class="fas fa-times"></i></button>' +
+        '  </div>' +
+        '  <div class="popup-body">' +
+        '    <div class="popup-field">' +
+        '      <label><i class="fas fa-signature"></i> Location Name</label>' +
+        '      <input type="text" id="rename-location-name" value="' + escapeHtml(currentName) + '" style="width:100%;padding:8px 10px;border:1px solid #dfe3e8;border-radius:8px;font-size:13px;font-family:inherit;" />' +
+        '    </div>' +
+        '  </div>' +
+        '  <div class="popup-footer">' +
+        '    <button class="popup-btn secondary" action="closePopup">Cancel</button>' +
+        '    <button class="popup-btn approve" action="submitRenameLocation: ' + locationId + '"><i class="fas fa-check"></i> Save</button>' +
+        '  </div>' +
+        '</div>'
+    );
+
+    var nameInput = document.getElementById('rename-location-name');
+    if (nameInput) { nameInput.focus(); nameInput.select(); }
+}
+
+function submitRenameLocation(arg, context) {
+    var locationId = parseInt(arg, 10);
+    var nameInput = document.getElementById('rename-location-name');
+    var name = nameInput ? nameInput.value.trim() : '';
+
+    if (!locationId || !name) {
+        showNotificationToast(context, 'Enter a location name.', 'error');
+        return;
+    }
+
+    context.fetch('api/rename_location.php', {
+        method: 'POST',
+        body: { location_id: locationId, name: name }
+    }, function(result) {
+        if (!result.ok) {
+            showNotificationToast(context, (result && result.data) || 'Failed to rename location', 'error');
+            return;
+        }
+        closePopup(context);
+        showNotificationToast(context, 'Location renamed', 'success');
         loadDepartmentLocations(context);
     });
 }
@@ -314,6 +371,8 @@ window.loadDepartmentLocations = loadDepartmentLocations;
 window.saveLocationDepartment = saveLocationDepartment;
 window.openAddLocationPopup = openAddLocationPopup;
 window.submitNewLocation = submitNewLocation;
+window.openRenameLocationPopup = openRenameLocationPopup;
+window.submitRenameLocation = submitRenameLocation;
 window.toggleDarkMode = toggleDarkMode;
 window.toggleNotificationsPref = toggleNotificationsPref;
 window.toggleCompactMode = toggleCompactMode;
