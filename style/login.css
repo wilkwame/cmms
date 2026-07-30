@@ -27,10 +27,16 @@
 
 body{
   margin: 0px;
+  overflow: hidden;
 }
 /* Reset any inherited styles */
 #login {
-  min-height: 100vh;
+  /* Fixed (not min-) height + hidden overflow: the page is never meant to
+     scroll at all. Vertical rhythm throughout this file was tightened
+     (logo/card/footer spacing) specifically so the whole form column
+     actually fits inside 100vh instead of relying on scroll to reach it. */
+  height: 100vh;
+  overflow: hidden;
   display: flex;
   align-items: stretch;
   justify-content: center;
@@ -49,7 +55,7 @@ body{
 .login-shell {
   width: 100%;
   display: flex;
-  min-height: 100vh;
+  height: 100%;
 }
 
 /* ========================================
@@ -192,7 +198,9 @@ body{
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 32px 16px;
+  padding: 18px 16px;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .login-wrapper {
@@ -200,6 +208,7 @@ body{
   max-width: 400px;
   margin: 0 auto;
   animation: login-rise 0.5s ease both;
+  max-height: 100%;
 }
 
 @keyframes login-rise {
@@ -213,14 +222,14 @@ body{
 
 .login-logo {
   text-align: center;
-  margin-bottom: 28px;
+  margin-bottom: 14px;
 }
 
 .logo-ring {
   position: relative;
-  width: 64px;
-  height: 64px;
-  margin: 0 auto 12px;
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 8px;
 }
 
 .logo-ring-ticks {
@@ -286,13 +295,13 @@ body{
 .login-card {
   background: white;
   border-radius: 14px;
-  padding: 28px 24px 20px;
+  padding: 20px 22px 16px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
   border: 1px solid var(--color-line);
 }
 
 .login-card-header {
-  margin-bottom: 20px;
+  margin-bottom: 14px;
 }
 
 .login-card-header h1 {
@@ -315,7 +324,7 @@ body{
    ======================================== */
 
 .login-form .form-group {
-  margin-bottom: 14px;
+  margin-bottom: 11px;
 }
 
 .login-form .form-group label {
@@ -407,7 +416,7 @@ body{
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   flex-wrap: wrap;
   gap: 6px;
 }
@@ -517,7 +526,7 @@ body{
 .login-divider {
   display: flex;
   align-items: center;
-  margin: 18px 0 14px;
+  margin: 12px 0 10px;
 }
 
 .login-divider::before,
@@ -583,8 +592,8 @@ body{
 
 .login-card-footer {
   text-align: center;
-  margin-top: 16px;
-  padding-top: 14px;
+  margin-top: 10px;
+  padding-top: 10px;
   border-top: 1px solid #f0f0f0;
 }
 
@@ -611,7 +620,7 @@ body{
 
 .login-footer-bottom {
   text-align: center;
-  margin-top: 18px;
+  margin-top: 10px;
 }
 
 .login-footer-bottom p {
@@ -710,6 +719,38 @@ body{
   .login-google-btn svg {
     width: 16px;
     height: 16px;
+  }
+}
+
+/* Short viewports (small laptop windows, landscape phones): the page never
+   scrolls (#login is overflow:hidden by design), so on top of the general
+   tightening above, trim a bit more and drop the logo subtitle / footer
+   copyright line entirely rather than risk clipping the actual form. */
+@media (max-height: 620px) {
+  .login-logo {
+    margin-bottom: 8px;
+  }
+
+  .logo-ring {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 4px;
+  }
+
+  .logo-subtitle {
+    display: none;
+  }
+
+  .login-card-header {
+    margin-bottom: 10px;
+  }
+
+  .login-form .form-group {
+    margin-bottom: 8px;
+  }
+
+  .login-footer-bottom {
+    display: none;
   }
 }
 
