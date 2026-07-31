@@ -3,8 +3,6 @@
 // ========================================
 
 function loadUserHomePage(context) {
-    var userName = app.memory.user ? app.memory.user.name : 'User';
-    context.query('#uh-user-name').text(userName);
     var dateEl = context.query('#uh-current-date');
     if (dateEl.exists) dateEl.text(getCurrentDate());
 
