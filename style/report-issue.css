@@ -171,6 +171,10 @@
 }
 
 .btn-photo-source {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   flex: 1;
   padding: 12px;
   border: 1px solid #d1d5db;
@@ -186,10 +190,6 @@
 .btn-photo-source:hover {
   border-color: #237FEA;
   background: rgba(35, 127, 234, 0.05);
-}
-
-.btn-photo-source i {
-  margin-right: 6px;
 }
 
 .dropzone {

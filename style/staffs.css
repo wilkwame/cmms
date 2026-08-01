@@ -96,6 +96,10 @@
 }
 
 .btn-new-staff {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
   background: #237FEA;
   color: white;
   border: none;
@@ -111,10 +115,6 @@
 
 .btn-new-staff:hover {
   background: #1a6dcc;
-}
-
-.btn-new-staff i {
-  margin-right: 4px;
 }
 
 /* ========================================

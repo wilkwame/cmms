@@ -29,6 +29,9 @@
 }
 
 .btn-complete-task {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   border: none;
   background: #cdffcf;
   color: #2d7a2d;
@@ -43,10 +46,6 @@
 
 .btn-complete-task:hover {
   background: #9bef9d;
-}
-
-.btn-complete-task i {
-  margin-right: 4px;
 }
 
 .wo-action-label {

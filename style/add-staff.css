@@ -103,6 +103,9 @@
 }
 
 .form-header .back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   background: none;
   border: none;
   color: #237FEA;
@@ -116,10 +119,6 @@
 
 .form-header .back-btn:hover {
   background: #f0f4f8;
-}
-
-.form-header .back-btn i {
-  margin-right: 4px;
 }
 
 .form-header h2 {
