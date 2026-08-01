@@ -48,6 +48,23 @@ try {
     ');
     $departments = $departmentStmt->fetchAll();
 
+    // Same filtering again, broken down by the specific location instead
+    // of department/category — answers "which physical areas on campus
+    // actually have the most reported issues," per the project review
+    // ask for a location-level view (no campus map image available, so
+    // this is the list/breakdown form of that instead).
+    $locationStmt = $db->query('
+        SELECT l.id, l.name,
+               COUNT(DISTINCT r.id)  AS report_count,
+               COUNT(DISTINCT wo.id) AS work_order_count
+        FROM locations l
+        LEFT JOIN reports r ON r.location_id = l.id AND r.status IN ("approved", "closed")
+        LEFT JOIN work_orders wo ON wo.report_id = r.id AND wo.status = "completed"
+        GROUP BY l.id, l.name
+        ORDER BY report_count DESC
+    ');
+    $locations = $locationStmt->fetchAll();
+
     foreach ($categories as &$row) {
         $row['report_count'] = (int) $row['report_count'];
         $row['work_order_count'] = (int) $row['work_order_count'];
@@ -60,9 +77,16 @@ try {
     }
     unset($row);
 
+    foreach ($locations as &$row) {
+        $row['report_count'] = (int) $row['report_count'];
+        $row['work_order_count'] = (int) $row['work_order_count'];
+    }
+    unset($row);
+
     sendJson(true, 200, [
         'categories'  => $categories,
         'departments' => $departments,
+        'locations'   => $locations,
     ]);
 
 } catch (PDOException $e) {

@@ -21,7 +21,8 @@ function loadCategoryStatsPage(context) {
             // already here, no extra round trip.
             app.memory.categoryStatsData = {
                 category: result.data.categories || [],
-                department: result.data.departments || []
+                department: result.data.departments || [],
+                location: result.data.locations || []
             };
             renderCategoryStats(context);
         })
@@ -31,29 +32,35 @@ function loadCategoryStatsPage(context) {
         });
 }
 
+var CATEGORY_STATS_VIEWS = {
+    category:   { btn: 'cs-view-category',   title: 'Tickets by Category',   plural: 'Categories', empty: 'categories' },
+    department: { btn: 'cs-view-department', title: 'Tickets by Department', plural: 'Departments', empty: 'departments' },
+    location:   { btn: 'cs-view-location',   title: 'Tickets by Location',   plural: 'Locations',   empty: 'locations' }
+};
+
 function switchCategoryStatsView(arg, context) {
-    if (arg !== 'category' && arg !== 'department') return;
+    if (!CATEGORY_STATS_VIEWS[arg]) return;
     app.memory.categoryStatsView = arg;
 
-    var catBtn = document.getElementById('cs-view-category');
-    var deptBtn = document.getElementById('cs-view-department');
-    if (catBtn) catBtn.classList.toggle('active', arg === 'category');
-    if (deptBtn) deptBtn.classList.toggle('active', arg === 'department');
+    Object.keys(CATEGORY_STATS_VIEWS).forEach(function(key) {
+        var btn = document.getElementById(CATEGORY_STATS_VIEWS[key].btn);
+        if (btn) btn.classList.toggle('active', key === arg);
+    });
 
     renderCategoryStats(context);
 }
 
 function renderCategoryStats(context) {
     var view = app.memory.categoryStatsView || 'category';
-    var data = app.memory.categoryStatsData || { category: [], department: [] };
+    var meta = CATEGORY_STATS_VIEWS[view] || CATEGORY_STATS_VIEWS.category;
+    var data = app.memory.categoryStatsData || { category: [], department: [], location: [] };
     var items = data[view] || [];
 
     var titleEl = document.getElementById('cs-chart-title');
-    if (titleEl) titleEl.textContent = view === 'department' ? 'Tickets by Department' : 'Tickets by Category';
+    if (titleEl) titleEl.textContent = meta.title;
     var subEl = document.getElementById('cs-panel-sub');
     if (subEl) {
-        subEl.textContent = (view === 'department' ? 'Departments' : 'Categories') +
-            ' sorted by ticket volume, highest first — approved and closed tickets only';
+        subEl.textContent = meta.plural + ' sorted by ticket volume, highest first — approved and closed tickets only';
     }
 
     var totalReports = 0;
@@ -74,10 +81,10 @@ function renderCategoryStats(context) {
     // canvas — kept in memory instead of re-fetching so the downloaded image
     // always matches whatever view is on screen right now.
     app.memory.categoryStatsCurrent = items;
-    app.memory.categoryStatsCurrentTitle = view === 'department' ? 'Tickets by Department' : 'Tickets by Category';
+    app.memory.categoryStatsCurrentTitle = meta.title;
 
     if (items.length === 0) {
-        context.render('#category-bars-body', '<p class="empty-state">No ' + (view === 'department' ? 'departments' : 'categories') + ' found.</p>');
+        context.render('#category-bars-body', '<p class="empty-state">No ' + meta.empty + ' found.</p>');
         return;
     }
 
