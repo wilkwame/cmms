@@ -194,8 +194,11 @@
 }
 
 .popup-close:hover {
-  background: #fee2e2;
-  color: #dc2626;
+  /* Closing a dialog isn't a destructive action in most of the places
+     this button appears (viewing a ticket, adding a location, etc.) — a
+     neutral darker-grey hover reads better than red everywhere. */
+  background: #e5e7eb;
+  color: #374151;
 }
 
 .popup-body {

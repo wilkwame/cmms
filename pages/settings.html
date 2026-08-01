@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <link rel="stylesheet" href="style/settings.css?v=11">
+  <link rel="stylesheet" href="style/settings.css?v=12">
 </head>
 <body>
   <page name="settings" id="settings" onshow="loadSettingsPage">
@@ -181,24 +181,24 @@
         </div>
       </div>
 
-      <div class="settings-card danger-zone collapsed">
+      <div class="settings-card session-card collapsed">
         <div class="card-header" action="toggleSettingsCard">
           <div class="card-header-left">
-            <span class="card-icon"><i class="fas fa-exclamation-triangle"></i></span>
+            <span class="card-icon"><i class="fas fa-sign-out-alt"></i></span>
             <div>
-              <h3>Danger Zone</h3>
-              <span class="card-subtitle">Irreversible actions</span>
+              <h3>Session</h3>
+              <span class="card-subtitle">Manage your active session</span>
             </div>
           </div>
           <button type="button" class="card-toggle-btn" aria-label="Toggle section"><i class="fas fa-chevron-down"></i></button>
         </div>
         <div class="card-body">
-          <div class="setting-item danger-item">
+          <div class="setting-item">
             <div class="setting-info">
               <span class="setting-label"><i class="fas fa-sign-out-alt"></i> Logout</span>
               <span class="setting-desc">Sign out of your account and end session</span>
             </div>
-            <button class="setting-action danger" action="logoutUser">
+            <button class="setting-action" action="logoutUser">
               <i class="fas fa-sign-out-alt"></i> Logout
             </button>
           </div>

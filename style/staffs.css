@@ -307,8 +307,10 @@
 }
 
 .status-badge.inactive {
-  background: #f8d7da;
-  color: #721c24;
+  /* Neutral rather than red — deactivated is an off/terminal state, not
+     a problem needing attention (matches .status-badge.cancelled). */
+  background: #e9ecef;
+  color: #495057;
 }
 
 /* ========================================

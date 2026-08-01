@@ -371,22 +371,6 @@
   color: #237FEA;
 }
 
-.setting-action.danger {
-  border-color: #ffdbdb;
-  color: #cc0000;
-}
-
-.setting-action.danger:hover {
-  background: #ffdbdb;
-}
-
-.danger-item {
-  border-left: 3px solid transparent;
-}
-
-.danger-item:hover {
-  border-left-color: #ff3b30;
-}
 
 /* ========================================
    DEPARTMENT-LOCATION SELECT
@@ -637,37 +621,6 @@
 .about-content .about-built {
   font-size: 12px;
   color: #999;
-}
-
-/* ========================================
-   DANGER ZONE - Enhanced
-   ======================================== */
-
-.danger-zone {
-  border: 1px solid #ffe0e0;
-}
-
-.danger-zone .card-header {
-  border-bottom-color: #ffe0e0;
-}
-
-.danger-zone .card-header .card-icon {
-  background: #fff0f0;
-  color: #ff3b30;
-}
-
-.danger-zone .card-header h3 {
-  color: #ff3b30;
-}
-
-.danger-zone .setting-action.danger {
-  background: #fff0f0;
-  border-color: #ffcccc;
-  color: #cc0000;
-}
-
-.danger-zone .setting-action.danger:hover {
-  background: #ffdbdb;
 }
 
 /* ========================================

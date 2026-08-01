@@ -543,28 +543,24 @@ app {
   color: #237FEA;
 }
 
+/* Logging out is a normal, safe, reversible action — not a warning — so it
+   sits at rest as a plain nav item (same treatment as the tabs above it)
+   and only picks up a soft red tint on hover, as a gentle cue rather than
+   a standing alarm. */
 #left-nav #log-me-out {
   margin: 8px 12px;
   margin-top: auto;
-  background: #fff0ef;
-  color: #ff3b30;
   border-radius: 11px;
 }
 
-#left-nav #log-me-out i {
-  background: #ffe0de;
-  color: #ff3b30;
-  opacity: 1;
-}
-
 #left-nav #log-me-out:hover {
-  background: #ff3b30;
-  color: #fff;
+  background: #fdf1f0;
+  color: #d64541;
 }
 
 #left-nav #log-me-out:hover i {
-  background: rgba(255, 255, 255, 0.25);
-  color: #fff;
+  background: #fbe0de;
+  color: #d64541;
 }
 
 #left-nav .sidebar-footer {
@@ -871,11 +867,15 @@ page {
   color: #555;
 }
 
-.icon-report { background: #fadbff; }
-.icon-clock { background: #f9ffcc; }
-.icon-tools { background: #dbecff; }
-.icon-check { background: #cdffcf; }
-.icon-alert { background: #ffdbdb; }
+/* Each tile's icon now matches its own tint instead of falling back to
+   the flat grey in .card .image-container — the pastel backgrounds were
+   reading as dull with a uniform grey glyph sitting on top of all of
+   them regardless of color. */
+.icon-report { background: #fadbff; color: #9333ea; }
+.icon-clock  { background: #f9ffcc; color: #b45309; }
+.icon-tools  { background: #dbecff; color: #237FEA; }
+.icon-check  { background: #cdffcf; color: #16a34a; }
+.icon-alert  { background: #ffdbdb; color: #dc2626; }
 
 .card .card-data {
   flex: 1;
