@@ -429,7 +429,7 @@ function statusLabel(status) {
         pending_review: 'Pending Review',
         completed: 'Completed',
         overdue: 'Overdue',
-        cancelled: 'Cancelled'
+        cancelled: 'On Hold'
     };
     return map[status] || status;
 }
@@ -1215,12 +1215,12 @@ function buildWorkOrderDetailPopup(order, reassignPanelHtml) {
             statusButtonsHtml += '<button class="popup-btn approve" action="openCompleteWorkOrderPopup: ' + order.id + '"><i class="fas fa-check"></i> Complete Task</button>';
         }
         // Once submitted, only an admin/supervisor can approve it — the
-        // technician just waits (they can still Cancel below if they
-        // submitted by mistake).
+        // technician just waits (they can still put it On Hold below if
+        // they submitted by mistake).
         if (order.status === 'pending_review' && isPrivileged) {
             statusButtonsHtml += '<button class="popup-btn approve" action="approveWorkOrderCompletion: ' + order.id + '"><i class="fas fa-check-double"></i> Approve</button>';
         }
-        statusButtonsHtml += '<button class="popup-btn reject" action="cancelWorkOrderStatus: ' + order.id + '"><i class="fas fa-ban"></i> Cancel Work</button>';
+        statusButtonsHtml += '<button class="popup-btn warning" action="cancelWorkOrderStatus: ' + order.id + '"><i class="fas fa-pause"></i> On Hold</button>';
     }
 
     return '<div class="popup-content">' +
@@ -1553,11 +1553,15 @@ function startWorkOrder(arg, context) {
 // completeWorkOrder() was replaced by openCompleteWorkOrderPopup() below —
 // completing now requires photo evidence, not just a plain confirm.
 
+// Labeled "On Hold" in the UI (materials/resources unavailable, etc.) —
+// still records as the same terminal "cancelled" status under the hood,
+// so it's final rather than resumable. Kept as a wording-only change
+// rather than adding a real resumable on-hold status.
 function cancelWorkOrderStatus(arg, context) {
     var orderId = parseInt(arg, 10);
-    requestConfirm(context, 'Cancel this work order? This cannot be undone.', 'Cancel Work Order', function() {
+    requestConfirm(context, 'Put this work order on hold? It will be marked cancelled and cannot be resumed — a new work order will be needed to pick it back up.', 'Put On Hold', function() {
         doUpdateWorkOrderStatus(context, orderId, 'cancelled');
-    }, 'reject', 'fa-ban');
+    }, 'warning', 'fa-pause');
 }
 
 // ===== REASSIGN WORK ORDER =====

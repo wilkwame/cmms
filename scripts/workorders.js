@@ -122,7 +122,7 @@ function renderWorkOrdersSlice(context) {
                 } else if (wo.status === 'completed') {
                     html += '    <span class="wo-action-label wo-action-completed"><i class="fas fa-check-circle"></i> Completed</span>';
                 } else if (wo.status === 'cancelled') {
-                    html += '    <span class="wo-action-label wo-action-cancelled"><i class="fas fa-ban"></i> Cancelled</span>';
+                    html += '    <span class="wo-action-label wo-action-cancelled"><i class="fas fa-pause"></i> On Hold</span>';
                 } else {
                     html += '    <span class="wo-action-label wo-action-waiting"><i class="fas fa-hourglass-half"></i> Waiting for worker\'s response</span>';
                 }
