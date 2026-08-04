@@ -14,12 +14,19 @@ require_once __DIR__ . '/_audit.php';
 // or supervisor then approves it (completed) or reassigns it (see
 // reassign_work_order.php) if the work isn't actually done.
 //
-// Expected POST body: { "work_order_id": int, "status": "in_progress" | "pending_review" | "completed" | "cancelled" | "on_hold" }
+// Expected POST body: { "work_order_id": int, "status": "in_progress" | "pending_review" | "completed" | "on_hold" }
 //
 // "on_hold" is a resumable pause (materials/resources unavailable, etc.) —
-// unlike "completed"/"cancelled" it's deliberately NOT in the terminal-state
-// guard below, so a work order can go on_hold and then back to in_progress
-// (see resumeWorkOrder() in app.js) through this same endpoint.
+// unlike "completed" it's deliberately NOT in the terminal-state guard
+// below, so a work order can go on_hold and then back to in_progress (see
+// resumeWorkOrder() in app.js) through this same endpoint.
+//
+// "cancelled" is intentionally NOT an accepted target here — there is no
+// UI control left anywhere that sets it (that flow was fully replaced by
+// resumable "on_hold"). It stays a valid enum value in the database only
+// for old historical rows and general schema integrity; a client that
+// still tries to POST it (e.g. a stale cached copy of app.js from before
+// this rename) now gets a clear 400 instead of silently succeeding.
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     sendJson(false, 405, 'Method not allowed');
@@ -31,7 +38,7 @@ $body = json_decode(file_get_contents('php://input'), true);
 $workOrderId = (int) ($body['work_order_id'] ?? 0);
 $newStatus   = (string) ($body['status'] ?? '');
 
-$allowedTargets = ['in_progress', 'pending_review', 'completed', 'cancelled', 'on_hold'];
+$allowedTargets = ['in_progress', 'pending_review', 'completed', 'on_hold'];
 
 if ($workOrderId <= 0) {
     sendJson(false, 400, 'work_order_id is required');
