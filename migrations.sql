@@ -139,3 +139,18 @@ SET @sql = IF(@staff_dept_exists = 0,
 PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
+
+-- "On Hold" is a real resumable work-order status (materials/resources
+-- unavailable, etc.) rather than the same dead end as 'cancelled' — it can
+-- be resumed back to in_progress. Its own enum value rather than reusing
+-- 'cancelled' so a genuinely cancelled work order stays distinguishable
+-- from a paused one.
+SET @on_hold_exists = (SELECT COUNT(*) FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'work_orders' AND COLUMN_NAME = 'status'
+    AND COLUMN_TYPE LIKE '%on_hold%');
+SET @sql = IF(@on_hold_exists = 0,
+    "ALTER TABLE work_orders MODIFY status ENUM('pending','in_progress','pending_review','completed','overdue','cancelled','on_hold') NOT NULL DEFAULT 'pending'",
+    'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;

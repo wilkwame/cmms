@@ -429,7 +429,8 @@ function statusLabel(status) {
         pending_review: 'Pending Review',
         completed: 'Completed',
         overdue: 'Overdue',
-        cancelled: 'On Hold'
+        cancelled: 'Cancelled',
+        on_hold: 'On Hold'
     };
     return map[status] || status;
 }
@@ -470,7 +471,8 @@ function getStatusClass(status) {
         pending_review: 'status-badge pending_review',
         completed: 'status-badge completed',
         overdue: 'status-badge overdue',
-        cancelled: 'status-badge cancelled'
+        cancelled: 'status-badge cancelled',
+        on_hold: 'status-badge on_hold'
     };
     return map[status] || '';
 }
@@ -1220,22 +1222,29 @@ function buildWorkOrderDetailPopup(order, reassignPanelHtml) {
 
     var statusButtonsHtml = '';
     if (canManageStatus) {
-        if (order.status === 'pending') {
-            statusButtonsHtml += '<button class="popup-btn reassign" action="startWorkOrder: ' + order.id + '"><i class="fas fa-play"></i> Start Work</button>';
+        if (order.status === 'on_hold') {
+            // Paused work is resumable — the only sensible action from here
+            // is to pick it back up, not the normal start/complete/on-hold
+            // progression below.
+            statusButtonsHtml += '<button class="popup-btn approve" action="resumeWorkOrder: ' + order.id + '"><i class="fas fa-play"></i> Resume</button>';
+        } else {
+            if (order.status === 'pending') {
+                statusButtonsHtml += '<button class="popup-btn reassign" action="startWorkOrder: ' + order.id + '"><i class="fas fa-play"></i> Start Work</button>';
+            }
+            // Completing with photo evidence is the technician's own action —
+            // an admin/supervisor reviews and approves it, not perform it for
+            // them (that would defeat the point of it being proof of THEIR work).
+            if (order.status === 'in_progress' && isOwner) {
+                statusButtonsHtml += '<button class="popup-btn approve" action="openCompleteWorkOrderPopup: ' + order.id + '"><i class="fas fa-check"></i> Complete Task</button>';
+            }
+            // Once submitted, only an admin/supervisor can approve it — the
+            // technician just waits (they can still put it On Hold below if
+            // they submitted by mistake).
+            if (order.status === 'pending_review' && isPrivileged) {
+                statusButtonsHtml += '<button class="popup-btn approve" action="approveWorkOrderCompletion: ' + order.id + '"><i class="fas fa-check-double"></i> Approve</button>';
+            }
+            statusButtonsHtml += '<button class="popup-btn warning" action="putWorkOrderOnHold: ' + order.id + '"><i class="fas fa-pause"></i> On Hold</button>';
         }
-        // Completing with photo evidence is the technician's own action —
-        // an admin/supervisor reviews and approves it, not perform it for
-        // them (that would defeat the point of it being proof of THEIR work).
-        if (order.status === 'in_progress' && isOwner) {
-            statusButtonsHtml += '<button class="popup-btn approve" action="openCompleteWorkOrderPopup: ' + order.id + '"><i class="fas fa-check"></i> Complete Task</button>';
-        }
-        // Once submitted, only an admin/supervisor can approve it — the
-        // technician just waits (they can still put it On Hold below if
-        // they submitted by mistake).
-        if (order.status === 'pending_review' && isPrivileged) {
-            statusButtonsHtml += '<button class="popup-btn approve" action="approveWorkOrderCompletion: ' + order.id + '"><i class="fas fa-check-double"></i> Approve</button>';
-        }
-        statusButtonsHtml += '<button class="popup-btn warning" action="cancelWorkOrderStatus: ' + order.id + '"><i class="fas fa-pause"></i> On Hold</button>';
     }
 
     return '<div class="popup-content">' +
@@ -1568,15 +1577,18 @@ function startWorkOrder(arg, context) {
 // completeWorkOrder() was replaced by openCompleteWorkOrderPopup() below —
 // completing now requires photo evidence, not just a plain confirm.
 
-// Labeled "On Hold" in the UI (materials/resources unavailable, etc.) —
-// still records as the same terminal "cancelled" status under the hood,
-// so it's final rather than resumable. Kept as a wording-only change
-// rather than adding a real resumable on-hold status.
-function cancelWorkOrderStatus(arg, context) {
+// A real, resumable pause — for when materials/resources are unavailable
+// etc. — not a dead end like "cancelled". See resumeWorkOrder() below for
+// picking it back up.
+function putWorkOrderOnHold(arg, context) {
     var orderId = parseInt(arg, 10);
-    requestConfirm(context, 'Put this work order on hold? It will be marked cancelled and cannot be resumed — a new work order will be needed to pick it back up.', 'Put On Hold', function() {
-        doUpdateWorkOrderStatus(context, orderId, 'cancelled');
+    requestConfirm(context, 'Put this work order on hold? You can resume it at any time from its detail view.', 'Put On Hold', function() {
+        doUpdateWorkOrderStatus(context, orderId, 'on_hold');
     }, 'warning', 'fa-pause');
+}
+
+function resumeWorkOrder(arg, context) {
+    doUpdateWorkOrderStatus(context, parseInt(arg, 10), 'in_progress');
 }
 
 // ===== REASSIGN WORK ORDER =====
@@ -2156,7 +2168,8 @@ window.openCompleteWorkOrderPopup = openCompleteWorkOrderPopup;
 window.submitWorkOrderCompletion = submitWorkOrderCompletion;
 window.approveWorkOrderCompletion = approveWorkOrderCompletion;
 window.removeCompletionPhoto = removeCompletionPhoto;
-window.cancelWorkOrderStatus = cancelWorkOrderStatus;
+window.putWorkOrderOnHold = putWorkOrderOnHold;
+window.resumeWorkOrder = resumeWorkOrder;
 window.approveReportFromPopup = approveReportFromPopup;
 window.rejectReportFromPopup = rejectReportFromPopup;
 window.showConfirmation = showConfirmation;

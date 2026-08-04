@@ -121,8 +121,8 @@ function renderWorkOrdersSlice(context) {
                     html += '    <button class="btn-complete-task" action="approveWorkOrderCompletion: ' + wo.id + '" title="Review photo and approve"><i class="fas fa-check-double"></i> Approve</button>';
                 } else if (wo.status === 'completed') {
                     html += '    <span class="wo-action-label wo-action-completed"><i class="fas fa-check-circle"></i> Completed</span>';
-                } else if (wo.status === 'cancelled') {
-                    html += '    <span class="wo-action-label wo-action-cancelled"><i class="fas fa-pause"></i> On Hold</span>';
+                } else if (wo.status === 'on_hold') {
+                    html += '    <button class="btn-complete-task" action="resumeWorkOrder: ' + wo.id + '" title="Resume this work order"><i class="fas fa-play"></i> Resume</button>';
                 } else {
                     html += '    <span class="wo-action-label wo-action-waiting"><i class="fas fa-hourglass-half"></i> Waiting for worker\'s response</span>';
                 }

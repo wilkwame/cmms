@@ -1562,6 +1562,7 @@ page {
 .status-badge.completed    { background: #d4edda; color: #155724; }
 .status-badge.overdue      { background: #f8d7da; color: #721c24; }
 .status-badge.cancelled    { background: #e9ecef; color: #495057; }
+.status-badge.on_hold      { background: #ffe5cc; color: #853d00; }
 
 .priority-badge.urgent  { background: #f8d7da; color: #721c24; }
 .priority-badge.high    { background: #ffe5cc; color: #853d00; }

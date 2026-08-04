@@ -346,6 +346,7 @@ html[data-theme="dark"] .btn-download-chart:hover {
    or overly bright against a dark surface, so these get a translucent
    dark-friendly treatment with a brighter foreground instead. ===== */
 html[data-theme="dark"] .status-badge.pending,
+html[data-theme="dark"] .status-badge.on_hold,
 html[data-theme="dark"] .priority-badge.medium,
 html[data-theme="dark"] .load-medium { background: rgba(255, 149, 0, 0.16); color: #ffb454; }
 

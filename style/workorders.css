@@ -63,10 +63,6 @@
   color: #2d7a2d;
 }
 
-.wo-action-cancelled {
-  color: #6b7280;
-}
-
 .wo-action-waiting {
   color: #b8860b;
 }
@@ -379,6 +375,11 @@
 .status-badge.cancelled {
   background: #e9ecef;
   color: #495057;
+}
+
+.status-badge.on_hold {
+  background: #ffe5cc;
+  color: #853d00;
 }
 
 /* ========================================
