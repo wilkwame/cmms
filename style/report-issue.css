@@ -47,7 +47,7 @@
 .form-card select {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #d5dbe3;
   border-radius: 8px;
   font-size: 14px;
   font-family: inherit;
@@ -82,7 +82,7 @@
   max-height: 240px;
   overflow-y: auto;
   background: #fff;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #d5dbe3;
   border-radius: 8px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
   z-index: 20;
@@ -114,7 +114,7 @@
 .location-result-dept {
   font-size: 11px;
   color: #9aa1ac;
-  background: #f5f7fa;
+  background: #e9edf3;
   padding: 2px 8px;
   border-radius: 10px;
   flex-shrink: 0;
@@ -228,7 +228,7 @@
   height: 80px;
   border-radius: 8px;
   overflow: hidden;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #d5dbe3;
 }
 
 .photo-thumb img {
