@@ -47,10 +47,6 @@ html[data-theme="dark"] #left-nav .sidebar-user {
   border-bottom-color: var(--dm-border);
 }
 
-html[data-theme="dark"] .sidebar-name {
-  color: var(--dm-text);
-}
-
 html[data-theme="dark"] .sidebar-role {
   color: var(--dm-text-muted);
 }
