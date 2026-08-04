@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="style/category-stats.css?v=5">
+  <link rel="stylesheet" href="style/category-stats.css?v=6">
 </head>
 <body>
   <page name="category-stats" id="category-stats" onshow="loadCategoryStatsPage">
@@ -66,6 +66,36 @@
       <p class="panel-sub" id="cs-panel-sub">Sorted by ticket volume, highest first — approved and closed tickets only</p>
       <div id="category-bars-body">
         <p class="loading-text">Loading ticket breakdown...</p>
+      </div>
+    </div>
+
+    <div class="staff-perf-panel card-panel">
+      <div class="panel-header">
+        <h4><i class="fas fa-user-clock"></i> Staff Performance</h4>
+        <div class="panel-header-actions">
+          <button class="btn-download-chart" action="downloadStaffPerfChart: png" title="Download as a PNG image">
+            <i class="fas fa-image"></i> PNG
+          </button>
+          <button class="btn-download-chart" action="downloadStaffPerfChart: pdf" title="Download as a PDF document">
+            <i class="fas fa-file-pdf"></i> PDF
+          </button>
+        </div>
+      </div>
+      <div class="staff-perf-filters">
+        <div class="staff-perf-date-field">
+          <label for="sp-start-date">From</label>
+          <input type="date" id="sp-start-date" />
+        </div>
+        <div class="staff-perf-date-field">
+          <label for="sp-end-date">To</label>
+          <input type="date" id="sp-end-date" />
+        </div>
+        <button class="btn-download-chart" action="applyStaffPerfFilter"><i class="fas fa-filter"></i> Apply</button>
+        <button class="view-toggle-btn" action="clearStaffPerfFilter">All time</button>
+      </div>
+      <p class="panel-sub" id="sp-panel-sub">All time — completed jobs, active jobs, and average time to complete</p>
+      <div id="staff-perf-body">
+        <p class="loading-text">Loading staff performance...</p>
       </div>
     </div>
   </section>

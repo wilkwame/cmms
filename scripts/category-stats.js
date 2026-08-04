@@ -30,6 +30,8 @@ function loadCategoryStatsPage(context) {
             console.error('Failed to load category stats:', error);
             context.render('#category-bars-body', '<p class="empty-state">Failed to load category stats. Please try again.</p>');
         });
+
+    loadStaffPerformance(context);
 }
 
 var CATEGORY_STATS_VIEWS = {
@@ -106,6 +108,153 @@ function renderCategoryStats(context) {
     context.render('#category-bars-body', html);
 }
 
+// ===== STAFF PERFORMANCE (item 8: date-ranged, exportable) =====
+function loadStaffPerformance(context, startDate, endDate) {
+    context.render('#staff-perf-body', '<p class="loading-text">Loading staff performance...</p>');
+
+    app.php('api/get_staff_performance.php', { start_date: startDate || null, end_date: endDate || null })
+        .then(function(result) {
+            if (handleAuthFailure(result)) return;
+            if (!result.ok) {
+                context.render('#staff-perf-body', '<p class="empty-state">Failed to load staff performance.</p>');
+                return;
+            }
+            app.memory.staffPerfData = result.data.staff || [];
+            app.memory.staffPerfRange = { start: result.data.start_date, end: result.data.end_date };
+            renderStaffPerformance(context);
+        })
+        .catch(function(error) {
+            console.error('Failed to load staff performance:', error);
+            context.render('#staff-perf-body', '<p class="empty-state">Failed to load staff performance. Please try again.</p>');
+        });
+}
+
+function applyStaffPerfFilter(context) {
+    var startEl = document.getElementById('sp-start-date');
+    var endEl = document.getElementById('sp-end-date');
+    var start = startEl && startEl.value ? startEl.value : null;
+    var end = endEl && endEl.value ? endEl.value : null;
+
+    if (start && end && start > end) {
+        showNotificationToast(context, '"From" date must be before "To" date.', 'error');
+        return;
+    }
+
+    loadStaffPerformance(context, start, end);
+}
+
+function clearStaffPerfFilter(context) {
+    var startEl = document.getElementById('sp-start-date');
+    var endEl = document.getElementById('sp-end-date');
+    if (startEl) startEl.value = '';
+    if (endEl) endEl.value = '';
+    loadStaffPerformance(context);
+}
+
+// mins -> "2h 15m" / "45m" / "—" (no completed jobs to average yet).
+function formatDurationMinutes(mins) {
+    if (mins === null || mins === undefined) return '—';
+    var hours = Math.floor(mins / 60);
+    var rest = mins % 60;
+    if (hours === 0) return rest + 'm';
+    return hours + 'h' + (rest > 0 ? ' ' + rest + 'm' : '');
+}
+
+function renderStaffPerformance(context) {
+    var items = app.memory.staffPerfData || [];
+    var range = app.memory.staffPerfRange || { start: null, end: null };
+
+    var subEl = document.getElementById('sp-panel-sub');
+    if (subEl) {
+        var rangeText = (range.start && range.end) ? (range.start + ' to ' + range.end)
+            : range.start ? ('from ' + range.start)
+            : range.end ? ('through ' + range.end)
+            : 'All time';
+        subEl.textContent = rangeText + ' — completed jobs, active jobs, and average time to complete';
+    }
+
+    if (items.length === 0) {
+        context.render('#staff-perf-body', '<p class="empty-state">No technicians found.</p>');
+        return;
+    }
+
+    var maxCompleted = 0;
+    items.forEach(function(item) { if (item.completed_jobs > maxCompleted) maxCompleted = item.completed_jobs; });
+
+    var html = '';
+    for (var i = 0; i < items.length; i++) {
+        var s = items[i];
+        var hasCompleted = s.completed_jobs > 0;
+        var pct = maxCompleted > 0 ? Math.round((s.completed_jobs / maxCompleted) * 100) : 0;
+        var fillWidth = hasCompleted ? Math.max(pct, 4) : 0;
+        var color = CATEGORY_COLORS[i % CATEGORY_COLORS.length];
+
+        html += '<div class="staff-perf-row">';
+        html += '  <span class="staff-perf-label"><span class="staff-perf-name">' + escapeHtml(s.name) + '</span>' +
+            (s.department_name ? '<span class="staff-perf-dept">' + escapeHtml(s.department_name) + '</span>' : '') + '</span>';
+        html += '  <span class="staff-perf-track"><span class="staff-perf-fill' + (hasCompleted ? '' : ' is-zero') + '" style="width:' + fillWidth + '%;background:' + color + '"></span></span>';
+        html += '  <span class="staff-perf-meta"><strong>' + s.completed_jobs + '</strong> completed' +
+            '<span class="meta-divider">&middot;</span>' + s.active_jobs + ' active' +
+            '<span class="meta-divider">&middot;</span>avg ' + formatDurationMinutes(s.avg_completion_minutes) + '</span>';
+        html += '</div>';
+    }
+    context.render('#staff-perf-body', html);
+}
+
+function downloadStaffPerfChart(arg, context) {
+    var format = (arg === 'pdf') ? 'pdf' : 'png';
+    var items = app.memory.staffPerfData || [];
+    if (items.length === 0) {
+        showNotificationToast(context, 'Nothing to download yet', 'error');
+        return;
+    }
+
+    var range = app.memory.staffPerfRange || { start: null, end: null };
+    var subtitle = (range.start && range.end) ? (range.start + ' to ' + range.end)
+        : range.start ? ('From ' + range.start)
+        : range.end ? ('Through ' + range.end)
+        : 'All time';
+
+    var canvas = buildCategoryChartCanvas(items, 'Staff Performance', {
+        valueKey: 'completed_jobs',
+        subtitle: subtitle,
+        metaText: function(item) {
+            return item.completed_jobs + ' completed · ' + item.active_jobs + ' active · avg ' + formatDurationMinutes(item.avg_completion_minutes);
+        }
+    });
+    var fileStem = 'staff-performance-' + new Date().toISOString().slice(0, 10);
+
+    if (format === 'png') {
+        canvas.toBlob(function(blob) {
+            if (!blob) {
+                showNotificationToast(context, 'Failed to generate image', 'error');
+                return;
+            }
+            downloadBlob(blob, fileStem + '.png');
+        }, 'image/png');
+        return;
+    }
+
+    if (!window.jspdf || !window.jspdf.jsPDF) {
+        showNotificationToast(context, 'PDF export is unavailable right now — try the PNG download instead.', 'error');
+        return;
+    }
+    var imgData = canvas.toDataURL('image/png');
+    var pxToPt = 72 / 96;
+    var logicalWidth = canvas.width / 2;
+    var logicalHeight = canvas.height / 2;
+    var pdfWidth = logicalWidth * pxToPt;
+    var pdfHeight = logicalHeight * pxToPt;
+
+    var pdf = new window.jspdf.jsPDF({
+        orientation: pdfWidth > pdfHeight ? 'landscape' : 'portrait',
+        unit: 'pt',
+        format: [pdfWidth, pdfHeight]
+    });
+    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+    pdf.save(fileStem + '.pdf');
+}
+
 // ===== DOWNLOAD CHART (PNG or PDF) =====
 // Redraws the current view's bars onto an offscreen canvas (rather than
 // screenshotting the DOM, which would need an extra library) and saves it
@@ -167,9 +316,19 @@ function downloadBlob(blob, filename) {
     URL.revokeObjectURL(url);
 }
 
-function buildCategoryChartCanvas(items, title) {
-    var maxReports = 0;
-    items.forEach(function(item) { if (item.report_count > maxReports) maxReports = item.report_count; });
+// options: { subtitle, valueKey (default 'report_count'), metaText(item) ->
+// string }. Staff Performance reuses this same drawer with its own value
+// field and meta formatter instead of duplicating the whole layout.
+function buildCategoryChartCanvas(items, title, options) {
+    options = options || {};
+    var valueKey = options.valueKey || 'report_count';
+    var subtitle = options.subtitle || 'Sorted by ticket volume, highest first';
+    var metaText = options.metaText || function(item) {
+        return item.report_count + ' ticket' + (item.report_count === 1 ? '' : 's');
+    };
+
+    var maxValue = 0;
+    items.forEach(function(item) { if (item[valueKey] > maxValue) maxValue = item[valueKey]; });
 
     var scale = 2; // draw at 2x for a crisp download on high-DPI screens
     var width = 820;
@@ -204,10 +363,10 @@ function buildCategoryChartCanvas(items, title) {
     ctx.fillText(title, 24, 32);
     ctx.fillStyle = '#9aa1ac';
     ctx.font = '400 12px Arial, sans-serif';
-    ctx.fillText('Sorted by ticket volume, highest first · exported ' + new Date().toLocaleDateString(), 24, 52);
+    ctx.fillText(subtitle + ' · exported ' + new Date().toLocaleDateString(), 24, 52);
 
     var labelW = 130;
-    var metaW = 150;
+    var metaW = 190;
     var trackX = 24 + labelW;
     var trackW = width - 24 - labelW - metaW - 24;
 
@@ -215,8 +374,9 @@ function buildCategoryChartCanvas(items, title) {
         var c = items[i];
         var y = headerHeight + i * rowHeight;
         var trackY = y + rowHeight / 2 - 7;
-        var hasReports = c.report_count > 0;
-        var pct = maxReports > 0 ? Math.max(c.report_count / maxReports, hasReports ? 0.04 : 0) : 0;
+        var value = c[valueKey] || 0;
+        var hasValue = value > 0;
+        var pct = maxValue > 0 ? Math.max(value / maxValue, hasValue ? 0.04 : 0) : 0;
         var color = CATEGORY_COLORS[i % CATEGORY_COLORS.length];
 
         // Label
@@ -230,7 +390,7 @@ function buildCategoryChartCanvas(items, title) {
         ctx.fill();
 
         // Fill
-        if (hasReports) {
+        if (hasValue) {
             ctx.fillStyle = color;
             roundRect(trackX, trackY, Math.max(trackW * pct, 14), 14, 7);
             ctx.fill();
@@ -240,8 +400,7 @@ function buildCategoryChartCanvas(items, title) {
         ctx.textAlign = 'right';
         ctx.fillStyle = color;
         ctx.font = '700 13px Arial, sans-serif';
-        var countText = c.report_count + ' ticket' + (c.report_count === 1 ? '' : 's');
-        ctx.fillText(countText, width - 24, y + rowHeight / 2 + 4);
+        ctx.fillText(truncateForCanvas(ctx, metaText(c), metaW - 10), width - 24, y + rowHeight / 2 + 4);
         ctx.textAlign = 'left';
     }
 
@@ -261,3 +420,6 @@ function truncateForCanvas(ctx, text, maxWidth) {
 window.loadCategoryStatsPage = loadCategoryStatsPage;
 window.switchCategoryStatsView = switchCategoryStatsView;
 window.downloadCategoryChart = downloadCategoryChart;
+window.applyStaffPerfFilter = applyStaffPerfFilter;
+window.clearStaffPerfFilter = clearStaffPerfFilter;
+window.downloadStaffPerfChart = downloadStaffPerfChart;
