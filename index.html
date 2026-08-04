@@ -15,6 +15,17 @@
   <meta http-equiv="Expires" content="0" />
 
   <script>
+    // Applies the saved dark-mode preference to <html> before first paint,
+    // so the page never flashes light-mode content first. See settings.js
+    // (toggleDarkMode/applyTheme) for where this preference is written —
+    // this is just the earliest possible read of it.
+    (function () {
+      if (localStorage.getItem('cmms_dark_mode') === 'true') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+  <script>
     // Guard: if there's no session, bounce to the login page immediately.
     // Runs synchronously, before the app shell or any styles/scripts load.
     (function () {
@@ -43,6 +54,7 @@
   <link rel="stylesheet" href="style/staffs.css?v=16">
   <link rel="stylesheet" href="style/confirmation.css?v=10">
   <link rel="stylesheet" href="style/popups.css?v=17">
+  <link rel="stylesheet" href="style/dark-mode.css?v=1">
   <script src="https://unpkg.com/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="scripts/platform.js?v=10"></script>
@@ -419,7 +431,7 @@
   <script src="scripts/workorders.js?v=15"></script>
   <script src="scripts/staffs.js?v=22"></script>
   <script src="scripts/add-staff.js?v=15"></script>
-  <script src="scripts/settings.js?v=14"></script>
+  <script src="scripts/settings.js?v=15"></script>
   <script src="scripts/report-issue.js?v=18"></script>
   <script src="scripts/user-dashboard.js?v=19"></script>
 </body>

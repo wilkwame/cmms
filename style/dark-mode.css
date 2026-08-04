@@ -1,0 +1,463 @@
+/* ========================================
+   DARK MODE
+   Every rule here is prefixed with html[data-theme="dark"] specifically so
+   it always outranks the equivalent light-mode rule on specificity alone —
+   page-specific stylesheets (staffs.css, workorders.css, etc.) get injected
+   into <head> at runtime when a page is first visited, sometimes AFTER this
+   file, so relying on source order to win would break the moment a page's
+   own CSS loaded later. Toggled by setting data-theme="dark" on <html>
+   (see toggleDarkMode/applyTheme in settings.js) — a plain attribute
+   selector, not a JS-driven inline-style sweep, so it actually covers
+   every page instead of only whichever elements someone remembered to
+   enumerate.
+   ======================================== */
+
+/* ===== Palette ===== */
+html[data-theme="dark"] {
+  --dm-bg: #12161d;
+  --dm-surface: #1b212b;
+  --dm-surface-alt: #212836;
+  --dm-surface-hover: #262e3b;
+  --dm-border: #2c3440;
+  --dm-text: #e7e9ec;
+  --dm-text-secondary: #b4bac4;
+  --dm-text-muted: #838b98;
+  --dm-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+/* ===== App shell ===== */
+html[data-theme="dark"] body,
+html[data-theme="dark"] app,
+html[data-theme="dark"] page {
+  background: var(--dm-bg);
+  color: var(--dm-text);
+}
+
+html[data-theme="dark"] #top-nav {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+html[data-theme="dark"] #left-nav {
+  background: var(--dm-surface);
+  border-right-color: var(--dm-border);
+  box-shadow: 2px 0 16px rgba(0, 0, 0, 0.35);
+}
+
+html[data-theme="dark"] #left-nav .sidebar-user {
+  border-bottom-color: var(--dm-border);
+}
+
+html[data-theme="dark"] .sidebar-name {
+  color: var(--dm-text);
+}
+
+html[data-theme="dark"] .sidebar-role {
+  color: var(--dm-text-muted);
+}
+
+html[data-theme="dark"] #left-nav tab {
+  color: var(--dm-text-secondary);
+}
+
+html[data-theme="dark"] #left-nav tab i {
+  background: var(--dm-surface-alt);
+  color: var(--dm-text-muted);
+}
+
+html[data-theme="dark"] #left-nav tab:not([active]):hover {
+  background: var(--dm-surface-hover);
+  color: #6fb0ff;
+}
+
+html[data-theme="dark"] #left-nav tab:not([active]):hover i {
+  background: rgba(35, 127, 234, 0.18);
+  color: #6fb0ff;
+}
+
+html[data-theme="dark"] #left-nav #mobile-menu-close {
+  color: var(--dm-text-muted);
+}
+
+html[data-theme="dark"] #left-nav #log-me-out:hover {
+  background: rgba(255, 59, 48, 0.14);
+  color: #ff6961;
+}
+
+html[data-theme="dark"] #left-nav #log-me-out:hover i {
+  background: rgba(255, 59, 48, 0.2);
+  color: #ff6961;
+}
+
+html[data-theme="dark"] #left-nav .sidebar-footer {
+  border-top-color: var(--dm-border);
+  color: var(--dm-text-muted);
+}
+
+html[data-theme="dark"] #mobile-overlay {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+/* ===== Cards, panels, page headers (shared across every page) ===== */
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .card-panel,
+html[data-theme="dark"] .table-container,
+html[data-theme="dark"] .form-card,
+html[data-theme="dark"] .settings-card,
+html[data-theme="dark"] .filter-bar,
+html[data-theme="dark"] .info-modal,
+html[data-theme="dark"] .recent-reports,
+html[data-theme="dark"] .staff-workload,
+html[data-theme="dark"] .quick-overview > * {
+  background: var(--dm-surface);
+  box-shadow: var(--dm-shadow);
+  color: var(--dm-text);
+}
+
+html[data-theme="dark"] .settings-card {
+  border: 1px solid var(--dm-border);
+}
+
+html[data-theme="dark"] .settings-card:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+html[data-theme="dark"] .list-page-header,
+html[data-theme="dark"] .page-header,
+html[data-theme="dark"] .table-header,
+html[data-theme="dark"] .card-header,
+html[data-theme="dark"] .panel-header,
+html[data-theme="dark"] .uh-list-header {
+  border-bottom-color: var(--dm-border);
+}
+
+html[data-theme="dark"] h1,
+html[data-theme="dark"] h2,
+html[data-theme="dark"] h3,
+html[data-theme="dark"] h4,
+html[data-theme="dark"] h5 {
+  color: var(--dm-text);
+}
+
+html[data-theme="dark"] .list-page-sub,
+html[data-theme="dark"] .header-date,
+html[data-theme="dark"] .header-subtitle,
+html[data-theme="dark"] .panel-sub,
+html[data-theme="dark"] .card-subtitle,
+html[data-theme="dark"] .field-hint,
+html[data-theme="dark"] .record-count,
+html[data-theme="dark"] .loading-text,
+html[data-theme="dark"] .empty-state {
+  color: var(--dm-text-muted);
+}
+
+html[data-theme="dark"] .card-count {
+  color: var(--dm-text);
+}
+
+/* KPI icon tiles keep their own saturated tint (already colorful, reads
+   fine on dark) — only the pale ones need a touch more contrast. */
+html[data-theme="dark"] .image-container {
+  filter: saturate(1.15);
+}
+
+/* ===== Text within cards/settings ===== */
+html[data-theme="dark"] .setting-label,
+html[data-theme="dark"] .staff-perf-name,
+html[data-theme="dark"] .category-bar-label,
+html[data-theme="dark"] .col-id,
+html[data-theme="dark"] .staff-row span,
+html[data-theme="dark"] .wo-row span,
+html[data-theme="dark"] .report-row span,
+html[data-theme="dark"] .log-row span,
+html[data-theme="dark"] .timeline-label,
+html[data-theme="dark"] .about-content h3 {
+  color: var(--dm-text);
+}
+
+html[data-theme="dark"] .setting-value,
+html[data-theme="dark"] .setting-desc,
+html[data-theme="dark"] .col-email,
+html[data-theme="dark"] .col-department,
+html[data-theme="dark"] .timeline-time,
+html[data-theme="dark"] .about-desc,
+html[data-theme="dark"] .about-version {
+  color: var(--dm-text-secondary);
+}
+
+html[data-theme="dark"] .setting-item {
+  border-bottom-color: var(--dm-border);
+}
+
+html[data-theme="dark"] .setting-item:hover {
+  background: var(--dm-surface-hover);
+}
+
+/* ===== Tables (Staff / Work Orders / Tickets / Logs) ===== */
+html[data-theme="dark"] .table-head {
+  border-bottom-color: var(--dm-border);
+  color: var(--dm-text-muted);
+}
+
+html[data-theme="dark"] .staff-row,
+html[data-theme="dark"] .wo-row,
+html[data-theme="dark"] .report-row,
+html[data-theme="dark"] .log-row {
+  border-bottom-color: var(--dm-border);
+}
+
+html[data-theme="dark"] .staff-row:hover,
+html[data-theme="dark"] .wo-row:hover,
+html[data-theme="dark"] .report-row:hover,
+html[data-theme="dark"] .log-row:hover {
+  background: var(--dm-surface-hover);
+}
+
+html[data-theme="dark"] .pagination-bar {
+  border-top-color: var(--dm-border);
+}
+
+html[data-theme="dark"] .pagination-btn {
+  background: var(--dm-surface-alt);
+  border-color: var(--dm-border);
+  color: var(--dm-text-secondary);
+}
+
+html[data-theme="dark"] .pagination-label {
+  color: var(--dm-text-muted);
+}
+
+/* ===== Forms: inputs, selects, textareas everywhere ===== */
+html[data-theme="dark"] input[type="text"],
+html[data-theme="dark"] input[type="email"],
+html[data-theme="dark"] input[type="password"],
+html[data-theme="dark"] input[type="search"],
+html[data-theme="dark"] input[type="date"],
+html[data-theme="dark"] input[type="number"],
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] select {
+  background: var(--dm-surface-alt);
+  border-color: var(--dm-border);
+  color: var(--dm-text);
+}
+
+html[data-theme="dark"] input::placeholder,
+html[data-theme="dark"] textarea::placeholder {
+  color: var(--dm-text-muted);
+}
+
+html[data-theme="dark"] input:focus,
+html[data-theme="dark"] select:focus,
+html[data-theme="dark"] textarea:focus {
+  border-color: #237FEA;
+}
+
+/* Native date-picker calendar-icon glyph is dark-on-transparent by default
+   and disappears against a dark field without this. */
+html[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.8);
+}
+
+html[data-theme="dark"] .filter-group label,
+html[data-theme="dark"] .staff-perf-date-field label {
+  color: var(--dm-text-muted);
+}
+
+html[data-theme="dark"] .dropzone {
+  border-color: var(--dm-border);
+  background: var(--dm-surface-alt);
+  color: var(--dm-text-muted);
+}
+
+html[data-theme="dark"] .location-results,
+html[data-theme="dark"] .notification-popup {
+  background: var(--dm-surface);
+  border-color: var(--dm-border);
+  box-shadow: var(--dm-shadow);
+}
+
+html[data-theme="dark"] .location-result-item:hover {
+  background: var(--dm-surface-hover);
+}
+
+html[data-theme="dark"] .notification-header {
+  background: var(--dm-surface-alt);
+  border-bottom-color: var(--dm-border);
+}
+
+html[data-theme="dark"] .notification-item {
+  border-bottom-color: var(--dm-border);
+}
+
+html[data-theme="dark"] .notification-item:hover {
+  background: var(--dm-surface-hover);
+}
+
+html[data-theme="dark"] .notification-item.unread {
+  background: rgba(35, 127, 234, 0.1);
+}
+
+html[data-theme="dark"] .notification-item.unread:hover {
+  background: rgba(35, 127, 234, 0.16);
+}
+
+html[data-theme="dark"] .notification-item .notif-title {
+  color: var(--dm-text);
+}
+
+html[data-theme="dark"] .notification-item .notif-body {
+  color: var(--dm-text-secondary);
+}
+
+html[data-theme="dark"] .notification-item .notif-time {
+  color: var(--dm-text-muted);
+}
+
+/* ===== Buttons (neutral/secondary — the colored ones already read fine) ===== */
+html[data-theme="dark"] .btn-cancel,
+html[data-theme="dark"] .form-actions .btn-cancel,
+html[data-theme="dark"] .btn-photo-source,
+html[data-theme="dark"] .view-toggle,
+html[data-theme="dark"] .btn-download-chart,
+html[data-theme="dark"] .setting-action,
+html[data-theme="dark"] .size-btn,
+html[data-theme="dark"] .card-toggle-btn {
+  background: var(--dm-surface-alt);
+  border-color: var(--dm-border);
+  color: var(--dm-text-secondary);
+}
+
+html[data-theme="dark"] .view-toggle {
+  background: var(--dm-bg);
+}
+
+html[data-theme="dark"] .view-toggle-btn.active {
+  background: var(--dm-surface-alt);
+  color: #6fb0ff;
+}
+
+html[data-theme="dark"] .setting-action:hover,
+html[data-theme="dark"] .btn-download-chart:hover {
+  background: rgba(35, 127, 234, 0.16);
+  border-color: #237FEA;
+  color: #6fb0ff;
+}
+
+/* ===== Status / priority badges — pale light-mode tints read as washed-out
+   or overly bright against a dark surface, so these get a translucent
+   dark-friendly treatment with a brighter foreground instead. ===== */
+html[data-theme="dark"] .status-badge.pending,
+html[data-theme="dark"] .priority-badge.medium,
+html[data-theme="dark"] .load-medium { background: rgba(255, 149, 0, 0.16); color: #ffb454; }
+
+html[data-theme="dark"] .status-badge.approved,
+html[data-theme="dark"] .status-badge.completed,
+html[data-theme="dark"] .status-badge.active,
+html[data-theme="dark"] .priority-badge.low,
+html[data-theme="dark"] .load-low,
+html[data-theme="dark"] .btn-approve { background: rgba(52, 199, 89, 0.16); color: #4ade80; }
+
+html[data-theme="dark"] .status-badge.rejected,
+html[data-theme="dark"] .status-badge.overdue,
+html[data-theme="dark"] .priority-badge.urgent,
+html[data-theme="dark"] .priority-badge.high,
+html[data-theme="dark"] .load-high,
+html[data-theme="dark"] .btn-reject { background: rgba(255, 59, 48, 0.16); color: #ff8a80; }
+
+html[data-theme="dark"] .status-badge.in_progress { background: rgba(35, 127, 234, 0.18); color: #6fb0ff; }
+html[data-theme="dark"] .status-badge.pending_review { background: rgba(124, 58, 237, 0.18); color: #c4b5fd; }
+
+html[data-theme="dark"] .status-badge.cancelled,
+html[data-theme="dark"] .status-badge.inactive,
+html[data-theme="dark"] .status-badge.not_configured {
+  background: var(--dm-surface-alt);
+  color: var(--dm-text-muted);
+}
+
+html[data-theme="dark"] .action-badge {
+  background: var(--dm-surface-alt);
+  color: var(--dm-text-secondary);
+}
+
+html[data-theme="dark"] .action-badge.action-delete { background: rgba(255, 59, 48, 0.16); color: #ff8a80; }
+html[data-theme="dark"] .action-badge.action-create { background: rgba(52, 199, 89, 0.16); color: #4ade80; }
+
+/* ===== Popups / modals ===== */
+html[data-theme="dark"] .popup-content,
+html[data-theme="dark"] #confirmation-popup {
+  background: var(--dm-surface);
+  color: var(--dm-text);
+}
+
+html[data-theme="dark"] .popup-header,
+html[data-theme="dark"] .popup-footer {
+  border-color: var(--dm-border);
+}
+
+html[data-theme="dark"] .popup-field label {
+  color: var(--dm-text-muted);
+}
+
+html[data-theme="dark"] .popup-field p {
+  color: var(--dm-text);
+}
+
+html[data-theme="dark"] .popup-close {
+  background: var(--dm-surface-alt);
+  color: var(--dm-text-secondary);
+}
+
+html[data-theme="dark"] .popup-btn.secondary {
+  background: var(--dm-surface-alt);
+  color: var(--dm-text-secondary);
+}
+
+html[data-theme="dark"] .toast-content {
+  background: var(--dm-surface);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+}
+
+html[data-theme="dark"] .toast-message {
+  color: var(--dm-text);
+}
+
+/* ===== Dashboard-specific widgets ===== */
+html[data-theme="dark"] .wl-staff,
+html[data-theme="dark"] .wl-jobs,
+html[data-theme="dark"] .wl-done,
+html[data-theme="dark"] .wl-load,
+html[data-theme="dark"] .mrc-card,
+html[data-theme="dark"] .mrc-issue {
+  color: var(--dm-text);
+}
+
+html[data-theme="dark"] .mrc-card {
+  background: var(--dm-surface);
+  border-color: var(--dm-border);
+}
+
+html[data-theme="dark"] .mrc-tag {
+  background: var(--dm-surface-alt);
+  color: var(--dm-text-secondary);
+}
+
+html[data-theme="dark"] .about-divider {
+  background: var(--dm-border);
+}
+
+html[data-theme="dark"] .about-stat .stat-number {
+  color: var(--dm-text);
+}
+
+html[data-theme="dark"] .about-stat .stat-label {
+  color: var(--dm-text-muted);
+}
+
+/* ===== Scrollbars — the default light scrollbar looks out of place ===== */
+html[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: var(--dm-bg);
+}
+
+html[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: var(--dm-border);
+  border-radius: 8px;
+}

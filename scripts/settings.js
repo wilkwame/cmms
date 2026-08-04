@@ -328,35 +328,16 @@ function increaseFontSize(context) {
 }
 
 // ===== THEME FUNCTIONS =====
+// A single attribute drives the whole theme (see style/dark-mode.css) —
+// replaces the old approach of manually inline-styling a hand-picked list
+// of Settings-page elements, which never covered any other page in the app
+// and needed a fresh entry here for every new component that ever wanted
+// dark-mode support.
 function applyTheme(isDark) {
-    var body = document.body;
-    var appElement = document.querySelector('app');
-    var cards = document.querySelectorAll('.settings-card');
-
     if (isDark) {
-        body.style.background = '#1a1a1a';
-        body.style.color = '#e0e0e0';
-        if (appElement) appElement.style.background = '#1a1a1a';
-        cards.forEach(function(card) {
-            card.style.background = '#2d2d2d';
-            card.style.borderColor = '#3d3d3d';
-        });
-        document.querySelectorAll('.setting-label').forEach(function(l) { l.style.color = '#e0e0e0'; });
-        document.querySelectorAll('.setting-value').forEach(function(v) { v.style.color = '#aaa'; });
-        document.querySelectorAll('.settings-card .card-header h3').forEach(function(h) { h.style.color = '#e0e0e0'; });
-        document.querySelectorAll('.card-subtitle').forEach(function(s) { s.style.color = '#888'; });
+        document.documentElement.setAttribute('data-theme', 'dark');
     } else {
-        body.style.background = '';
-        body.style.color = '';
-        if (appElement) appElement.style.background = '';
-        cards.forEach(function(card) {
-            card.style.background = '';
-            card.style.borderColor = '';
-        });
-        document.querySelectorAll('.setting-label').forEach(function(l) { l.style.color = ''; });
-        document.querySelectorAll('.setting-value').forEach(function(v) { v.style.color = ''; });
-        document.querySelectorAll('.settings-card .card-header h3').forEach(function(h) { h.style.color = ''; });
-        document.querySelectorAll('.card-subtitle').forEach(function(s) { s.style.color = ''; });
+        document.documentElement.removeAttribute('data-theme');
     }
 }
 
