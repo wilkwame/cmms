@@ -49,7 +49,7 @@
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <link rel="stylesheet" href="style/main.css?v=22">
+  <link rel="stylesheet" href="style/main.css?v=23">
   <link rel="stylesheet" href="style/mobile.css?v=10">
   <link rel="stylesheet" href="style/staffs.css?v=16">
   <link rel="stylesheet" href="style/confirmation.css?v=11">
@@ -66,7 +66,7 @@
     <!-- Page Imports (dashboard pages only — login lives at /login.html now) -->
     <import src="pages/reports.html"></import>
     <import src="pages/workorders.html?v=5"></import>
-    <import src="pages/settings.html"></import>
+    <import src="pages/settings.html?v=2"></import>
     <import src="pages/staffs.html?v=2"></import>
     <import src="pages/add-staff.html?v=2"></import>
     <import src="pages/user-dashboard.html?v=2"></import>
@@ -111,7 +111,7 @@
       <div id="menu-toggle" action="toggleMobileMenu">
         <i class="fas fa-bars"></i>
       </div>
-      <div id="brandname"><i class="fas fa-wrench"></i> CMMS - Maintenance</div>
+      <div id="brandname"><img src="assets/logo.jpg" alt="CMMS - Ho Technical University" class="brand-logo-img" /></div>
       <div class="right">
         <div id="notification-bell" action="toggleNotifications">
           <i class="fas fa-bell"></i>
@@ -244,10 +244,6 @@
       <section>
         <!-- Welcome Header -->
         <div class="page-header">
-          <span class="avatar-widget">
-            <img class="avatar-img hidden" alt="" style="display:none;" />
-            <i class="fas fa-user-circle avatar-icon"></i>
-          </span>
           <div class="header-content">
             <p class="greeting">Welcome back, <span id="user-name">User</span></p>
             <h2><i class="fas fa-chart-pie"></i> Dashboard</h2>

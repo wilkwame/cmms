@@ -64,15 +64,17 @@ app {
 }
 
 #top-nav #brandname {
-  color: white;
-  font-size: 16px;
-  font-weight: 600;
+  display: flex;
+  align-items: center;
   flex: 1;
   margin-left: 8px;
 }
 
-#top-nav #brandname i {
-  margin-right: 6px;
+.brand-logo-img {
+  height: 40px;
+  width: auto;
+  border-radius: 6px;
+  display: block;
 }
 
 #top-nav .right {
@@ -688,31 +690,6 @@ page {
   z-index: 1;
 }
 
-.avatar-widget {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.18);
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  margin-right: 16px;
-  overflow: hidden;
-  position: relative;
-  z-index: 1;
-  font-size: 26px;
-  color: #fff;
-}
-
-.avatar-widget .avatar-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
-}
-
 .greeting {
   font-size: 14px;
   color: rgba(255, 255, 255, 0.85);
@@ -1286,10 +1263,10 @@ page {
     padding: 0 12px;
   }
   
-  #top-nav #brandname {
-    font-size: 14px;
+  .brand-logo-img {
+    height: 32px;
   }
-  
+
   #home section {
     padding: 12px 14px 80px;
   }
@@ -1301,13 +1278,6 @@ page {
     padding: 12px 14px;
     border-radius: 14px;
     margin-bottom: 12px;
-  }
-
-  .page-header .avatar-widget {
-    width: 36px;
-    height: 36px;
-    font-size: 18px;
-    margin-right: 10px;
   }
 
   .page-header h2 {
