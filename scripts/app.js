@@ -364,7 +364,7 @@ function formatDate(rawTimestamp) {
         var day = String(date.getDate()).padStart(2, '0');
         var month = String(date.getMonth() + 1).padStart(2, '0');
         var year = date.getFullYear();
-        return day + '-' + month + '-' + year;
+        return day + '/' + month + '/' + year;
     } catch (e) {
         return rawTimestamp;
     }
@@ -379,7 +379,7 @@ function formatDateTime(rawTimestamp) {
         var year = date.getFullYear();
         var hours = String(date.getHours()).padStart(2, '0');
         var minutes = String(date.getMinutes()).padStart(2, '0');
-        return day + '-' + month + '-' + year + ' ' + hours + ':' + minutes;
+        return day + '/' + month + '/' + year + ' ' + hours + ':' + minutes;
     } catch (e) {
         return rawTimestamp;
     }
@@ -855,12 +855,16 @@ var NOTIFICATION_TONE = {
     info:    { tone: 'info',    icon: 'fa-circle-info',   title: 'Notice' }
 };
 
-// A proper dismissible popup for every success/error/warning/info message
-// in the app (replaces the old corner toast bubble, which used to share an
-// element id with the notification bell's dropdown — see #message-overlay
-// in index.html / popups.css for the full story). Its own overlay, so it
-// can be shown even while a detail popup is being opened/closed around the
-// same action without the two competing for the same dialog.
+// A small, corner-anchored, non-blocking toast for routine success/error/
+// info messages — no backdrop, doesn't interrupt whatever the reporter/
+// admin was doing, and auto-dismisses on its own after a few seconds since
+// most of these don't need a decision, just an acknowledgement (an error
+// gets a bit longer, since it's more likely worth actually reading). Its
+// own overlay, so it can be shown even while a detail popup is being
+// opened/closed around the same action without the two competing for the
+// same dialog.
+var _toastAutoCloseTimer = null;
+
 function showNotificationToast(context, message, type) {
     var overlay = globalQuery('#message-overlay');
     var dialog = globalQuery('#message-dialog');
@@ -868,23 +872,34 @@ function showNotificationToast(context, message, type) {
 
     var spec = NOTIFICATION_TONE[type] || NOTIFICATION_TONE.success;
 
+    if (_toastAutoCloseTimer) {
+        clearTimeout(_toastAutoCloseTimer);
+        _toastAutoCloseTimer = null;
+    }
+
     dialog.html(
-        '<div class="popup-content confirm-popup">' +
-        '  <button class="popup-close confirm-popup-close" action="closeMessageModal"><i class="fas fa-times"></i></button>' +
-        '  <div class="confirm-icon-badge ' + spec.tone + '"><i class="fas ' + spec.icon + '"></i></div>' +
-        '  <h3 class="confirm-title">' + spec.title + '</h3>' +
-        '  <p class="confirm-message">' + escapeHtml(message) + '</p>' +
-        '  <div class="confirm-actions">' +
-        '    <button class="popup-btn ' + spec.tone + '" action="closeMessageModal">OK</button>' +
-        '  </div>' +
+        '<div class="toast-content toast-' + spec.tone + '">' +
+        '  <span class="toast-icon"><i class="fas ' + spec.icon + '"></i></span>' +
+        '  <span class="toast-message">' + escapeHtml(message) + '</span>' +
+        '  <button class="toast-close" action="closeMessageModal" aria-label="Dismiss"><i class="fas fa-times"></i></button>' +
         '</div>'
     );
     overlay.element.classList.add('active');
+
+    var autoCloseDelay = type === 'error' ? 5000 : 3200;
+    _toastAutoCloseTimer = setTimeout(function() {
+        closeMessageModal();
+    }, autoCloseDelay);
 }
 
 function closeMessageModal(context) {
     var overlay = globalQuery('#message-overlay');
     var dialog = globalQuery('#message-dialog');
+
+    if (_toastAutoCloseTimer) {
+        clearTimeout(_toastAutoCloseTimer);
+        _toastAutoCloseTimer = null;
+    }
     if (!overlay.exists || !dialog.exists) return;
 
     overlay.element.classList.remove('active');

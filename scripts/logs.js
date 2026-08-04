@@ -12,7 +12,11 @@ function formatLogTime(isoString) {
     if (!isoString) return '';
     var d = new Date(isoString.replace(' ', 'T'));
     if (isNaN(d.getTime())) return isoString;
-    return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    var day = String(d.getDate()).padStart(2, '0');
+    var month = String(d.getMonth() + 1).padStart(2, '0');
+    var hours = String(d.getHours()).padStart(2, '0');
+    var minutes = String(d.getMinutes()).padStart(2, '0');
+    return day + '/' + month + '/' + d.getFullYear() + ' ' + hours + ':' + minutes;
 }
 
 function actionBadgeClass(action) {

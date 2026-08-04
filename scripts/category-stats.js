@@ -363,7 +363,7 @@ function buildCategoryChartCanvas(items, title, options) {
     ctx.fillText(title, 24, 32);
     ctx.fillStyle = '#9aa1ac';
     ctx.font = '400 12px Arial, sans-serif';
-    ctx.fillText(subtitle + ' · exported ' + new Date().toLocaleDateString(), 24, 52);
+    ctx.fillText(subtitle + ' · exported ' + formatDate(new Date()), 24, 52);
 
     var labelW = 130;
     var metaW = 190;
