@@ -231,7 +231,8 @@ var STAFF_CATEGORIES = [
     { id: 4, name: 'Roofing' },
     { id: 5, name: 'HVAC' },
     { id: 6, name: 'Civil' },
-    { id: 7, name: 'General' }
+    { id: 7, name: 'General' },
+    { id: 10, name: 'Cleaning' }
 ];
 
 function openEditSkillsPopup(arg, context) {
