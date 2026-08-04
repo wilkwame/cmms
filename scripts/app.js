@@ -2055,11 +2055,6 @@ function showConfirmation(options) {
     // Show with animation
     overlay.classList.add('active');
 
-    // Confetti effect for success
-    if (type === 'success' && options.confetti !== false) {
-        createConfetti();
-    }
-
     // Auto close after delay
     if (options.autoClose && options.delay) {
         setTimeout(function() {
@@ -2076,50 +2071,6 @@ function closeConfirmation() {
     if (overlay) {
         overlay.classList.remove('active');
     }
-
-    // Remove confetti
-    var container = document.querySelector('.confetti-container');
-    if (container) {
-        container.remove();
-    }
-}
-
-function createConfetti() {
-    var container = document.createElement('div');
-    container.className = 'confetti-container';
-    document.body.appendChild(container);
-
-    var colors = ['#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#ff6fb7', '#a66cff', '#ff9f43', '#00d2d3'];
-
-    for (var i = 0; i < 60; i++) {
-        var piece = document.createElement('div');
-        piece.className = 'confetti-piece';
-        var color = colors[Math.floor(Math.random() * colors.length)];
-        var size = 6 + Math.random() * 8;
-        var left = Math.random() * 100;
-        var duration = 1.5 + Math.random() * 2;
-        var delay = Math.random() * 0.8;
-        var shape = Math.random() > 0.5 ? '50%' : '2px';
-
-        piece.style.cssText = `
-            left: ${left}%;
-            width: ${size}px;
-            height: ${size * (0.6 + Math.random() * 0.8)}px;
-            background: ${color};
-            border-radius: ${shape};
-            animation-duration: ${duration}s;
-            animation-delay: ${delay}s;
-        `;
-
-        container.appendChild(piece);
-    }
-
-    // Remove confetti after animation
-    setTimeout(function() {
-        if (container) {
-            container.remove();
-        }
-    }, 4000);
 }
 
 // ===== SHORTCUT FUNCTIONS =====
@@ -2131,7 +2082,6 @@ function showSuccessPopup(message, title, callback) {
         message: message || 'Operation completed successfully.',
         buttonText: 'Done',
         onConfirm: callback || null,
-        confetti: true,
         autoClose: true,
         delay: 3000
     });
@@ -2144,7 +2094,6 @@ function showErrorPopup(message, title, callback) {
         message: message || 'Something went wrong. Please try again.',
         buttonText: 'Try Again',
         onConfirm: callback || null,
-        confetti: false,
         autoClose: false
     });
 }
@@ -2157,7 +2106,6 @@ function showWarningPopup(message, title, callback) {
         buttonText: 'Confirm',
         buttonClass: 'danger',
         onConfirm: callback || null,
-        confetti: false,
         autoClose: false
     });
 }
@@ -2169,7 +2117,6 @@ function showInfoPopup(message, title, callback) {
         message: message || 'Please review the details below.',
         buttonText: 'Got it',
         onConfirm: callback || null,
-        confetti: false,
         autoClose: true,
         delay: 3000
     });
