@@ -240,8 +240,11 @@ function wireReportIssueDropzone(context) {
 
     if (cameraBtn.exists && cameraInput.exists) {
         cameraBtn.element.addEventListener('click', function() {
-            cameraInput.element.click();
+            openCameraCapture(context);
         });
+        // Fallback path — used when getUserMedia isn't available/permitted
+        // (see openCameraCapture) so "Take Photo" still does something on
+        // an unsupported browser instead of just failing silently.
         cameraInput.element.addEventListener('change', function() {
             handleReportIssuePhotoFiles(context, cameraInput.element.files);
             cameraInput.element.value = '';
@@ -271,6 +274,128 @@ function wireReportIssueDropzone(context) {
         handleReportIssuePhotoFiles(context, input.element.files);
         input.element.value = '';
     });
+}
+
+// ===== LIVE CAMERA CAPTURE =====
+// A real in-page getUserMedia stream, rather than relying on the hidden
+// <input capture="environment"> — desktop browsers mostly ignore that
+// attribute (just opening a plain file picker), and even on mobile it hands
+// off to the OS camera app instead of staying in the ticket form. This opens
+// a live preview, lets the reporter frame the shot and retake if needed, and
+// only then hands the captured frame to the same handleReportIssuePhotoFiles
+// pipeline every other photo source already goes through (compression,
+// validation, previews).
+var _cameraStream = null;
+var _cameraCapturedBlob = null;
+
+function openCameraCapture(context) {
+    var overlay = document.getElementById('ri-camera-overlay');
+    var video = document.getElementById('ri-camera-video');
+    var errorEl = document.getElementById('ri-camera-error');
+    if (!overlay || !video) return;
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        // No live-camera support at all (very old browser, or a non-secure
+        // context) — fall back straight to the file input rather than
+        // showing a dead modal.
+        var cameraInput = document.getElementById('ri-camera-input');
+        if (cameraInput) cameraInput.click();
+        return;
+    }
+
+    resetCameraModalState();
+    overlay.classList.add('active');
+
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
+        .then(function(stream) {
+            _cameraStream = stream;
+            video.srcObject = stream;
+        })
+        .catch(function(error) {
+            console.error('Camera access failed:', error);
+            if (errorEl) {
+                errorEl.textContent = error && error.name === 'NotAllowedError'
+                    ? 'Camera access was denied. Allow camera access in your browser settings, or close this and use "Choose from Gallery" instead.'
+                    : 'Could not access the camera on this device. Close this and use "Choose from Gallery" instead.';
+                errorEl.classList.remove('hidden');
+            }
+            var shutter = document.getElementById('ri-camera-shutter');
+            if (shutter) shutter.classList.add('hidden');
+        });
+}
+
+function closeCameraCapture(context) {
+    var overlay = document.getElementById('ri-camera-overlay');
+    if (overlay) overlay.classList.remove('active');
+    stopCameraStream();
+    resetCameraModalState();
+}
+
+function stopCameraStream() {
+    if (_cameraStream) {
+        _cameraStream.getTracks().forEach(function(track) { track.stop(); });
+        _cameraStream = null;
+    }
+}
+
+function resetCameraModalState() {
+    _cameraCapturedBlob = null;
+
+    var video = document.getElementById('ri-camera-video');
+    var preview = document.getElementById('ri-camera-preview');
+    var errorEl = document.getElementById('ri-camera-error');
+    var shutter = document.getElementById('ri-camera-shutter');
+    var reviewControls = document.getElementById('ri-camera-review-controls');
+
+    if (video) { video.hidden = false; video.srcObject = null; }
+    if (preview) { preview.hidden = true; preview.src = ''; }
+    if (errorEl) errorEl.classList.add('hidden');
+    if (shutter) shutter.classList.remove('hidden');
+    if (reviewControls) reviewControls.classList.add('hidden');
+}
+
+function captureCameraPhoto(context) {
+    var video = document.getElementById('ri-camera-video');
+    var preview = document.getElementById('ri-camera-preview');
+    var shutter = document.getElementById('ri-camera-shutter');
+    var reviewControls = document.getElementById('ri-camera-review-controls');
+    if (!video || !video.videoWidth) return;
+
+    var canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    canvas.toBlob(function(blob) {
+        if (!blob) return;
+        _cameraCapturedBlob = blob;
+
+        if (preview) { preview.src = URL.createObjectURL(blob); preview.hidden = false; }
+        if (video) video.hidden = true;
+        if (shutter) shutter.classList.add('hidden');
+        if (reviewControls) reviewControls.classList.remove('hidden');
+    }, 'image/jpeg', 0.92);
+}
+
+function retakeCameraPhoto(context) {
+    var video = document.getElementById('ri-camera-video');
+    var preview = document.getElementById('ri-camera-preview');
+    var shutter = document.getElementById('ri-camera-shutter');
+    var reviewControls = document.getElementById('ri-camera-review-controls');
+
+    _cameraCapturedBlob = null;
+    if (preview) { preview.hidden = true; preview.src = ''; }
+    if (video) video.hidden = false;
+    if (shutter) shutter.classList.remove('hidden');
+    if (reviewControls) reviewControls.classList.add('hidden');
+}
+
+function useCameraPhoto(context) {
+    if (!_cameraCapturedBlob) return;
+
+    var file = new File([_cameraCapturedBlob], 'camera-' + Date.now() + '.jpg', { type: 'image/jpeg' });
+    handleReportIssuePhotoFiles(context, [file]);
+    closeCameraCapture(context);
 }
 
 async function handleReportIssuePhotoFiles(context, fileList) {
@@ -491,3 +616,8 @@ window.removeReportIssuePhoto = removeReportIssuePhoto;
 window.clearReportIssueForm = clearReportIssueForm;
 window.submitReportIssue = submitReportIssue;
 window.selectReportIssueLocation = selectReportIssueLocation;
+window.openCameraCapture = openCameraCapture;
+window.closeCameraCapture = closeCameraCapture;
+window.captureCameraPhoto = captureCameraPhoto;
+window.retakeCameraPhoto = retakeCameraPhoto;
+window.useCameraPhoto = useCameraPhoto;

@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="style/report-issue.css?v=11">
+  <link rel="stylesheet" href="style/report-issue.css?v=12">
 </head>
 <body>
-<page name="report-issue" id="report-issue" onshow="loadReportIssuePage">
+<page name="report-issue" id="report-issue" onshow="loadReportIssuePage" onhide="closeCameraCapture">
   <section>
     <div class="page-header">
       <div class="header-content">
@@ -102,6 +102,32 @@
       </div>
     </div>
   </section>
+
+  <!-- Live camera capture — a real getUserMedia stream rather than relying on
+       <input capture>, which desktop browsers mostly ignore and which even
+       on mobile just hands off to the OS camera app instead of staying
+       in-page. Falls back to the file input automatically if the browser/
+       context doesn't support it (see wireReportIssueDropzone). -->
+  <div id="ri-camera-overlay" class="camera-overlay">
+    <div class="camera-modal">
+      <div class="camera-header">
+        <span>Take Photo</span>
+        <button type="button" class="camera-close-btn" action="closeCameraCapture"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="camera-viewport">
+        <video id="ri-camera-video" autoplay playsinline muted></video>
+        <img id="ri-camera-preview" alt="Captured photo" hidden />
+        <p id="ri-camera-error" class="camera-error hidden"></p>
+      </div>
+      <div class="camera-controls">
+        <button type="button" class="camera-shutter-btn" id="ri-camera-shutter" action="captureCameraPhoto" title="Take photo"></button>
+        <div class="camera-review-controls hidden" id="ri-camera-review-controls">
+          <button type="button" class="btn-photo-source" action="retakeCameraPhoto"><i class="fas fa-rotate-left"></i> Retake</button>
+          <button type="button" class="btn-submit" action="useCameraPhoto"><i class="fas fa-check"></i> Use Photo</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </page>
 </body>
 </html>

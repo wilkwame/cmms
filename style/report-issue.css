@@ -281,3 +281,140 @@
   opacity: 0.7;
   cursor: default;
 }
+
+/* ========================================
+   LIVE CAMERA CAPTURE
+   ======================================== */
+
+.camera-overlay {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 10001;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.camera-overlay.active {
+  display: flex;
+}
+
+.camera-modal {
+  width: 100%;
+  height: 100%;
+  max-width: 560px;
+  max-height: 900px;
+  display: flex;
+  flex-direction: column;
+  background: #000;
+}
+
+.camera-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.camera-close-btn {
+  background: rgba(255, 255, 255, 0.12);
+  border: none;
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+}
+
+.camera-close-btn:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.camera-viewport {
+  flex: 1;
+  position: relative;
+  min-height: 0;
+  background: #111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.camera-viewport video,
+.camera-viewport img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.camera-error {
+  position: absolute;
+  inset: 16px;
+  margin: auto;
+  max-height: fit-content;
+  background: rgba(20, 20, 20, 0.9);
+  color: #fff;
+  font-size: 13px;
+  line-height: 1.5;
+  padding: 16px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.camera-error.hidden {
+  display: none;
+}
+
+.camera-controls {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 22px 16px calc(22px + env(safe-area-inset-bottom, 0px));
+  min-height: 88px;
+}
+
+.camera-shutter-btn {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #fff;
+  border: 4px solid rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.camera-shutter-btn:active {
+  transform: scale(0.92);
+}
+
+.camera-shutter-btn.hidden {
+  display: none;
+}
+
+.camera-review-controls {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  max-width: 320px;
+}
+
+.camera-review-controls.hidden {
+  display: none;
+}
+
+.camera-review-controls .btn-photo-source,
+.camera-review-controls .btn-submit {
+  flex: 1;
+  justify-content: center;
+}
