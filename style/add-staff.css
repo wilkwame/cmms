@@ -64,6 +64,7 @@
 
 .skill-chip:hover {
   border-color: #237FEA;
+  border-width: 3px;
 }
 
 .skill-chip input {
@@ -77,6 +78,7 @@
 .skill-chip:has(input:checked) {
   background: rgba(35, 127, 234, 0.08);
   border-color: #237FEA;
+  border-width: 3px;
   color: #237FEA;
   font-weight: 700;
 }
@@ -224,6 +226,7 @@
 .form-group select:focus,
 .form-group textarea:focus {
   border-color: #237FEA;
+  border-width: 3px;
   box-shadow: 0 0 0 3px rgba(35, 127, 234, 0.1);
 }
 

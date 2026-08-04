@@ -63,6 +63,7 @@
 .btn-download-chart:hover {
   background: #237FEA;
   border-color: #237FEA;
+  border-width: 3px;
   color: white;
 }
 
@@ -151,6 +152,7 @@
 .staff-perf-date-field input[type="date"]:focus {
   outline: none;
   border-color: #237FEA;
+  border-width: 3px;
 }
 
 .staff-perf-filters .view-toggle-btn {

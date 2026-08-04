@@ -315,7 +315,7 @@ app {
 
 .notification-item.unread {
   background: #f0f7ff;
-  border-left: 3px solid #237FEA;
+  border-left: 4px solid #237FEA;
 }
 
 .notification-item.unread:hover {

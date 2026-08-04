@@ -118,6 +118,7 @@
 .filter-group select:focus,
 .filter-group input:focus {
   border-color: #237FEA;
+  border-width: 3px;
 }
 
 .filter-group select {
@@ -447,6 +448,7 @@
   background: #237FEA;
   color: white;
   border-color: #237FEA;
+  border-width: 3px;
 }
 
 .pagination-btn:disabled {

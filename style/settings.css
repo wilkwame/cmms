@@ -88,6 +88,7 @@
 .btn-header:hover {
   background: #f0f4f8;
   border-color: #237FEA;
+  border-width: 3px;
   color: #237FEA;
 }
 
@@ -362,6 +363,7 @@
 .setting-action:hover {
   background: #f0f4f8;
   border-color: #237FEA;
+  border-width: 3px;
   color: #237FEA;
 }
 
@@ -387,6 +389,7 @@
 .dept-location-select:hover,
 .dept-location-select:focus {
   border-color: #237FEA;
+  border-width: 3px;
   color: #237FEA;
   outline: none;
 }
@@ -470,6 +473,7 @@
 .size-btn:hover {
   background: #f0f4f8;
   border-color: #237FEA;
+  border-width: 3px;
   color: #237FEA;
 }
 
@@ -495,6 +499,7 @@
 
 .language-select:focus {
   border-color: #237FEA;
+  border-width: 3px;
 }
 
 /* ========================================

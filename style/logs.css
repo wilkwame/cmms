@@ -66,6 +66,7 @@
 .filter-group select:focus,
 .filter-group input[type="date"]:focus {
   border-color: #237FEA;
+  border-width: 3px;
 }
 
 .filter-group.search-group {
@@ -87,6 +88,7 @@
 
 .filter-group.search-group input:focus {
   border-color: #237FEA;
+  border-width: 3px;
 }
 
 .filter-group.search-group input::placeholder {
@@ -284,6 +286,7 @@
   background: #237FEA;
   color: white;
   border-color: #237FEA;
+  border-width: 3px;
 }
 
 .pagination-btn:disabled {

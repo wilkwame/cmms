@@ -602,6 +602,7 @@
 .feedback-comment-input:focus {
   outline: none;
   border-color: #237FEA;
+  border-width: 3px;
 }
 
 .feedback-submit-btn {

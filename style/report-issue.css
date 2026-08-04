@@ -189,6 +189,7 @@
 
 .btn-photo-source:hover {
   border-color: #237FEA;
+  border-width: 3px;
   background: rgba(35, 127, 234, 0.05);
 }
 
@@ -206,6 +207,7 @@
 .dropzone:hover,
 .dropzone.dragover {
   border-color: #237FEA;
+  border-width: 3px;
   background: rgba(35, 127, 234, 0.05);
 }
 
