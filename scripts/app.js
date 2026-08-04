@@ -1238,12 +1238,16 @@ function buildWorkOrderDetailPopup(order, reassignPanelHtml) {
                 statusButtonsHtml += '<button class="popup-btn approve" action="openCompleteWorkOrderPopup: ' + order.id + '"><i class="fas fa-check"></i> Complete Task</button>';
             }
             // Once submitted, only an admin/supervisor can approve it — the
-            // technician just waits (they can still put it On Hold below if
-            // they submitted by mistake).
+            // technician just waits.
             if (order.status === 'pending_review' && isPrivileged) {
                 statusButtonsHtml += '<button class="popup-btn approve" action="approveWorkOrderCompletion: ' + order.id + '"><i class="fas fa-check-double"></i> Approve</button>';
             }
-            statusButtonsHtml += '<button class="popup-btn warning" action="putWorkOrderOnHold: ' + order.id + '"><i class="fas fa-pause"></i> On Hold</button>';
+            // Putting work on hold is an admin/supervisor call, not the
+            // assigned technician's own — they can still Start/Complete
+            // their own work above, just not pause it themselves.
+            if (isPrivileged) {
+                statusButtonsHtml += '<button class="popup-btn warning" action="putWorkOrderOnHold: ' + order.id + '"><i class="fas fa-pause"></i> On Hold</button>';
+            }
         }
     }
 

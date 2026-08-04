@@ -74,6 +74,12 @@ try {
     if ($newStatus === 'pending_review' && !$isOwner) {
         sendJson(false, 403, 'Only the technician assigned to this work order can submit it for review.');
     }
+    // Putting work on hold is an admin/supervisor call, not the assigned
+    // technician's own — they can still start/submit their own work, just
+    // not pause it themselves.
+    if ($newStatus === 'on_hold' && !$isPrivileged) {
+        sendJson(false, 403, 'Only an admin or supervisor can put a work order on hold.');
+    }
 
     if (in_array($workOrder['status'], ['completed', 'cancelled'], true)) {
         sendJson(false, 409, 'This work order is already ' . $workOrder['status'] . ' and cannot be changed');
