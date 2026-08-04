@@ -80,6 +80,12 @@ try {
     if ($newStatus === 'on_hold' && !$isPrivileged) {
         sendJson(false, 403, 'Only an admin or supervisor can put a work order on hold.');
     }
+    // Resuming is the same admin/supervisor-only call as pausing it in the
+    // first place — the assigned technician can't un-pause work that was
+    // paused on them.
+    if ($newStatus === 'in_progress' && $workOrder['status'] === 'on_hold' && !$isPrivileged) {
+        sendJson(false, 403, 'Only an admin or supervisor can resume a work order that is on hold.');
+    }
 
     if (in_array($workOrder['status'], ['completed', 'cancelled'], true)) {
         sendJson(false, 409, 'This work order is already ' . $workOrder['status'] . ' and cannot be changed');
@@ -151,6 +157,18 @@ try {
             ? 'Your ticket "' . $workOrder['issue'] . '" (' . $workOrder['reference'] . ') has been resolved.'
             : 'Work has started on your ticket "' . $workOrder['issue'] . '" (' . $workOrder['reference'] . ').';
         notifyUser($db, (int) $workOrder['submitted_by'], 'Ticket Status Update', $reporterMessage);
+    }
+
+    // The assigned technician isn't the one deciding to pause/resume their
+    // own work here (see the isPrivileged checks above) — they need to
+    // actually be told, not just discover it next time they open the work
+    // order.
+    if (!empty($workOrder['assigned_to'])) {
+        if ($newStatus === 'on_hold') {
+            notifyUser($db, (int) $workOrder['assigned_to'], 'Work Order On Hold', $workOrder['reference'] . ' ("' . $workOrder['issue'] . '") has been put on hold by ' . $user['name'] . '. Hold off on further work until it\'s resumed.');
+        } elseif ($newStatus === 'in_progress' && $workOrder['status'] === 'on_hold') {
+            notifyUser($db, (int) $workOrder['assigned_to'], 'Work Order Resumed', $workOrder['reference'] . ' ("' . $workOrder['issue'] . '") has been resumed by ' . $user['name'] . ' — you can continue the work.');
+        }
     }
 
     $fetchStmt = $db->prepare('

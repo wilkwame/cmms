@@ -412,6 +412,12 @@ html[data-theme="dark"] .popup-btn.secondary {
   color: var(--dm-text-secondary);
 }
 
+html[data-theme="dark"] .wo-hold-notice {
+  background: rgba(255, 149, 0, 0.1);
+  border-color: rgba(255, 149, 0, 0.3);
+  color: #ffb454;
+}
+
 html[data-theme="dark"] .toast-content {
   background: var(--dm-surface);
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);

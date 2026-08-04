@@ -1223,10 +1223,12 @@ function buildWorkOrderDetailPopup(order, reassignPanelHtml) {
     var statusButtonsHtml = '';
     if (canManageStatus) {
         if (order.status === 'on_hold') {
-            // Paused work is resumable — the only sensible action from here
-            // is to pick it back up, not the normal start/complete/on-hold
-            // progression below.
-            statusButtonsHtml += '<button class="popup-btn approve" action="resumeWorkOrder: ' + order.id + '"><i class="fas fa-play"></i> Resume</button>';
+            // Resuming is the same admin/supervisor-only call as pausing it
+            // in the first place — the assigned technician sees the notice
+            // below instead of a button, since they can't act on it.
+            if (isPrivileged) {
+                statusButtonsHtml += '<button class="popup-btn approve" action="resumeWorkOrder: ' + order.id + '"><i class="fas fa-play"></i> Resume</button>';
+            }
         } else {
             if (order.status === 'pending') {
                 statusButtonsHtml += '<button class="popup-btn reassign" action="startWorkOrder: ' + order.id + '"><i class="fas fa-play"></i> Start Work</button>';
@@ -1297,6 +1299,9 @@ function buildWorkOrderDetailPopup(order, reassignPanelHtml) {
         '      <p><span class="' + statusClass + '">' + statusLabel(order.status) + '</span></p>' +
         '    </div>' +
         '  </div>' +
+        (order.status === 'on_hold' && !isPrivileged ?
+        '  <div class="wo-hold-notice"><i class="fas fa-circle-pause"></i> ' +
+        'This work order is on hold. Hold off on further work until an admin or supervisor resumes it.</div>' : '') +
         (order.department ?
         '  <div class="popup-field">' +
         '    <label><i class="fas fa-building"></i> Department</label>' +

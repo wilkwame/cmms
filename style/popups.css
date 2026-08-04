@@ -616,6 +616,28 @@
   font-style: italic;
 }
 
+/* Shown to the assigned technician on a work order an admin/supervisor has
+   put on hold — they can't resume it themselves, so this needs to be an
+   explicit statement rather than something implied by an absent button. */
+.wo-hold-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #fff6ec;
+  border: 1px solid #ffe5cc;
+  color: #853d00;
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  margin-top: 4px;
+}
+
+.wo-hold-notice i {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
 @media (max-width: 600px) {
   .popup-row {
     grid-template-columns: 1fr;
