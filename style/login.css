@@ -100,31 +100,14 @@ body{
 }
 
 .panel-brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
   margin-bottom: 40px;
 }
 
-.panel-brand-icon {
-  width: 34px;
-  height: 34px;
-  border-radius: 9px;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-}
-
-.panel-brand-name {
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 15px;
-  letter-spacing: 1.5px;
-  color: white;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+.panel-brand-img {
+  height: 42px;
+  width: auto;
+  border-radius: 7px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
 }
 
 .panel-headline {
@@ -225,67 +208,12 @@ body{
   margin-bottom: 14px;
 }
 
-.logo-ring {
-  position: relative;
-  width: 52px;
-  height: 52px;
-  margin: 0 auto 8px;
-}
-
-.logo-ring-ticks {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  transform: rotate(-90deg);
-}
-
-.ring-track {
-  fill: none;
-  stroke: var(--color-primary-tint);
-  stroke-width: 3;
-}
-
-.ring-progress {
-  fill: none;
-  stroke: var(--color-primary);
-  stroke-width: 3;
-  stroke-linecap: round;
-  stroke-dasharray: 58 175;
-  animation: ring-sweep 3.2s ease-in-out infinite;
-}
-
-@keyframes ring-sweep {
-  0%, 100% { stroke-dashoffset: 0; }
-  50% { stroke-dashoffset: -110; }
-}
-
-.logo-icon {
-  position: absolute;
-  inset: 7px;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  color: white;
-  box-shadow: 0 4px 16px rgba(35, 127, 234, 0.28);
-}
-
-.login-logo-name {
-  font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 800;
-  color: var(--color-ink);
-  margin: 0;
-  letter-spacing: 0.5px;
-}
-
-.logo-subtitle {
-  font-size: 12px;
-  color: var(--color-muted);
-  margin-top: 2px;
+.login-logo-img {
+  height: 72px;
+  width: auto;
+  max-width: 90%;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(15, 42, 82, 0.18);
 }
 
 /* ========================================
@@ -649,18 +577,11 @@ body{
 
 /* Below 1024px .login-panel (and its photo) is hidden, so #login's own
    photo background is what's visible around the floating card — lighten
-   the logo/footer text here to stay readable against it. .login-card
-   itself is unaffected: it's always opaque white regardless of breakpoint. */
+   the footer text here to stay readable against it (the logo is its own
+   opaque white card regardless, so it doesn't need the same treatment).
+   .login-card itself is unaffected: it's always opaque white regardless
+   of breakpoint. */
 @media (max-width: 1023.98px) {
-  .login-logo-name {
-    color: white;
-    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
-  }
-
-  .logo-subtitle {
-    color: rgba(255, 255, 255, 0.75);
-  }
-
   .login-footer-bottom p {
     color: rgba(255, 255, 255, 0.7);
   }
@@ -683,19 +604,6 @@ body{
 
   .login-card {
     padding: 20px 16px 16px;
-  }
-
-  .logo-ring {
-    width: 52px;
-    height: 52px;
-  }
-
-  .logo-icon {
-    font-size: 18px;
-  }
-
-  .login-logo-name {
-    font-size: 19px;
   }
 
   .login-card-header h1 {
@@ -731,14 +639,8 @@ body{
     margin-bottom: 8px;
   }
 
-  .logo-ring {
-    width: 40px;
-    height: 40px;
-    margin-bottom: 4px;
-  }
-
-  .logo-subtitle {
-    display: none;
+  .login-logo-img {
+    height: 56px;
   }
 
   .login-card-header {
@@ -764,17 +666,8 @@ body{
     border-radius: 10px;
   }
 
-  .logo-ring {
-    width: 44px;
-    height: 44px;
-  }
-
-  .logo-icon {
-    font-size: 16px;
-  }
-
-  .login-logo-name {
-    font-size: 17px;
+  .login-logo-img {
+    height: 48px;
   }
 
   .login-card-header h1 {
@@ -897,11 +790,6 @@ body{
 @media (prefers-reduced-motion: reduce) {
   .login-wrapper {
     animation: none;
-  }
-
-  .ring-progress {
-    animation: none;
-    stroke-dasharray: 90 175;
   }
 
   .login-error {

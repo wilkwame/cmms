@@ -104,7 +104,7 @@
 .filter-group select,
 .filter-group input {
   padding: 4px 6px;
-  border: 1px solid #d5dbe3;
+  border: 2px solid #d5dbe3;
   border-radius: 4px;
   font-size: 11px;
   color: #333;
@@ -229,7 +229,7 @@
 .table-head {
   display: flex;
   padding: 4px 0;
-  border-bottom: 2px solid #e3e6eb;
+  border-bottom: 3px solid #e3e6eb;
   font-size: 9px;
   font-weight: 600;
   color: #999;
@@ -426,14 +426,14 @@
   justify-content: flex-end;
   gap: 8px;
   padding-top: 8px;
-  border-top: 1px solid #e3e6eb;
+  border-top: 2px solid #e3e6eb;
   margin-top: 4px;
   flex-wrap: wrap;
 }
 
 .pagination-btn {
   padding: 3px 10px;
-  border: 1px solid #d5dbe3;
+  border: 2px solid #d5dbe3;
   border-radius: 4px;
   background: white;
   font-size: 10px;

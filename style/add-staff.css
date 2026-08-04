@@ -51,7 +51,7 @@
   align-items: center;
   gap: 7px;
   padding: 8px 16px;
-  border: 1.5px solid #d5dbe3;
+  border: 2px solid #d5dbe3;
   border-radius: 20px;
   font-size: 13px;
   font-weight: 500;
@@ -91,7 +91,7 @@
   align-items: center;
   margin-bottom: 24px;
   padding-bottom: 16px;
-  border-bottom: 2px solid #e3e6eb;
+  border-bottom: 3px solid #e3e6eb;
   flex-wrap: wrap;
   gap: 10px;
 }
@@ -152,7 +152,7 @@
   padding: 16px 18px;
   background: #fafbfc;
   border-radius: 8px;
-  border: 1px solid #e3e6eb;
+  border: 2px solid #e3e6eb;
 }
 
 .form-section h3 {
@@ -161,7 +161,7 @@
   color: #1a1a1a;
   margin: 0 0 14px 0;
   padding-bottom: 8px;
-  border-bottom: 1px solid #e3e6eb;
+  border-bottom: 2px solid #e3e6eb;
 }
 
 .form-section h3 i {
@@ -209,7 +209,7 @@
 .form-group select,
 .form-group textarea {
   padding: 8px 12px;
-  border: 1px solid #d5dbe3;
+  border: 2px solid #d5dbe3;
   border-radius: 6px;
   font-size: 13px;
   color: #333;
@@ -256,7 +256,7 @@
   justify-content: flex-end;
   gap: 12px;
   padding-top: 16px;
-  border-top: 1px solid #e3e6eb;
+  border-top: 2px solid #e3e6eb;
   margin-top: 4px;
 }
 
