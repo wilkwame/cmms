@@ -964,6 +964,14 @@ function closePopup(context) {
 
     overlay.element.classList.remove('active');
     dialog.html('');
+
+    // Safety net: the work order camera modal is a separate global overlay
+    // (not inside #popup-dialog), so wiping this popup's HTML alone
+    // wouldn't stop an in-progress camera stream if the popup closes while
+    // it's open.
+    if (typeof stopWorkOrderCameraStream === 'function') stopWorkOrderCameraStream();
+    var woCameraOverlay = document.getElementById('wo-camera-overlay');
+    if (woCameraOverlay) woCameraOverlay.classList.remove('active');
 }
 
 // ===== KEYBOARD SHORTCUTS FOR POPUPS =====
@@ -1419,7 +1427,10 @@ function wireCompletionPhotoInputs(context) {
     var galleryInput = document.getElementById('wo-gallery-input');
 
     if (cameraBtn && cameraInput) {
-        cameraBtn.addEventListener('click', function() { cameraInput.click(); });
+        cameraBtn.addEventListener('click', function() { openWorkOrderCameraCapture(context); });
+        // Fallback path — used when getUserMedia isn't available/permitted
+        // (see openWorkOrderCameraCapture) so "Take Photo" still does
+        // something on an unsupported browser instead of failing silently.
         cameraInput.addEventListener('change', function() {
             handleCompletionPhotoFiles(context, cameraInput.files);
             cameraInput.value = '';
@@ -1466,6 +1477,123 @@ async function handleCompletionPhotoFiles(context, fileList) {
     }
 
     renderCompletionPhotoPreviews();
+}
+
+// ===== WORK ORDER COMPLETION - LIVE CAMERA CAPTURE =====
+// Same getUserMedia approach as Report Issue's camera (scripts/report-issue.js)
+// — a live in-page preview instead of relying on <input capture>, which
+// desktop browsers mostly ignore and which even on mobile hands off to the
+// OS camera app. This popup is opened from Work Orders on more than one
+// page, so its overlay markup lives globally in index.html (#wo-camera-overlay)
+// rather than inside a single page fragment.
+var _woCameraStream = null;
+var _woCameraCapturedBlob = null;
+
+function openWorkOrderCameraCapture(context) {
+    var overlay = document.getElementById('wo-camera-overlay');
+    var video = document.getElementById('wo-camera-video');
+    var errorEl = document.getElementById('wo-camera-error');
+    if (!overlay || !video) return;
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        var cameraInput = document.getElementById('wo-camera-input');
+        if (cameraInput) cameraInput.click();
+        return;
+    }
+
+    resetWorkOrderCameraModalState();
+    overlay.classList.add('active');
+
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
+        .then(function(stream) {
+            _woCameraStream = stream;
+            video.srcObject = stream;
+        })
+        .catch(function(error) {
+            console.error('Camera access failed:', error);
+            if (errorEl) {
+                errorEl.textContent = error && error.name === 'NotAllowedError'
+                    ? 'Camera access was denied. Allow camera access in your browser settings, or close this and use "Choose from Gallery" instead.'
+                    : 'Could not access the camera on this device. Close this and use "Choose from Gallery" instead.';
+                errorEl.classList.remove('hidden');
+            }
+            var shutter = document.getElementById('wo-camera-shutter');
+            if (shutter) shutter.classList.add('hidden');
+        });
+}
+
+function closeWorkOrderCameraCapture(context) {
+    var overlay = document.getElementById('wo-camera-overlay');
+    if (overlay) overlay.classList.remove('active');
+    stopWorkOrderCameraStream();
+    resetWorkOrderCameraModalState();
+}
+
+function stopWorkOrderCameraStream() {
+    if (_woCameraStream) {
+        _woCameraStream.getTracks().forEach(function(track) { track.stop(); });
+        _woCameraStream = null;
+    }
+}
+
+function resetWorkOrderCameraModalState() {
+    _woCameraCapturedBlob = null;
+
+    var video = document.getElementById('wo-camera-video');
+    var preview = document.getElementById('wo-camera-preview');
+    var errorEl = document.getElementById('wo-camera-error');
+    var shutter = document.getElementById('wo-camera-shutter');
+    var reviewControls = document.getElementById('wo-camera-review-controls');
+
+    if (video) { video.hidden = false; video.srcObject = null; }
+    if (preview) { preview.hidden = true; preview.src = ''; }
+    if (errorEl) errorEl.classList.add('hidden');
+    if (shutter) shutter.classList.remove('hidden');
+    if (reviewControls) reviewControls.classList.add('hidden');
+}
+
+function captureWorkOrderCameraPhoto(context) {
+    var video = document.getElementById('wo-camera-video');
+    var preview = document.getElementById('wo-camera-preview');
+    var shutter = document.getElementById('wo-camera-shutter');
+    var reviewControls = document.getElementById('wo-camera-review-controls');
+    if (!video || !video.videoWidth) return;
+
+    var canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    canvas.toBlob(function(blob) {
+        if (!blob) return;
+        _woCameraCapturedBlob = blob;
+
+        if (preview) { preview.src = URL.createObjectURL(blob); preview.hidden = false; }
+        if (video) video.hidden = true;
+        if (shutter) shutter.classList.add('hidden');
+        if (reviewControls) reviewControls.classList.remove('hidden');
+    }, 'image/jpeg', 0.92);
+}
+
+function retakeWorkOrderCameraPhoto(context) {
+    var video = document.getElementById('wo-camera-video');
+    var preview = document.getElementById('wo-camera-preview');
+    var shutter = document.getElementById('wo-camera-shutter');
+    var reviewControls = document.getElementById('wo-camera-review-controls');
+
+    _woCameraCapturedBlob = null;
+    if (preview) { preview.hidden = true; preview.src = ''; }
+    if (video) video.hidden = false;
+    if (shutter) shutter.classList.remove('hidden');
+    if (reviewControls) reviewControls.classList.add('hidden');
+}
+
+function useWorkOrderCameraPhoto(context) {
+    if (!_woCameraCapturedBlob) return;
+
+    var file = new File([_woCameraCapturedBlob], 'camera-' + Date.now() + '.jpg', { type: 'image/jpeg' });
+    handleCompletionPhotoFiles(context, [file]);
+    closeWorkOrderCameraCapture(context);
 }
 
 function renderCompletionPhotoPreviews() {
@@ -2177,6 +2305,11 @@ window.openCompleteWorkOrderPopup = openCompleteWorkOrderPopup;
 window.submitWorkOrderCompletion = submitWorkOrderCompletion;
 window.approveWorkOrderCompletion = approveWorkOrderCompletion;
 window.removeCompletionPhoto = removeCompletionPhoto;
+window.openWorkOrderCameraCapture = openWorkOrderCameraCapture;
+window.closeWorkOrderCameraCapture = closeWorkOrderCameraCapture;
+window.captureWorkOrderCameraPhoto = captureWorkOrderCameraPhoto;
+window.retakeWorkOrderCameraPhoto = retakeWorkOrderCameraPhoto;
+window.useWorkOrderCameraPhoto = useWorkOrderCameraPhoto;
 window.putWorkOrderOnHold = putWorkOrderOnHold;
 window.resumeWorkOrder = resumeWorkOrder;
 window.approveReportFromPopup = approveReportFromPopup;

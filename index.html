@@ -53,7 +53,7 @@
   <link rel="stylesheet" href="style/mobile.css?v=10">
   <link rel="stylesheet" href="style/staffs.css?v=19">
   <link rel="stylesheet" href="style/confirmation.css?v=12">
-  <link rel="stylesheet" href="style/popups.css?v=22">
+  <link rel="stylesheet" href="style/popups.css?v=23">
   <link rel="stylesheet" href="style/dark-mode.css?v=4">
   <script src="https://unpkg.com/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -225,6 +225,32 @@
     <div id="image-lightbox-overlay">
       <button id="image-lightbox-close" action="closeImageLightbox"><i class="fas fa-times"></i></button>
       <img id="image-lightbox-img" alt="Photo" />
+    </div>
+
+    <!-- Work Order Completion — Live Camera Capture. A real getUserMedia
+         stream, same rationale as Report Issue's camera (see
+         report-issue.html). Lives here (not inside a single page fragment)
+         because the Complete Task popup can be opened from Work Orders on
+         more than one page. -->
+    <div id="wo-camera-overlay" class="camera-overlay">
+      <div class="camera-modal">
+        <div class="camera-header">
+          <span>Take Photo</span>
+          <button type="button" class="camera-close-btn" action="closeWorkOrderCameraCapture"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="camera-viewport">
+          <video id="wo-camera-video" autoplay playsinline muted></video>
+          <img id="wo-camera-preview" alt="Captured photo" hidden />
+          <p id="wo-camera-error" class="camera-error hidden"></p>
+        </div>
+        <div class="camera-controls">
+          <button type="button" class="camera-shutter-btn" id="wo-camera-shutter" action="captureWorkOrderCameraPhoto" title="Take photo"></button>
+          <div class="camera-review-controls hidden" id="wo-camera-review-controls">
+            <button type="button" class="btn-photo-source" action="retakeWorkOrderCameraPhoto"><i class="fas fa-rotate-left"></i> Retake</button>
+            <button type="button" class="btn-submit" action="useWorkOrderCameraPhoto"><i class="fas fa-check"></i> Use Photo</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Confirmation Popup -->
@@ -419,7 +445,7 @@
 
   <script src="runtime/clera.js?v=13"></script>
   <script src="scripts/offline-queue.js?v=2"></script>
-  <script src="scripts/app.js?v=51"></script>
+  <script src="scripts/app.js?v=52"></script>
   <script src="scripts/logs.js?v=2"></script>
   <script src="scripts/category-stats.js?v=8"></script>
   <script src="scripts/reports.js?v=19"></script>
