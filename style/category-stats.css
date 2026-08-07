@@ -22,7 +22,7 @@
    brand-blue treatment as the chart below instead of the alert-red icon
    tile it was borrowing, so the KPI row and the chart read as one story. */
 .icon-top-category {
-  background: #e8f1fd;
+  background: #c7e0fa;
   color: #237FEA;
 }
 
@@ -201,7 +201,7 @@
 .staff-perf-track {
   flex: 1;
   height: 14px;
-  background: #e8f1fd;
+  background: #c7e0fa;
   border-radius: 7px;
   overflow: hidden;
 }
@@ -296,7 +296,7 @@
 .category-bar-track {
   flex: 1;
   height: 14px;
-  background: #e8f1fd;
+  background: #c7e0fa;
   border-radius: 7px;
   overflow: hidden;
 }

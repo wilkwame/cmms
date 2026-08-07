@@ -112,7 +112,7 @@ app {
 }
 
 .offline-indicator.syncing {
-  background: #e5f0ff;
+  background: #bfdcff;
   color: #1a5fc7;
   border-bottom-color: #cfe0fb;
 }
@@ -247,7 +247,7 @@ app {
 }
 
 .notification-header .mark-all-read:hover {
-  background: #e5f0ff;
+  background: #bfdcff;
 }
 
 .notification-header-actions {
@@ -314,12 +314,12 @@ app {
 }
 
 .notification-item.unread {
-  background: #f0f7ff;
-  border-left: 4px solid #237FEA;
+  background: #d6ebff;
+  border-left: 3px solid #237FEA;
 }
 
 .notification-item.unread:hover {
-  background: #e5f0ff;
+  background: #bfdcff;
 }
 
 .notification-item .notif-icon {
@@ -336,7 +336,7 @@ app {
 }
 
 .notif-icon-assigned  { background: #fff0dd; color: #ff9500; }
-.notif-icon-submitted { background: #e5f0ff; color: #237FEA; }
+.notif-icon-submitted { background: #bfdcff; color: #237FEA; }
 .notif-icon-success   { background: #e3f9e9; color: #34c759; }
 .notif-icon-alert     { background: #ffe6e4; color: #ff3b30; }
 .notif-icon-default   { background: #e3e6eb; color: #888; }
@@ -535,7 +535,7 @@ app {
 }
 
 #left-nav tab:not([active]):hover i {
-  background: #e5f0ff;
+  background: #bfdcff;
   color: #237FEA;
 }
 
@@ -765,7 +765,7 @@ page {
   width: 36px;
   height: 36px;
   border-radius: 8px;
-  background: #f0f7ff;
+  background: #d6ebff;
   color: #237FEA;
   display: flex;
   align-items: center;
@@ -844,7 +844,7 @@ page {
    them regardless of color. */
 .icon-report { background: #fadbff; color: #9333ea; }
 .icon-clock  { background: #f9ffcc; color: #b45309; }
-.icon-tools  { background: #dbecff; color: #237FEA; }
+.icon-tools  { background: #b3ddff; color: #237FEA; }
 .icon-check  { background: #cdffcf; color: #16a34a; }
 .icon-alert  { background: #ffdbdb; color: #dc2626; }
 
@@ -1521,7 +1521,7 @@ page {
 .status-badge.pending      { background: #fff3cd; color: #856404; }
 .status-badge.approved     { background: #d4edda; color: #155724; }
 .status-badge.rejected     { background: #f8d7da; color: #721c24; }
-.status-badge.in_progress  { background: #cce5ff; color: #004085; }
+.status-badge.in_progress  { background: #a3d1ff; color: #004085; }
 .status-badge.pending_review { background: #ece5ff; color: #5b3fd6; }
 .status-badge.completed    { background: #d4edda; color: #155724; }
 .status-badge.overdue      { background: #f8d7da; color: #721c24; }

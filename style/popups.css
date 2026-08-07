@@ -143,7 +143,7 @@
 .toast-content.toast-warning .toast-icon { background: #fff3cd; color: #92400e; }
 
 .toast-content.toast-info { border-left-color: #237FEA; }
-.toast-content.toast-info .toast-icon { background: #e8f1fd; color: #237FEA; }
+.toast-content.toast-info .toast-icon { background: #c7e0fa; color: #237FEA; }
 
 @media (max-width: 480px) {
   #message-overlay {
@@ -388,7 +388,7 @@
 }
 
 .popup-btn.reassign {
-  background: #eef2ff;
+  background: #d6dcff;
   color: #4338ca;
 }
 
@@ -475,7 +475,7 @@
 }
 
 .confirm-icon-badge.reassign {
-  background: #eef2ff;
+  background: #d6dcff;
   color: #4338ca;
 }
 
@@ -490,7 +490,7 @@
 }
 
 .confirm-icon-badge.info {
-  background: #e8f1fd;
+  background: #c7e0fa;
   color: #237FEA;
 }
 
